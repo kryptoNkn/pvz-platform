@@ -1,0 +1,29 @@
+# General
+.DS_Store
+.env
+.env.*
+*.log
+
+# Go (backend)
+backend/bin/
+backend/*.exe
+backend/*.out
+
+# Go build cache
+backend/pkg/
+backend/tmp/
+backend/vendor/
+
+# Frontend (React + Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
