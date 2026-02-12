@@ -1,19 +1,24 @@
 package main
 
 import (
-	"net/http"
+	"log"
+	"pvz-platform/backend/internal/config"
+	"pvz-platform/backend/internal/db"
+	"pvz-platform/backend/internal/routes"
 
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
+	cfg := config.Load()
+
+	sqlDB, err := db.New(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
+	defer sqlDB.Close()
+
 	e := echo.New()
-
-	e.GET("/health", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
-			"status": "ok",
-		})
-	})
-
-	e.Logger.Fatal(e.Start(":8080"))
+	routes.Register(e, sqlDB)
+	e.Logger.Fatal(e.Start(cfg.Addr))
 }
