@@ -2,5 +2,25 @@
 name = "backend"
 version = "0.1.0"
 edition = "2024"
+authors = ["kryptonkn <artemovandrej941@gmail.com>"]
 
 [dependencies]
+actix-web = "4"
+actix-rt = "2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-native-tls", "uuid", "chrono"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+argon2 = "0.4"
+dotenv = "0.15"
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+jsonwebtoken = "8"
+lettre = { version = "0.11", features = ["smtp-transport", "builder"] }
+log = "0.4"
+env_logger = "0.10"
+actix-cors = "0.7.1"
+regex = "1.10"
+futures-util = "0.3"
