@@ -1,5 +1,4 @@
 use actix_web::HttpResponse;
-
 use crate::utils::{validation::ValidationError};
 
 fn validation_error_message(error: &ValidationError) -> &'static str {
