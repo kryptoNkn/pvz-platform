@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { BarChart2, ClipboardList, DollarSign, LogOut } from "lucide-react";
+
+import logoImg from "../assets/logo.png";
+import analyticsImg from "../assets/analytics.png";
+import reportsImg from "../assets/reports.png";
+import financeImg from "../assets/finance.png";
+import logoutImg from "../assets/logout.png";
 
 interface SidebarProps {
   active?: number;
@@ -7,9 +12,9 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: <BarChart2 size={21} />, label: "Аналитика" },
-  { icon: <ClipboardList size={21} />, label: "Отчёты" },
-  { icon: <DollarSign size={21} />, label: "Финансы" },
+  { icon: analyticsImg, label: "Аналитика" },
+  { icon: reportsImg, label: "Отчёты" },
+  { icon: financeImg, label: "Финансы" },
 ];
 
 export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
@@ -18,43 +23,82 @@ export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
 
   return (
     <>
-      <aside style={{
-        width: 72, minHeight: "100vh",
-        background: "linear-gradient(180deg, #1c3d2b, #0d1f14)",
-        display: "flex", flexDirection: "column", alignItems: "center",
-        paddingBottom: 20, boxShadow: "3px 0 24px rgba(0,0,0,.25)",
-        position: "fixed", left: 0, top: 0, bottom: 0, zIndex: 100,
-      }}>
+      <aside
+        style={{
+          width: 72,
+          minHeight: "100vh",
+          background: "linear-gradient(180deg, #1c3d2b, #0d1f14)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          paddingBottom: 20,
+          boxShadow: "3px 0 24px rgba(0,0,0,.25)",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 100,
+        }}
+      >
         {/* Logo */}
-        <div style={{
-          width: "100%", display: "flex", flexDirection: "column",
-          alignItems: "center", padding: "16px 0 18px",
-          borderBottom: "1px solid rgba(255,255,255,.07)", marginBottom: 14,
-        }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 11,
-            background: "linear-gradient(135deg, #40c97e, #1a7a48)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(64,201,126,.45)", marginBottom: 6,
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="2" y="2" width="9" height="9" rx="2.5" fill="white" fillOpacity=".95" />
-              <rect x="13" y="2" width="9" height="9" rx="2.5" fill="white" fillOpacity=".5" />
-              <rect x="2" y="13" width="9" height="9" rx="2.5" fill="white" fillOpacity=".5" />
-              <rect x="13" y="13" width="9" height="9" rx="2.5" fill="white" fillOpacity=".95" />
-            </svg>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "16px 0 18px",
+            borderBottom: "1px solid rgba(255,255,255,.07)",
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 11,
+              background: "linear-gradient(135deg, #40c97e, #1a7a48)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 4px 16px rgba(64,201,126,.45)",
+              marginBottom: 6,
+            }}
+          >
+            <img
+              src={logoImg}
+              alt="Logo"
+              style={{ width: 24, height: 24 }}
+            />
           </div>
-          <span style={{
-            color: "rgba(255,255,255,.55)", fontSize: 8, fontWeight: 800,
-            letterSpacing: 1.6, textTransform: "uppercase",
-          }}>ПВЗ</span>
+
+          <span
+            style={{
+              color: "rgba(255,255,255,.55)",
+              fontSize: 8,
+              fontWeight: 580,
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+            }}
+          >
+            ПВЗ Master
+          </span>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <nav
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            alignItems: "center",
+          }}
+        >
           {navItems.map((item, i) => {
             const isActive = active === i;
             const isHov = hov === i;
+
             return (
               <button
                 key={i}
@@ -62,15 +106,34 @@ export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
                 onMouseEnter={() => setHov(i)}
                 onMouseLeave={() => setHov(null)}
                 style={{
-                  width: 48, height: 48, borderRadius: 13, border: "none",
-                  background: isActive ? "rgba(64,201,126,.2)" : isHov ? "rgba(255,255,255,.07)" : "transparent",
-                  color: isActive ? "#40c97e" : isHov ? "rgba(255,255,255,.75)" : "rgba(255,255,255,.38)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", transition: "all .15s",
-                  boxShadow: isActive ? "inset 0 0 0 1.5px rgba(64,201,126,.4)" : "none",
+                  width: 48,
+                  height: 48,
+                  borderRadius: 13,
+                  border: "none",
+                  background: isActive
+                    ? "rgba(64,201,126,.2)"
+                    : isHov
+                    ? "rgba(255,255,255,.07)"
+                    : "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all .15s",
+                  boxShadow: isActive
+                    ? "inset 0 0 0 1.5px rgba(64,201,126,.4)"
+                    : "none",
                 }}
               >
-                {item.icon}
+                <img
+                  src={item.icon}
+                  alt={item.label}
+                  style={{
+                    width: 21,
+                    height: 21,
+                    opacity: isActive ? 1 : isHov ? 0.75 : 0.38,
+                  }}
+                />
               </button>
             );
           })}
@@ -80,16 +143,30 @@ export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
         <button
           title="Выйти"
           onClick={() => setShowConfirm(true)}
-          onMouseEnter={e => { e.currentTarget.style.background = "rgba(220,60,60,.15)"; e.currentTarget.style.color = "#e06060"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,.3)"; }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(220,60,60,.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
           style={{
-            width: 48, height: 48, borderRadius: 13, border: "none",
-            background: "transparent", color: "rgba(255,255,255,.3)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", transition: "all .15s",
+            width: 48,
+            height: 48,
+            borderRadius: 13,
+            border: "none",
+            background: "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "all .15s",
           }}
         >
-          <LogOut size={21} />
+          <img
+            src={logoutImg}
+            alt="Logout"
+            style={{ width: 21, height: 21, opacity: 0.38 }}
+          />
         </button>
       </aside>
 
@@ -98,34 +175,65 @@ export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
         <div
           onClick={() => setShowConfirm(false)}
           style={{
-            position: "fixed", inset: 0, zIndex: 200,
-            background: "rgba(0,0,0,.45)", backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            position: "fixed",
+            inset: 0,
+            zIndex: 200,
+            background: "rgba(0,0,0,.45)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             style={{
               background: "linear-gradient(160deg, #1c3d2b, #142d1f)",
-              borderRadius: 20, padding: "32px 28px 28px",
+              borderRadius: 20,
+              padding: "32px 28px 28px",
               boxShadow: "0 20px 60px rgba(0,0,0,.5)",
               border: "1px solid rgba(64,201,126,.15)",
-              width: 320, textAlign: "center",
+              width: 320,
+              textAlign: "center",
             }}
           >
-            <div style={{
-              width: 52, height: 52, borderRadius: "50%",
-              background: "rgba(220,60,60,.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 18px",
-            }}>
-              <LogOut size={24} color="#e06060" />
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                background: "rgba(220,60,60,.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 18px",
+              }}
+            >
+              <img
+                src={logoutImg}
+                alt="Logout"
+                style={{ width: 24, height: 24 }}
+              />
             </div>
 
-            <h3 style={{ margin: "0 0 8px", color: "white", fontSize: 18, fontWeight: 700 }}>
+            <h3
+              style={{
+                margin: "0 0 8px",
+                color: "white",
+                fontSize: 18,
+                fontWeight: 700,
+              }}
+            >
               Выйти из аккаунта?
             </h3>
-            <p style={{ margin: "0 0 24px", color: "rgba(255,255,255,.5)", fontSize: 14 }}>
+
+            <p
+              style={{
+                margin: "0 0 24px",
+                color: "rgba(255,255,255,.5)",
+                fontSize: 14,
+              }}
+            >
               Вы уверены, что хотите выйти?
             </p>
 
@@ -133,19 +241,35 @@ export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
               <button
                 onClick={() => setShowConfirm(false)}
                 style={{
-                  flex: 1, padding: "11px 0", borderRadius: 12, border: "1.5px solid rgba(255,255,255,.12)",
-                  background: "transparent", color: "rgba(255,255,255,.7)",
-                  fontSize: 14, fontWeight: 600, cursor: "pointer",
+                  flex: 1,
+                  padding: "11px 0",
+                  borderRadius: 12,
+                  border: "1.5px solid rgba(255,255,255,.12)",
+                  background: "transparent",
+                  color: "rgba(255,255,255,.7)",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
                 }}
               >
                 Отмена
               </button>
+
               <button
-                onClick={() => { setShowConfirm(false); onLogout?.(); }}
+                onClick={() => {
+                  setShowConfirm(false);
+                  onLogout?.();
+                }}
                 style={{
-                  flex: 1, padding: "11px 0", borderRadius: 12, border: "none",
+                  flex: 1,
+                  padding: "11px 0",
+                  borderRadius: 12,
+                  border: "none",
                   background: "linear-gradient(135deg, #e05050, #b02020)",
-                  color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                  color: "white",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
                   boxShadow: "0 4px 16px rgba(200,40,40,.4)",
                 }}
               >

@@ -215,7 +215,7 @@ $ease: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .switchLink {
   background: none;
   border: none;
-  color: $link-color;
+  color: #1a695d;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -225,7 +225,7 @@ $ease: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   transition: color $ease;
 
   &:hover {
-    color: darken($link-color, 10%);
+    color: #0B2B26;
     text-decoration: underline;
   }
 }
