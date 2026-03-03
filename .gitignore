@@ -1,0 +1,14 @@
+# Frontend
+frontend/.next
+frontend/node_modules
+
+# Backend
+backend/target
+
+# OS
+.DS_Store
+
+# Env files
+.env
+.env.local
+.env*.local
