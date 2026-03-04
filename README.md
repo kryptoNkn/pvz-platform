@@ -382,12 +382,6 @@ git clone <repo-url>
 cd pvz-platform
 ```
 
-Создайте `backend/.env`:
-```env
-DATABASE_URL=postgres://postgres:password@localhost:5432/pvzbd
-JWT_SECRET=your-secret-key-min-32-chars
-```
-
 ### 2. База данных
 
 ```bash
@@ -431,19 +425,6 @@ npm run build
 # Артефакты: frontend/dist/
 ```
 
----
-
-## Переменные окружения
-
-| Переменная | Описание | Пример |
-|---|---|---|
-| `DATABASE_URL` | Строка подключения к PostgreSQL | `postgres://user:pass@localhost:5432/pvzbd` |
-| `JWT_SECRET` | Секрет для подписи JWT (минимум 32 символа) | `Yt5kL9sPq2x8Vf3wZr6hQn7uE1bC0aJd` |
-
----
-
-## Безопасность
-
 ### Реализовано
 
 | Механизм | Описание |
@@ -456,12 +437,3 @@ npm run build
 | Input Validation | Валидация телефона, ФИО, пароля на backend |
 | Auth Middleware | Все защищённые маршруты проверяют JWT |
 
-### Рекомендации для продакшена
-
-- Настроить CORS с явным списком разрешённых origins вместо `*`
-- Добавить rate limiting на `/auth/*` маршруты
-- Использовать HTTPS (TLS-терминация на nginx/load balancer)
-- Добавить заголовки безопасности: `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`
-- Ротация `JWT_SECRET` с graceful period
-- Настроить мониторинг аномальных попыток входа
-- Добавить верификацию email / телефона при регистрации
