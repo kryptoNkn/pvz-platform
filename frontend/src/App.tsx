@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { LoginForm, RegisterForm } from './components/AuthForms';
+import LoginForm from './components/AuthForms/LoginForm';
+import RegisterForm from './components/AuthForms/RegisterForm';
 import ProfilePage from './pages/ProfilePage';
 
 type View = 'login' | 'register' | 'profile';
