@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Camera, Phone, Mail, Shield } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, Phone, User, Shield } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
@@ -11,7 +11,19 @@ export default function ProfilePage({ onLogout }: ProfilePageProps) {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarHov, setAvatarHov] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/user/profile", { credentials: "include" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        setFullName(data.full_name ?? "");
+        setPhone(data.phone ?? "");
+      })
+      .catch(() => {});
+  }, []);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,10 +131,10 @@ export default function ProfilePage({ onLogout }: ProfilePageProps) {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
-                { Icon: Phone, href: "tel:+79001318122", label: "+7 (900) 131 81-22" },
-                { Icon: Mail, href: "mailto:lyohasal@gmail.com", label: "lyohasal@gmail.com" },
-              ].map(({ Icon, href, label }) => (
-                <div key={href} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                { Icon: Phone, label: phone || "—" },
+                { Icon: User, label: fullName || "—" },
+              ].map(({ Icon, label }, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{
                     width: 34, height: 34, borderRadius: 10,
                     background: "rgba(40,130,75,.12)",
@@ -130,12 +142,12 @@ export default function ProfilePage({ onLogout }: ProfilePageProps) {
                   }}>
                     <Icon size={15} color="#2a7a4a" />
                   </div>
-                  <a href={href} style={{
+                  <span style={{
                     color: "#1a3528", fontSize: 13.5, fontWeight: 600,
-                    textDecoration: "none", borderBottom: "1.5px dashed rgba(42,122,74,.35)", paddingBottom: 1,
+                    borderBottom: "1.5px dashed rgba(42,122,74,.35)", paddingBottom: 1,
                   }}>
                     {label}
-                  </a>
+                  </span>
                 </div>
               ))}
             </div>

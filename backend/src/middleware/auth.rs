@@ -65,20 +65,25 @@ where
                 return Ok(res.map_into_left_body());
             }
 
-            let auth_header = req.headers().get("Authorization").and_then(|v| v.to_str().ok());
+            let jwt = req
+                .headers()
+                .get("Authorization")
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.strip_prefix("Bearer ").map(str::to_owned))
+                .or_else(|| {
+                    req.cookie("access_token").map(|c| c.value().to_owned())
+                });
 
-            if let Some(token) = auth_header {
-                if let Some(jwt) = token.strip_prefix("Bearer ") {
-                    let secret = get_jwt_secret();
-                    if let Ok(data) = decode::<AccessClaims>(
-                        jwt,
-                        &DecodingKey::from_secret(&secret),
-                        &Validation::default(),
-                    ) {
-                        req.extensions_mut().insert(data.claims.sub);
-                        let res = srv.call(req).await?;
-                        return Ok(res.map_into_left_body());
-                    }
+            if let Some(jwt) = jwt {
+                let secret = get_jwt_secret();
+                if let Ok(data) = decode::<AccessClaims>(
+                    &jwt,
+                    &DecodingKey::from_secret(&secret),
+                    &Validation::default(),
+                ) {
+                    req.extensions_mut().insert(data.claims.sub);
+                    let res = srv.call(req).await?;
+                    return Ok(res.map_into_left_body());
                 }
             }
 

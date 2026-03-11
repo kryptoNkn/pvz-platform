@@ -3,7 +3,7 @@ use actix_web::cookie::{Cookie, SameSite, time::Duration};
 pub fn access_cookie(token: String) -> Cookie<'static> {
     Cookie::build("access_token", token)
         .http_only(true)
-        .secure(true)
+        .secure(false)
         .same_site(SameSite::Lax)
         .path("/")
         .max_age(Duration::minutes(15))
