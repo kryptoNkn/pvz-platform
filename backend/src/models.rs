@@ -21,3 +21,8 @@ pub struct LoginUser {
     pub phone: String,
     pub password: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateProfile {
+    pub full_name: String,
+}
