@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { LockIcon, PhoneIcon, LoginIcon, EyeIcon } from './Icons';
 import styles from './AuthForms.module.scss';
+import Popup from './Popup';
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;
@@ -19,17 +19,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
     setError('');
     setLoading(true);
 
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const payload = {
+      phone: cleanPhone,
+      password,
+    };
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const text = await res.text();
-        setError(text || 'Неверный номер телефона или пароль');
+        setError(text || 'Ошибка входа');
         return;
       }
 
@@ -42,71 +48,70 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
   };
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.card}>
-        <div className={styles.iconCircle}>
-          <LoginIcon />
+    <>
+      {error && <Popup message={error} onClose={() => setError('')} />}
+    <div className={styles['login-container']}>
+      <div className={styles['login-main']}>
+        <div className={styles.square}>
+          <img src="/register_icon.png" alt="login" className={styles['login-picture']} />
         </div>
 
-        <h1 className={styles.title}>Войти в аккаунт</h1>
-        <p className={styles.subtitle}>
-          Начните работу прямо сейчас!
-        </p>
+        <h2>Добро пожаловать!</h2>
+        <p className={styles.subtitle}>Войдите в свой аккаунт</p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.inputGroup}>
-            <span className={styles.inputIcon}>
-              <PhoneIcon />
-            </span>
+        <form onSubmit={handleSubmit}>
+          <div className={styles['input-stroke']}>
+            <img src="/phone-icon.png" alt="phone" className={styles['input-icon']} />
             <input
               type="tel"
               placeholder="Телефон"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className={styles.input}
+              required
             />
           </div>
 
-          <div className={styles.inputGroup}>
-            <span className={styles.inputIcon}>
-              <LockIcon />
-            </span>
+          <div className={styles['input-stroke']}>
+            <img src="/password.png" alt="password" className={styles['input-icon']} />
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Пароль"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={styles.input}
+              required
             />
             <button
               type="button"
-              className={styles.togglePassword}
+              className={styles['password-toggle']}
               onClick={() => setShowPassword(!showPassword)}
-              aria-label="Показать пароль"
             >
-              <EyeIcon open={showPassword} />
+              <img
+                src={showPassword ? '/eyeopen.png' : '/eyeclosed.png'}
+                alt="toggle"
+                className={styles['eye-icon']}
+              />
             </button>
           </div>
 
-          {error && <p className={styles.errorText}>{error}</p>}
-
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'Входим...' : 'Войти'}
+          <button type="submit" className={styles['login-button']} disabled={loading}>
+            {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
+        <div className={styles.line}></div>
 
-        <p className={styles.switchText}>
+        <div className={styles['register-link']}>
           Нет аккаунта?{' '}
           <button
             type="button"
-            className={styles.switchLink}
+            className={styles['switch-button']}
             onClick={onSwitchToRegister}
           >
             Зарегистрироваться
           </button>
-        </p>
+        </div>
       </div>
     </div>
+    </>
   );
 };
 
