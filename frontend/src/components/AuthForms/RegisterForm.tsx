@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import styles from './AuthForms.module.scss';
-
+import Popup from './Popup';
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
   onSuccess?: () => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess }) => {
-  const [FIO, setFIO] = useState('');
+  const [full_name, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,12 +29,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
 
     setLoading(true);
 
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const payload = {
+      full_name,
+      phone: cleanPhone,
+      password,
+    };
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ FIO, phone, password }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -52,6 +59,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
   };
 
   return (
+    <>
+      {error && <Popup message={error} onClose={() => setError('')} />}
     <div className={styles['register-container']}>
       <div className={styles['register-main']}>
         <div className={styles.square}>
@@ -66,14 +75,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
             <input
               type="text"
               placeholder="Введите ФИО"
-              value={FIO}
-              onChange={(e) => setFIO(e.target.value)}
+              value={full_name}
+              onChange={(e) => setFullName(e.target.value)}
               required
             />
           </div>
 
           <div className={styles['input-stroke']}>
-            <img src="/email.png" alt="email" className={styles['input-icon']} />
+            <img src="/phone-icon.png" alt="phone" className={styles['input-icon']} />
             <input
               type="tel"
               placeholder="Телефон"
@@ -127,7 +136,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
             </button>
           </div>
 
-          {error && <p className={styles['error-message']}>{error}</p>}
 
           <button type="submit" className={styles['login-button']} disabled={loading}>
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}
@@ -146,6 +154,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
         </div>
       </div>
     </div>
+    </>
   );
 };
 

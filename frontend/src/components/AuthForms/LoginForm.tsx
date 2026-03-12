@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styles from './AuthForms.module.scss';
+import Popup from './Popup';
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;
@@ -18,17 +19,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
     setError('');
     setLoading(true);
 
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const payload = {
+      phone: cleanPhone,
+      password,
+    };
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const text = await res.text();
-        setError(text || 'Неверный номер телефона или пароль');
+        setError(text || 'Ошибка входа');
         return;
       }
 
@@ -41,21 +48,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
   };
 
   return (
+    <>
+      {error && <Popup message={error} onClose={() => setError('')} />}
     <div className={styles['login-container']}>
       <div className={styles['login-main']}>
         <div className={styles.square}>
-          <img src='/enter_icon.png' alt='vxod' className={styles['enter-picture']} />
+          <img src="/register_icon.png" alt="login" className={styles['login-picture']} />
         </div>
 
-        <h2 className={styles['login-main-h2']}>Добро пожаловать!</h2>
+        <h2>Добро пожаловать!</h2>
         <p className={styles.subtitle}>Войдите в свой аккаунт</p>
 
         <form onSubmit={handleSubmit}>
           <div className={styles['input-stroke']}>
-            <img src='/phone-icon.png' alt='phone' className={styles['input-icon']} />
+            <img src="/phone-icon.png" alt="phone" className={styles['input-icon']} />
             <input
-              type='tel'
-              placeholder='Телефон'
+              type="tel"
+              placeholder="Телефон"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -63,10 +72,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
           </div>
 
           <div className={styles['input-stroke']}>
-            <img src='/password.png' alt='password' className={styles['input-icon']} />
+            <img src="/password.png" alt="password" className={styles['input-icon']} />
             <input
               type={showPassword ? 'text' : 'password'}
-              placeholder='Пароль'
+              placeholder="Пароль"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -84,9 +93,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
             </button>
           </div>
 
-          {error && <p className={styles['error-message']}>{error}</p>}
-
-          <button type='submit' className={styles['login-button']} disabled={loading}>
+          <button type="submit" className={styles['login-button']} disabled={loading}>
             {loading ? 'Вход...' : 'Войти'}
           </button>
         </form>
@@ -103,6 +110,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
         </div>
       </div>
     </div>
+    </>
   );
 };
 

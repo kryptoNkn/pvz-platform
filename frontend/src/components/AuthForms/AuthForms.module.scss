@@ -299,6 +299,44 @@ body {
   }
 }
 
-.error-message{
-  
+
+.error-popup {
+  position: fixed;
+  top: 30px;
+  right: 45px;
+  background-color: #ff5757;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 1000;
+  box-shadow: 0 4px 12px rgba(255, 87, 87, 0.3);
+  max-width: 320px;
+  max-width: 320px;
+  animation: slideInRight 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  transform: scale(1.2);
+  &::before {
+    content: "⚠️";
+    font-size: 16px;
+  }
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+#popup-root {
+  position: relative;
+  z-index: 9999;
 }
