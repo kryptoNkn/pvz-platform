@@ -141,6 +141,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
         </form>
+        <div className={styles.line}></div>
 
         <div className={styles['register-link']}>
           Уже есть аккаунт?{' '}
