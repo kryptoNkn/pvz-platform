@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import LoginForm from './components/AuthForms/LoginForm';
-import RegisterForm from './components/AuthForms/RegisterForm';
-import ProfilePage from './pages/ProfilePage';
+import { LoginForm, RegisterForm } from '@/features/auth';
+import { ProfilePage } from '@/pages/profile';
 
 type View = 'login' | 'register' | 'profile';
 
-function App() {
+export default function App() {
   const [view, setView] = useState<View>('login');
 
   if (view === 'profile') {
@@ -24,5 +23,3 @@ function App() {
     />
   );
 }
-
-export default App;
