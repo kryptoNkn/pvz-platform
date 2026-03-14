@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { StatsIcon } from '@/shared/Icons/statsIcon/StatsIcon'
-import { WorkloadIcon } from '@/shared/Icons/workloadIcon/WorkloadIcon'
-import { FinanceIcon } from '@/shared/Icons/financeIcon/FinanceIcon'
-import { LeaveIcon } from '@/shared/Icons/leaveIcon/LeaveIcon'
+import { StatsIcon, WorkloadIcon, FinanceIcon, LeaveIcon } from '@/shared/Icons'
 import styles from './Sidebar.module.scss'
 // @ts-ignore
-import pvzIconUrl from '@/shared/Icons/pvzIcon/Ellipse 6.svg'
+import pvzIconUrl from '@/shared/assets/pvz-icon.svg'
 
 const navItems = [
     { path: '/stats', icon: <StatsIcon /> },

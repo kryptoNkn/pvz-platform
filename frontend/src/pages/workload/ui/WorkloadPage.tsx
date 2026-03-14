@@ -1,5 +1,5 @@
-import { SettingsIcon } from '@/shared/Icons/settingsIcon/SettingsIcon'
-import { NotificationIcon } from '@/shared/Icons/notificationIcon/Notification'
+import { useNavigate } from 'react-router-dom'
+import { SettingsIcon, NotificationIcon } from '@/shared/Icons'
 import styles from './WorkloadPage.module.scss'
 
 const mockPvzData = [
@@ -10,12 +10,14 @@ const mockPvzData = [
     { id: 5, name: 'ПВЗ Западный', address: 'ул. Труда, 33', load: 0, status: 'Неактивен', hours: '-', traffic: '-' },
 ]
 
-export const WorkloadPage = () => (
+export const WorkloadPage = () => {
+    const navigate = useNavigate()
+    return (
     <div className={styles.page}>
         <div className={styles.header}>
             <h1 className={styles.headerTitle}>Загруженность ПВЗ</h1>
             <div className={styles.headerActions}>
-                <button className={styles.btnEmployees}>Список сотрудников</button>
+                <button className={styles.btnEmployees} onClick={() => navigate('/workload/employees')}>Список сотрудников</button>
                 <button className={styles.btnIcon}><SettingsIcon /></button>
                 <button className={styles.btnIcon}><NotificationIcon /></button>
                 <div className={styles.avatarEmpty} />
@@ -44,7 +46,7 @@ export const WorkloadPage = () => (
         <div className={styles.searchSection}>
             <input type="text" placeholder="Поиск..." className={styles.searchInput} />
             <span className={styles.pointsText}>156 пунктов</span>
-            <button className={styles.btnAddPvz}>Добавить ПВЗ</button>
+            <button className={styles.btnAddPvz} onClick={() => navigate('/workload/add')}>Добавить ПВЗ</button>
         </div>
 
         <div className={styles.tableSection}>
@@ -78,4 +80,5 @@ export const WorkloadPage = () => (
             </table>
         </div>
     </div>
-)
+    )
+}

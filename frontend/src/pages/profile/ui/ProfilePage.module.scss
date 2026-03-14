@@ -1,15 +1,6 @@
-.page {
-  background: #f2fbf5;
-  min-height: 100vh;
-}
-
-.content {
-  margin-left: 72px;
-}
-
 .grid {
   padding: 32px;
-  padding-top: 92px;
+  padding-top: 32px;
   display: grid;
   grid-template-columns: 320px 1fr;
   gap: 20px;
