@@ -1,0 +1,7 @@
+export { FinanceIcon } from './financeIcon/FinanceIcon'
+export { LeaveIcon } from './leaveIcon/LeaveIcon'
+export { NotificationIcon } from './notificationIcon/Notification'
+export { PvzIcon } from './pvzIcon/PvzIcon'
+export { SettingsIcon } from './settingsIcon/SettingsIcon'
+export { StatsIcon } from './statsIcon/StatsIcon'
+export { WorkloadIcon } from './workloadIcon/WorkloadIcon'

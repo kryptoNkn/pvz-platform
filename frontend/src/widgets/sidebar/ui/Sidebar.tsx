@@ -1,83 +1,71 @@
-import { useState } from 'react';
-import logoImg from '@/shared/assets/logo.png';
-import analyticsImg from '@/shared/assets/analytics.png';
-import reportsImg from '@/shared/assets/reports.png';
-import financeImg from '@/shared/assets/finance.png';
-import logoutImg from '@/shared/assets/logout.png';
-import styles from './Sidebar.module.scss';
-
-interface SidebarProps {
-  active?: number;
-  onLogout?: () => void;
-}
+import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { StatsIcon } from '@/shared/Icons/statsIcon/StatsIcon'
+import { WorkloadIcon } from '@/shared/Icons/workloadIcon/WorkloadIcon'
+import { FinanceIcon } from '@/shared/Icons/financeIcon/FinanceIcon'
+import { LeaveIcon } from '@/shared/Icons/leaveIcon/LeaveIcon'
+import styles from './Sidebar.module.scss'
+// @ts-ignore
+import pvzIconUrl from '@/shared/Icons/pvzIcon/Ellipse 6.svg'
 
 const navItems = [
-  { icon: analyticsImg, label: 'Аналитика' },
-  { icon: reportsImg, label: 'Отчёты' },
-  { icon: financeImg, label: 'Финансы' },
-];
+    { path: '/stats', icon: <StatsIcon /> },
+    { path: '/workload', icon: <WorkloadIcon /> },
+    { path: '/finance', icon: <FinanceIcon /> },
+]
 
-export default function Sidebar({ active = 2, onLogout }: SidebarProps) {
-  const [showConfirm, setShowConfirm] = useState(false);
+export const Sidebar = () => {
+    const { pathname } = useLocation()
+    const navigate = useNavigate()
+    const [showConfirm, setShowConfirm] = useState(false)
 
-  return (
-    <>
-      <aside className={styles.aside}>
-        <div className={styles.logoSection}>
-          <div className={styles.logoWrap}>
-            <img src={logoImg} alt="Logo" className={styles.logoImg} />
-          </div>
-          <span className={styles.logoLabel}>ПВЗ Master</span>
-        </div>
+    return (
+        <>
+            <aside className={styles.sidebar}>
+                <div className={styles.top}>
+                    <img src={pvzIconUrl} alt="PVZ" width={64} height={64} className={styles.avatar} />
+                    <p className={styles.title}>ПВЗ Master</p>
+                </div>
 
-        <nav className={styles.nav}>
-          {navItems.map((item, i) => (
-            <button
-              key={i}
-              title={item.label}
-              className={[styles.navBtn, active === i ? styles.active : ''].filter(Boolean).join(' ')}
-            >
-              <img src={item.icon} alt={item.label} className={styles.navIcon} />
-            </button>
-          ))}
-        </nav>
+                <nav className={styles.nav}>
+                    {navItems.map(item => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`${styles.navIcon} ${pathname === item.path ? styles.navIconActive : ''}`}
+                        >
+                            {item.icon}
+                        </Link>
+                    ))}
+                </nav>
 
-        <button
-          title="Выйти"
-          className={styles.logoutBtn}
-          onClick={() => setShowConfirm(true)}
-        >
-          <img src={logoutImg} alt="Logout" className={styles.logoutIcon} />
-        </button>
-      </aside>
+                <div className={styles.leave} onClick={() => setShowConfirm(true)}>
+                    <LeaveIcon />
+                </div>
+            </aside>
 
-      {showConfirm && (
-        <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalIconWrap}>
-              <img src={logoutImg} alt="Logout" className={styles.modalIcon} />
-            </div>
-
-            <h3 className={styles.modalTitle}>Выйти из аккаунта?</h3>
-            <p className={styles.modalText}>Вы уверены, что хотите выйти?</p>
-
-            <div className={styles.modalActions}>
-              <button className={styles.modalCancelBtn} onClick={() => setShowConfirm(false)}>
-                Отмена
-              </button>
-              <button
-                className={styles.modalConfirmBtn}
-                onClick={() => {
-                  setShowConfirm(false);
-                  onLogout?.();
-                }}
-              >
-                Выйти
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+            {showConfirm && (
+                <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        <h3 className={styles.modalTitle}>Выйти из аккаунта?</h3>
+                        <p className={styles.modalText}>Вы уверены, что хотите выйти?</p>
+                        <div className={styles.modalActions}>
+                            <button className={styles.modalCancel} onClick={() => setShowConfirm(false)}>
+                                Отмена
+                            </button>
+                            <button
+                                className={styles.modalConfirm}
+                                onClick={() => {
+                                    setShowConfirm(false)
+                                    navigate('/login')
+                                }}
+                            >
+                                Выйти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    )
 }

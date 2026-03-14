@@ -1,0 +1,20 @@
+.page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 48px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #163832;
+    margin: 0 0 16px;
+}
+
+.stub {
+    font-size: 18px;
+    color: #83b69b;
+}
