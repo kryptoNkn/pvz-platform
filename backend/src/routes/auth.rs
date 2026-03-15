@@ -32,7 +32,7 @@ pub async fn register_user(
     };
 
     let user_id = Uuid::new_v4();
-    let role = "user".to_string();
+    let role = "pending".to_string();
 
     let result = sqlx::query(
         r#"

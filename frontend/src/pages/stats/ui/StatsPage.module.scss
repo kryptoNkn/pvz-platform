@@ -1,20 +1,149 @@
 .page {
-    flex: 1;
+    padding: 32px 40px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 48px;
+    flex: 1;
+    gap: 24px;
 }
 
-.title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #163832;
-    margin: 0 0 16px;
-}
-
-.stub {
+.loading {
     font-size: 18px;
     color: #83b69b;
+    padding: 48px 0;
+}
+
+/* ── Stat card grids ── */
+.statsSection {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.statBlock {
+    border-radius: 20px;
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 28px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.09);
+}
+
+.statDark {
+    background: #163832;
+    color: #ffffff;
+}
+
+.statGreen {
+    background: #83b69b;
+    color: #1a1a1a;
+}
+
+.statRed {
+    background: #c0392b;
+    color: #ffffff;
+}
+
+.statGray {
+    background: #8a9e96;
+    color: #ffffff;
+}
+
+.statLabel {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    opacity: 0.72;
+}
+
+.statValue {
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.statSub {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.65;
+    margin-top: 2px;
+}
+
+/* ── Distribution bar card ── */
+.sectionBlock {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.07);
+    border: 1.5px solid #d8ede5;
+}
+
+.sectionTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: #163832;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 16px;
+    opacity: 0.8;
+}
+
+.barTrack {
+    display: flex;
+    height: 48px;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    gap: 3px;
+}
+
+/* shared bar segment base */
+%bar-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    transition: width 0.5s ease;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    padding: 0 12px;
+    box-sizing: border-box;
+
+    span {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+        max-width: 100%;
+    }
+}
+
+.barActive {
+    @extend %bar-segment;
+    background: #163832;
+    color: #ffffff;
+}
+
+.barOverloaded {
+    @extend %bar-segment;
+    background: #c0392b;
+    color: #ffffff;
+}
+
+.barDelivery {
+    @extend %bar-segment;
+    background: #5a9e80;
+    color: #ffffff;
+}
+
+.barClosed {
+    @extend %bar-segment;
+    background: #8a9e96;
+    color: #ffffff;
 }

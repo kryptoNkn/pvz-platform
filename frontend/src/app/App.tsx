@@ -6,11 +6,13 @@ import { FinancePage } from '@/pages/finance'
 import { AddPvzPage } from '@/pages/add-pvz'
 import { EmployeesPage } from '@/pages/employees'
 import { ProfilePage } from '@/pages/profile'
+import { AuthPage } from '@/pages/auth'
 
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route path="/login" element={<AuthPage />} />
                 <Route element={<ProtectedLayout />}>
                     <Route path="/workload" element={<WorkloadPage />} />
                     <Route path="/workload/add" element={<AddPvzPage />} />
@@ -19,7 +21,7 @@ export default function App() {
                     <Route path="/finance" element={<FinancePage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/workload" replace />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
         </BrowserRouter>
     )

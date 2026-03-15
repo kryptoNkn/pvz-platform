@@ -1,20 +1,166 @@
 .page {
-    flex: 1;
+    padding: 32px 40px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 48px;
+    flex: 1;
+    gap: 24px;
 }
 
-.title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #163832;
-    margin: 0 0 16px;
-}
-
-.stub {
+.loading {
     font-size: 18px;
     color: #83b69b;
+    padding: 48px 0;
+}
+
+/* ── Top stat cards (3 big) ── */
+.statsSection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.statBlock {
+    border-radius: 20px;
+    min-height: 190px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 28px 32px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.10);
+}
+
+/* ── Secondary stat cards (3 smaller) ── */
+.statsSection2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.statBlock2 {
+    border-radius: 20px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 28px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.08);
+}
+
+/* ── Colors ── */
+.statDark {
+    background: #163832;
+    color: #ffffff;
+}
+
+.statGreen {
+    background: #83b69b;
+    color: #1a1a1a;
+}
+
+.statRed {
+    background: #d9604a;
+    color: #ffffff;
+}
+
+.statRedDark {
+    background: #c0392b;
+    color: #ffffff;
+}
+
+/* ── Typography ── */
+.statLabel {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    opacity: 0.72;
+}
+
+.statValue {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    align-self: flex-start;
+}
+
+.statValue2 {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.3px;
+}
+
+.statSub {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.65;
+}
+
+/* ── Monthly table ── */
+.tableSection {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 28px 32px 32px;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.07);
+    border: 1.5px solid #d8ede5;
+    flex: 1;
+}
+
+.sectionTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: #163832;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 20px;
+    opacity: 0.8;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableHead {
+    background: #163832;
+    color: #ffffff;
+}
+
+.th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tr {
+    &:nth-child(even) {
+        background: #f4fdf8;
+    }
+
+    &:hover {
+        background: #e4f7ee;
+    }
+}
+
+.td {
+    padding: 14px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #e4f0ea;
+    color: #1a2e28;
+}
+
+.profitPos {
+    font-weight: 700;
+    color: #1a6b4a;
+}
+
+.profitNeg {
+    font-weight: 700;
+    color: #c0392b;
 }

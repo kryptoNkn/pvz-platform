@@ -1,44 +1,69 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './EmployeesPage.module.scss'
 
-type Role = 'Оператор' | 'Администратор'
+type ApiRole = 'pending' | 'operator' | 'admin' | 'owner'
 
-type Employee = {
-    id: number
-    firstName: string
-    lastName: string
-    email: string
-    role: Role
+const ROLE_LABELS: Record<ApiRole, string> = {
+    pending: 'Ожидает назначения',
+    operator: 'Оператор',
+    admin: 'Администратор',
+    owner: 'Владелец',
 }
 
-const mockEmployees: Employee[] = [
-    { id: 1, firstName: 'Алексей',   lastName: 'Смирнов',   email: 'a.smirnov@pvz.ru',   role: 'Оператор' },
-    { id: 2, firstName: 'Мария',     lastName: 'Иванова',   email: 'm.ivanova@pvz.ru',   role: 'Оператор' },
-    { id: 3, firstName: 'Дмитрий',   lastName: 'Козлов',    email: 'd.kozlov@pvz.ru',    role: 'Оператор' },
-    { id: 4, firstName: 'Анна',      lastName: 'Петрова',   email: 'a.petrova@pvz.ru',   role: 'Оператор' },
-    { id: 5, firstName: 'Сергей',    lastName: 'Новиков',   email: 's.novikov@pvz.ru',   role: 'Оператор' },
-    { id: 6, firstName: 'Екатерина', lastName: 'Морозова',  email: 'e.morozova@pvz.ru',  role: 'Оператор' },
-]
+interface User {
+    id: string
+    full_name: string
+    role: ApiRole
+}
 
 export const EmployeesPage = () => {
     const navigate = useNavigate()
+    const [users, setUsers] = useState<User[]>([])
+    const [myRole, setMyRole] = useState<ApiRole | null>(null)
     const [search, setSearch] = useState('')
-    const [employees, setEmployees] = useState<Employee[]>(mockEmployees)
+    const [saving, setSaving] = useState<string | null>(null)
 
-    const filtered = employees.filter(e => {
-        const full = `${e.firstName} ${e.lastName}`.toLowerCase()
-        return full.includes(search.toLowerCase())
-    })
+    useEffect(() => {
+        fetch('/api/user/profile', { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => setMyRole(data.role))
+            .catch(console.error)
 
-    const updateRole = (id: number, role: Role) => {
-        setEmployees(prev => prev.map(e => e.id === id ? { ...e, role } : e))
+        fetch('/api/users', { credentials: 'include' })
+            .then(r => r.json())
+            .then(setUsers)
+            .catch(console.error)
+    }, [])
+
+    const assignRole = async (userId: string, role: string) => {
+        setSaving(userId)
+        try {
+            await fetch(`/api/users/${userId}/role`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role }),
+            })
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: role as ApiRole } : u))
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setSaving(null)
+        }
     }
 
-    const handleSave = () => {
-        // TODO: submit to API
-        navigate('/workload')
+    const roleOptions = (): ApiRole[] => {
+        if (myRole === 'owner') return ['operator', 'admin']
+        if (myRole === 'admin') return ['operator']
+        return []
     }
+
+    const canAssign = roleOptions().length > 0
+
+    const filtered = users.filter(u =>
+        u.full_name.toLowerCase().includes(search.toLowerCase())
+    )
 
     return (
         <div className={styles.page}>
@@ -52,8 +77,8 @@ export const EmployeesPage = () => {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <button className={styles.btnSave} onClick={handleSave}>
-                    Сохранить изменения
+                <button className={styles.btnSave} onClick={() => navigate('/workload')}>
+                    Назад
                 </button>
             </div>
 
@@ -66,28 +91,38 @@ export const EmployeesPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filtered.map(e => (
-                            <tr key={e.id} className={styles.tr}>
+                        {filtered.map(u => (
+                            <tr key={u.id} className={styles.tr}>
                                 <td className={styles.td}>
-                                    <span className={styles.name}>{e.firstName} {e.lastName}</span>
-                                    <span className={styles.email}>{e.email}</span>
+                                    <span className={styles.name}>{u.full_name}</span>
                                 </td>
                                 <td className={styles.td}>
-                                    <select
-                                        className={styles.roleSelect}
-                                        value={e.role}
-                                        onChange={ev => updateRole(e.id, ev.target.value as Role)}
-                                    >
-                                        <option value="Оператор">Оператор</option>
-                                        <option value="Администратор">Администратор</option>
-                                    </select>
+                                    {canAssign && u.role !== 'owner' ? (
+                                        <select
+                                            className={styles.roleSelect}
+                                            value={u.role}
+                                            disabled={saving === u.id}
+                                            onChange={e => assignRole(u.id, e.target.value)}
+                                        >
+                                            <option value="pending" disabled>
+                                                Ожидает назначения
+                                            </option>
+                                            {roleOptions().map(r => (
+                                                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <span className={u.role === 'pending' ? styles.rolePending : styles.roleLabel}>
+                                            {ROLE_LABELS[u.role] ?? u.role}
+                                        </span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
                         {filtered.length === 0 && (
                             <tr>
                                 <td className={styles.td} colSpan={2} style={{ textAlign: 'center', color: '#999' }}>
-                                    Сотрудники не найдены
+                                    Пользователи не найдены
                                 </td>
                             </tr>
                         )}

@@ -1,95 +1,27 @@
 .page {
-    padding: 40px 48px;
+    padding: 32px 40px;
     display: flex;
     flex-direction: column;
     flex: 1;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.headerTitle {
-    font-size: 32px;
-    font-weight: 700;
-    color: #163832;
-    margin: 0;
-}
-
-.headerActions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.btnEmployees {
-    padding: 0 28px;
-    height: 60px;
-    background: #163832;
-    color: #ffffff;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: opacity 0.2s;
-
-    &:hover {
-        opacity: 0.9;
-    }
-}
-
-.btnIcon {
-    width: 60px;
-    height: 60px;
-    background: #163832;
-    color: #ffffff;
-    border: none;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: opacity 0.2s;
-
-    &:hover {
-        opacity: 0.9;
-    }
-
-    svg {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-.avatarEmpty {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #83b69b;
-    flex-shrink: 0;
-}
-
-.statsSection {
-    margin-top: 67px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 24px;
 }
 
+/* ── Stat cards ── */
+.statsSection {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
 .statBlock {
-    height: 220px;
-    border-radius: 24px;
+    height: 180px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: space-between;
-    padding: 32px 40px;
+    padding: 24px 28px;
     box-sizing: border-box;
+    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.10);
 }
 
 .statBlock1 {
@@ -101,80 +33,115 @@
 .statBlock3,
 .statBlock4 {
     background: #83b69b;
-    color: #000000;
+    color: #1a1a1a;
 }
 
 .statLabel {
-    font-size: 20px;
-    font-weight: 600;
-    align-self: flex-start;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    opacity: 0.72;
 }
 
 .statValue {
     font-size: 52px;
-    font-weight: 700;
-    align-self: center;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
 }
 
+/* ── Search row ── */
 .searchSection {
-    margin-top: 80px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
 }
 
 .searchInput {
     flex: 1;
-    height: 56px;
-    border-radius: 12px;
-    border: 2px solid #163832;
-    padding: 0 20px;
-    font-size: 16px;
+    height: 48px;
+    border-radius: 14px;
+    border: 2px solid #c8e0d8;
+    padding: 0 18px;
+    font-size: 15px;
     outline: none;
-    background: transparent;
+    background: #ffffff;
+    color: #163832;
+    transition: border-color 0.2s;
+
+    &::placeholder {
+        color: #9bbcb0;
+    }
 
     &:focus {
-        border-color: #235347;
+        border-color: #163832;
     }
 }
 
 .pointsText {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: #163832;
     white-space: nowrap;
+    background: #dffff2;
+    height: 48px;
+    padding: 0 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    border: 2px solid #c8e0d8;
 }
 
-.btnAddPvz {
-    height: 56px;
-    padding: 0 32px;
-    background: #163832;
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
+.btnSecondary {
+    height: 48px;
+    padding: 0 22px;
+    background: transparent;
+    color: #163832;
+    border: 2px solid #163832;
+    border-radius: 14px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    transition: opacity 0.2s;
+    transition: background 0.2s, color 0.2s;
 
     &:hover {
-        opacity: 0.9;
+        background: #163832;
+        color: #ffffff;
     }
 }
 
+.btnPrimary {
+    height: 48px;
+    padding: 0 22px;
+    background: #163832;
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #235347;
+    }
+}
+
+/* ── Table ── */
 .tableSection {
-    margin-top: 32px;
     flex: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 20px rgba(22, 56, 50, 0.09);
+    border: 1.5px solid #c8e0d8;
 }
 
 .table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    border-radius: 50px;
-    overflow: hidden;
-    border: 2px solid #163832;
+    border-collapse: collapse;
 }
 
 .tableHead {
@@ -183,34 +150,59 @@
 }
 
 .th {
-    padding: 20px 24px;
+    padding: 16px 20px;
     text-align: left;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .tr {
+    transition: background 0.12s;
+
     &:nth-child(even) {
-        background: #f0fff8;
+        background: #f4fdf8;
     }
 
     &:hover {
-        background: #dffff2;
+        background: #e4f7ee;
     }
 }
 
 .td {
-    padding: 16px 24px;
-    font-size: 15px;
-    border-bottom: 1px solid #e0f0e8;
+    padding: 14px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #e4f0ea;
+    color: #1a2e28;
 }
 
 .statusActive {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: rgba(22, 56, 50, 0.10);
     color: #163832;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 12px;
 }
 
 .statusInactive {
-    color: #999;
-    font-weight: 600;
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.06);
+    color: #888;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.statusOverloaded {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: rgba(192, 57, 43, 0.10);
+    color: #c0392b;
+    font-weight: 700;
+    font-size: 12px;
 }

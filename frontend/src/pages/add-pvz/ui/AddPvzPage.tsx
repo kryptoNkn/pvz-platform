@@ -39,8 +39,16 @@ export const AddPvzPage = () => {
         )
     }
 
-    const handleSave = () => {
-        // TODO: submit to API
+    const handleSave = async () => {
+        await fetch('/api/v1/pvz', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                address,
+                max_capacity: Number(capacity) || 100,
+            }),
+        })
         navigate('/workload')
     }
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Users } from 'lucide-react'
 import { StatsIcon, WorkloadIcon, FinanceIcon, LeaveIcon } from '@/shared/Icons'
 import styles from './Sidebar.module.scss'
 // @ts-ignore
@@ -11,10 +12,16 @@ const navItems = [
     { path: '/finance', icon: <FinanceIcon /> },
 ]
 
-export const Sidebar = () => {
+interface SidebarProps {
+    role: string
+}
+
+export const Sidebar = ({ role }: SidebarProps) => {
     const { pathname } = useLocation()
     const navigate = useNavigate()
     const [showConfirm, setShowConfirm] = useState(false)
+
+    const canManageUsers = role === 'owner' || role === 'admin'
 
     return (
         <>
@@ -34,6 +41,14 @@ export const Sidebar = () => {
                             {item.icon}
                         </Link>
                     ))}
+                    {canManageUsers && (
+                        <Link
+                            to="/workload/employees"
+                            className={`${styles.navIcon} ${pathname === '/workload/employees' ? styles.navIconActive : ''}`}
+                        >
+                            <Users width={40} height={40} />
+                        </Link>
+                    )}
                 </nav>
 
                 <div className={styles.leave} onClick={() => setShowConfirm(true)}>

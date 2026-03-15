@@ -1,46 +1,62 @@
 .header {
-  position: fixed;
-  top: 0;
-  left: 72px;
-  right: 0;
-  height: 60px;
-  z-index: 99;
-  background: rgba(245, 252, 248, 0.92);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(40, 120, 70, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
+    height: 64px;
+    flex-shrink: 0;
+    background: rgba(245, 252, 248, 0.94);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(22, 56, 50, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .title {
-  font-weight: 700;
-  font-size: 15px;
-  color: #1c3d2b;
-  letter-spacing: 0.4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #163832;
+    letter-spacing: -0.2px;
 }
 
 .actions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .actionBtn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1c3d2b, #2d6043);
-  border: none;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.15s;
-  box-shadow: 0 2px 8px rgba(28, 61, 43, 0.28);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #163832;
+    border: none;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 2px 8px rgba(22, 56, 50, 0.22);
 
-  &:hover {
-    transform: scale(1.07);
-  }
+    &:hover {
+        background: #235347;
+    }
+}
+
+.avatarBtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #83b69b;
+    border: 2.5px solid rgba(22, 56, 50, 0.18);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(22, 56, 50, 0.18);
+
+    &:hover {
+        opacity: 0.85;
+        transform: scale(1.06);
+    }
 }
