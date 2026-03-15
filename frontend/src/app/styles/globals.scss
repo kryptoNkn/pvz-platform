@@ -1,15 +1,21 @@
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
+html,
+body {
+    height: 100%;
+    overflow: hidden;
 }
 
 #root {
-  height: 100%;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
