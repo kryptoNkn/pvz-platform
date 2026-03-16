@@ -1,7 +1,6 @@
 use actix_web::{web, HttpResponse, Responder};
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
-use rand::Rng;
 use serde::Deserialize;
 use crate::pvz::{AppState, Pvz, PvzStatus, SizeType, LocationType, generate_pvz_list, generate_workload_stats, generate_financial_stats};
 

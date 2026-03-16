@@ -45,6 +45,7 @@ export const StatsPage = () => {
                 <div className={`${styles.statBlock} ${styles.statDark}`}>
                     <span className={styles.statLabel}>Всего ПВЗ</span>
                     <span className={styles.statValue}>{stats.total}</span>
+                    <span className={styles.statSub}>всего объектов</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
                     <span className={styles.statLabel}>Активных</span>
@@ -67,17 +68,17 @@ export const StatsPage = () => {
                 <h2 className={styles.sectionTitle}>Распределение статусов ПВЗ</h2>
                 <div className={styles.barTrack}>
                     {activePercent > 0 && (
-                        <div className={styles.barActive} style={{ width: `${activePercent}%` }}>
+                        <div className={styles.barActive} style={{ flex: activePercent }}>
                             <span>Активен {activePercent}%</span>
                         </div>
                     )}
                     {overloadedPercent > 0 && (
-                        <div className={styles.barOverloaded} style={{ width: `${overloadedPercent}%` }}>
+                        <div className={styles.barOverloaded} style={{ flex: overloadedPercent }}>
                             <span>Перегружен {overloadedPercent}%</span>
                         </div>
                     )}
                     {closedPercent > 0 && (
-                        <div className={styles.barClosed} style={{ width: `${closedPercent}%` }}>
+                        <div className={styles.barClosed} style={{ flex: closedPercent }}>
                             <span>Неактивен {closedPercent}%</span>
                         </div>
                     )}
@@ -88,6 +89,7 @@ export const StatsPage = () => {
                 <div className={`${styles.statBlock} ${styles.statDark}`}>
                     <span className={styles.statLabel}>Всего товаров</span>
                     <span className={styles.statValue}>{stats.total_items.toLocaleString('ru-RU')}</span>
+                    <span className={styles.statSub}>на всех ПВЗ</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
                     <span className={styles.statLabel}>Приёмка</span>
@@ -110,17 +112,17 @@ export const StatsPage = () => {
                 <h2 className={styles.sectionTitle}>Соотношение операций</h2>
                 <div className={styles.barTrack}>
                     {accPct > 0 && (
-                        <div className={styles.barActive} style={{ width: `${accPct}%` }}>
+                        <div className={styles.barActive} style={{ flex: accPct }}>
                             <span>Приёмка {accPct}%</span>
                         </div>
                     )}
                     {delPct > 0 && (
-                        <div className={styles.barDelivery} style={{ width: `${delPct}%` }}>
+                        <div className={styles.barDelivery} style={{ flex: delPct }}>
                             <span>Выдача {delPct}%</span>
                         </div>
                     )}
                     {retPct > 0 && (
-                        <div className={styles.barOverloaded} style={{ width: `${retPct}%` }}>
+                        <div className={styles.barOverloaded} style={{ flex: retPct }}>
                             <span>Возвраты {retPct}%</span>
                         </div>
                     )}
