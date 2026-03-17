@@ -5,6 +5,8 @@ import {
     Shield, LogOut, CheckCircle, XCircle,
     Sun, Moon, Globe
 } from 'lucide-react'
+import { useLang } from '@/shared/i18n'
+import type { Lang } from '@/shared/i18n/translations'
 import styles from './SettingsPage.module.scss'
 
 interface Profile {
@@ -15,79 +17,19 @@ interface Profile {
 }
 
 type Theme = 'light' | 'dark'
-type Lang  = 'ru' | 'en'
-
-const T = {
-    ru: {
-        account:          'Аккаунт',
-        editProfile:      'Редактировать профиль',
-        changePassword:   'Изменить пароль',
-        notifications:    'Уведомления',
-        roleChange:       'Смена роли',
-        roleChangeDesc:   'Уведомлять при изменении вашей роли',
-        systemNotifs:     'Системные уведомления',
-        systemNotifsDesc: 'Информация от администраторов системы',
-        appearance:       'Внешний вид',
-        theme:            'Тема',
-        light:            'Светлая',
-        dark:             'Тёмная',
-        language:         'Язык',
-        about:            'О системе',
-        version:          'Версия',
-        platform:         'Платформа',
-        logout:           'Выйти из аккаунта',
-        saved:            'Настройки сохранены',
-    },
-    en: {
-        account:          'Account',
-        editProfile:      'Edit profile',
-        changePassword:   'Change password',
-        notifications:    'Notifications',
-        roleChange:       'Role change',
-        roleChangeDesc:   'Notify when your role changes',
-        systemNotifs:     'System notifications',
-        systemNotifsDesc: 'Information from system administrators',
-        appearance:       'Appearance',
-        theme:            'Theme',
-        light:            'Light',
-        dark:             'Dark',
-        language:         'Language',
-        about:            'About',
-        version:          'Version',
-        platform:         'Platform',
-        logout:           'Log out',
-        saved:            'Settings saved',
-    },
-}
-
-const ROLE_LABELS: Record<string, Record<Lang, string>> = {
-    owner:    { ru: 'Владелец',       en: 'Owner' },
-    admin:    { ru: 'Администратор',  en: 'Administrator' },
-    operator: { ru: 'Оператор',       en: 'Operator' },
-    pending:  { ru: 'Ожидает',        en: 'Pending' },
-    user:     { ru: 'Пользователь',   en: 'User' },
-}
 
 function applyTheme(theme: Theme) {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('theme', theme)
 }
 
-function applyLang(lang: Lang) {
-    document.documentElement.setAttribute('lang', lang)
-    localStorage.setItem('lang', lang)
-    window.dispatchEvent(new CustomEvent('langChanged', { detail: lang }))
-}
-
 export default function SettingsPage() {
     const navigate = useNavigate()
+    const { lang, t, setLang } = useLang()
     const [profile, setProfile] = useState<Profile | null>(null)
     const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
     const [theme, setTheme] = useState<Theme>(
         () => (localStorage.getItem('theme') as Theme) || 'light'
-    )
-    const [lang, setLang] = useState<Lang>(
-        () => (localStorage.getItem('lang') as Lang) || 'ru'
     )
     const [notifRole, setNotifRole] = useState(() =>
         localStorage.getItem('notif_role') !== 'false'
@@ -95,8 +37,6 @@ export default function SettingsPage() {
     const [notifSystem, setNotifSystem] = useState(() =>
         localStorage.getItem('notif_system') !== 'false'
     )
-
-    const t = T[lang]
 
     const showToast = (type: 'success' | 'error', text: string) => {
         setToast({ type, text })
@@ -113,19 +53,18 @@ export default function SettingsPage() {
     const handleTheme = (next: Theme) => {
         setTheme(next)
         applyTheme(next)
-        showToast('success', t.saved)
+        showToast('success', t.settingsSaved)
     }
 
     const handleLang = (next: Lang) => {
         setLang(next)
-        applyLang(next)
-        showToast('success', T[next].saved)
+        showToast('success', t.settingsSaved)
     }
 
     const toggle = (key: string, value: boolean, setter: (v: boolean) => void) => {
         setter(value)
         localStorage.setItem(key, String(value))
-        showToast('success', t.saved)
+        showToast('success', t.settingsSaved)
     }
 
     const handleLogout = () => {
@@ -134,6 +73,14 @@ export default function SettingsPage() {
                 document.cookie = 'token=; Max-Age=0; path=/'
                 navigate('/login')
             })
+    }
+
+    const ROLE_LABELS: Record<string, string> = {
+        owner:    t.roleOwnerLabel,
+        admin:    t.roleAdminLabel,
+        operator: t.roleOperatorLabel,
+        pending:  t.rolePendingLabel,
+        user:     t.roleUserLabel,
     }
 
     return (
@@ -150,7 +97,7 @@ export default function SettingsPage() {
 
                 {/* ── Account ─────────────────────────────────── */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>{t.account}</h2>
+                    <h2 className={styles.sectionTitle}>{t.settingsAccount}</h2>
                     <div className={styles.card}>
                         {profile && (
                             <div className={styles.profileRow}>
@@ -166,19 +113,19 @@ export default function SettingsPage() {
                                     <div className={styles.profileName}>{profile.full_name}</div>
                                     <div className={styles.profilePhone}>{profile.phone}</div>
                                     <div className={styles.roleBadge}>
-                                        {ROLE_LABELS[profile.role]?.[lang] ?? profile.role}
+                                        {ROLE_LABELS[profile.role] ?? profile.role}
                                     </div>
                                 </div>
                             </div>
                         )}
                         <button className={styles.linkRow} onClick={() => navigate('/profile')}>
                             <User size={16} />
-                            <span>{t.editProfile}</span>
+                            <span>{t.settingsEditProfile}</span>
                             <ChevronRight size={16} className={styles.chevron} />
                         </button>
                         <button className={styles.linkRow} onClick={() => navigate('/profile')}>
                             <Lock size={16} />
-                            <span>{t.changePassword}</span>
+                            <span>{t.settingsChangePassword}</span>
                             <ChevronRight size={16} className={styles.chevron} />
                         </button>
                     </div>
@@ -186,25 +133,25 @@ export default function SettingsPage() {
 
                 {/* ── Appearance ──────────────────────────────── */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>{t.appearance}</h2>
+                    <h2 className={styles.sectionTitle}>{t.settingsAppearance}</h2>
                     <div className={styles.card}>
                         <div className={styles.pickerRow}>
                             <div className={styles.pickerInfo}>
                                 {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-                                <span className={styles.pickerLabel}>{t.theme}</span>
+                                <span className={styles.pickerLabel}>{t.settingsTheme}</span>
                             </div>
                             <div className={styles.segmented}>
                                 <button
                                     className={`${styles.seg} ${theme === 'light' ? styles.segActive : ''}`}
                                     onClick={() => handleTheme('light')}
                                 >
-                                    <Sun size={13} />{t.light}
+                                    <Sun size={13} />{t.settingsLight}
                                 </button>
                                 <button
                                     className={`${styles.seg} ${theme === 'dark' ? styles.segActive : ''}`}
                                     onClick={() => handleTheme('dark')}
                                 >
-                                    <Moon size={13} />{t.dark}
+                                    <Moon size={13} />{t.settingsDark}
                                 </button>
                             </div>
                         </div>
@@ -212,7 +159,7 @@ export default function SettingsPage() {
                         <div className={styles.pickerRow}>
                             <div className={styles.pickerInfo}>
                                 <Globe size={16} />
-                                <span className={styles.pickerLabel}>{t.language}</span>
+                                <span className={styles.pickerLabel}>{t.settingsLanguage}</span>
                             </div>
                             <div className={styles.segmented}>
                                 <button
@@ -234,14 +181,14 @@ export default function SettingsPage() {
 
                 {/* ── Notifications ───────────────────────────── */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>{t.notifications}</h2>
+                    <h2 className={styles.sectionTitle}>{t.settingsNotifications}</h2>
                     <div className={styles.card}>
                         <div className={styles.toggleRow}>
                             <div className={styles.toggleInfo}>
                                 <Bell size={16} />
                                 <div>
-                                    <div className={styles.toggleLabel}>{t.roleChange}</div>
-                                    <div className={styles.toggleDesc}>{t.roleChangeDesc}</div>
+                                    <div className={styles.toggleLabel}>{t.settingsRoleChange}</div>
+                                    <div className={styles.toggleDesc}>{t.settingsRoleChangeDesc}</div>
                                 </div>
                             </div>
                             <button
@@ -256,8 +203,8 @@ export default function SettingsPage() {
                             <div className={styles.toggleInfo}>
                                 <Shield size={16} />
                                 <div>
-                                    <div className={styles.toggleLabel}>{t.systemNotifs}</div>
-                                    <div className={styles.toggleDesc}>{t.systemNotifsDesc}</div>
+                                    <div className={styles.toggleLabel}>{t.settingsSystemNotifs}</div>
+                                    <div className={styles.toggleDesc}>{t.settingsSystemNotifsDesc}</div>
                                 </div>
                             </div>
                             <button
@@ -272,17 +219,17 @@ export default function SettingsPage() {
 
                 {/* ── About ───────────────────────────────────── */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>{t.about}</h2>
+                    <h2 className={styles.sectionTitle}>{t.settingsAbout}</h2>
                     <div className={styles.card}>
                         <div className={styles.infoRow}>
                             <Info size={16} />
-                            <span className={styles.infoLabel}>{t.version}</span>
+                            <span className={styles.infoLabel}>{t.settingsVersion}</span>
                             <span className={styles.infoValue}>1.0.0</span>
                         </div>
                         <div className={styles.divider} />
                         <div className={styles.infoRow}>
                             <Shield size={16} />
-                            <span className={styles.infoLabel}>{t.platform}</span>
+                            <span className={styles.infoLabel}>{t.settingsPlatform}</span>
                             <span className={styles.infoValue}>ПВЗ Master</span>
                         </div>
                     </div>
@@ -293,7 +240,7 @@ export default function SettingsPage() {
                     <div className={styles.card}>
                         <button className={styles.logoutRow} onClick={handleLogout}>
                             <LogOut size={16} />
-                            <span>{t.logout}</span>
+                            <span>{t.settingsLogout}</span>
                         </button>
                     </div>
                 </section>

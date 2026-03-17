@@ -1,15 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLang } from '@/shared/i18n'
 import styles from './EmployeesPage.module.scss'
 
 type ApiRole = 'pending' | 'operator' | 'admin' | 'owner'
-
-const ROLE_LABELS: Record<ApiRole, string> = {
-    pending: 'Ожидает назначения',
-    operator: 'Оператор',
-    admin: 'Администратор',
-    owner: 'Владелец',
-}
 
 interface User {
     id: string
@@ -19,10 +13,18 @@ interface User {
 
 export const EmployeesPage = () => {
     const navigate = useNavigate()
+    const { t } = useLang()
     const [users, setUsers] = useState<User[]>([])
     const [myRole, setMyRole] = useState<ApiRole | null>(null)
     const [search, setSearch] = useState('')
     const [saving, setSaving] = useState<string | null>(null)
+
+    const ROLE_LABELS: Record<ApiRole, string> = {
+        pending:  t.rolePending,
+        operator: t.roleOperator,
+        admin:    t.roleAdmin,
+        owner:    t.roleOwner,
+    }
 
     useEffect(() => {
         fetch('/api/user/profile', { credentials: 'include' })
@@ -67,18 +69,18 @@ export const EmployeesPage = () => {
 
     return (
         <div className={styles.page}>
-            <h1 className={styles.title}>Список сотрудников</h1>
+            <h1 className={styles.title}>{t.employeesList}</h1>
 
             <div className={styles.toolbar}>
                 <input
                     className={styles.searchInput}
                     type="text"
-                    placeholder="Поиск сотрудника..."
+                    placeholder={t.searchEmployee}
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
                 <button className={styles.btnSave} onClick={() => navigate('/workload')}>
-                    Назад
+                    {t.back}
                 </button>
             </div>
 
@@ -86,8 +88,8 @@ export const EmployeesPage = () => {
                 <table className={styles.table}>
                     <thead className={styles.tableHead}>
                         <tr>
-                            <th className={styles.th}>Сотрудник</th>
-                            <th className={styles.th}>Роль</th>
+                            <th className={styles.th}>{t.colEmployee}</th>
+                            <th className={styles.th}>{t.colRole}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,7 +107,7 @@ export const EmployeesPage = () => {
                                             onChange={e => assignRole(u.id, e.target.value)}
                                         >
                                             <option value="pending" disabled>
-                                                Ожидает назначения
+                                                {t.rolePending}
                                             </option>
                                             {roleOptions().map(r => (
                                                 <option key={r} value={r}>{ROLE_LABELS[r]}</option>
@@ -122,7 +124,7 @@ export const EmployeesPage = () => {
                         {filtered.length === 0 && (
                             <tr>
                                 <td className={styles.td} colSpan={2} style={{ textAlign: 'center', color: '#999' }}>
-                                    Пользователи не найдены
+                                    {t.noUsersFound}
                                 </td>
                             </tr>
                         )}

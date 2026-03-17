@@ -1,16 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLang } from '@/shared/i18n'
 import styles from './AddPvzPage.module.scss'
-
-const DAYS = [
-    'Понедельник',
-    'Вторник',
-    'Среда',
-    'Четверг',
-    'Пятница',
-    'Суббота',
-    'Воскресенье',
-]
 
 type DaySchedule = {
     isOff: boolean
@@ -19,13 +10,19 @@ type DaySchedule = {
 }
 
 const defaultSchedule = (): DaySchedule[] =>
-    DAYS.map(() => ({ isOff: false, startTime: '9:00', endTime: '21:00' }))
+    Array(7).fill(null).map(() => ({ isOff: false, startTime: '9:00', endTime: '21:00' }))
 
 export const AddPvzPage = () => {
     const navigate = useNavigate()
+    const { t } = useLang()
     const [address, setAddress] = useState('')
     const [capacity, setCapacity] = useState('')
     const [schedule, setSchedule] = useState<DaySchedule[]>(defaultSchedule())
+
+    const DAYS = [
+        t.monday, t.tuesday, t.wednesday, t.thursday,
+        t.friday, t.saturday, t.sunday,
+    ]
 
     const toggleOff = (i: number) => {
         setSchedule(prev =>
@@ -54,29 +51,29 @@ export const AddPvzPage = () => {
 
     return (
         <div className={styles.page}>
-            <h1 className={styles.title}>Добавить новый ПВЗ...</h1>
+            <h1 className={styles.title}>{t.addPvzTitle}</h1>
 
             <section className={styles.section}>
-                <p className={styles.sectionTitle}>Основные параметры</p>
+                <p className={styles.sectionTitle}>{t.mainParams}</p>
 
                 <div className={styles.fieldsRow}>
                     <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Адрес ПВЗ</label>
+                        <label className={styles.label}>{t.pvzAddress}</label>
                         <input
                             className={styles.input}
                             type="text"
-                            placeholder="Введите адрес"
+                            placeholder={t.enterAddress}
                             value={address}
                             onChange={e => setAddress(e.target.value)}
                         />
                     </div>
 
                     <div className={styles.fieldGroup}>
-                        <label className={styles.label}>Пропускная способность (оп/час)</label>
+                        <label className={styles.label}>{t.throughput}</label>
                         <input
                             className={styles.input}
                             type="number"
-                            placeholder="Например, 120"
+                            placeholder={t.throughputPlaceholder}
                             value={capacity}
                             onChange={e => setCapacity(e.target.value)}
                         />
@@ -85,15 +82,15 @@ export const AddPvzPage = () => {
             </section>
 
             <section className={styles.section}>
-                <p className={styles.sectionTitle}>График работы</p>
+                <p className={styles.sectionTitle}>{t.workSchedule}</p>
 
                 <div className={styles.tableWrapper}>
                     <table className={styles.table}>
                         <thead className={styles.tableHead}>
                             <tr>
-                                <th className={styles.th}>День</th>
-                                <th className={styles.th}>Статус</th>
-                                <th className={styles.th}>Время работы</th>
+                                <th className={styles.th}>{t.colDay}</th>
+                                <th className={styles.th}>{t.colStatus}</th>
+                                <th className={styles.th}>{t.colWorkHours}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,7 +106,7 @@ export const AddPvzPage = () => {
                                                 onChange={() => toggleOff(i)}
                                             />
                                             <span className={schedule[i].isOff ? styles.offText : styles.workText}>
-                                                {schedule[i].isOff ? 'Выходной' : 'Рабочий'}
+                                                {schedule[i].isOff ? t.dayOff : t.workDay}
                                             </span>
                                         </label>
                                     </td>
@@ -143,10 +140,10 @@ export const AddPvzPage = () => {
 
             <div className={styles.actions}>
                 <button className={styles.btnCancel} onClick={() => navigate('/workload')}>
-                    Отмена
+                    {t.cancel}
                 </button>
                 <button className={styles.btnSave} onClick={handleSave}>
-                    Сохранить изменения
+                    {t.saveChanges}
                 </button>
             </div>
         </div>

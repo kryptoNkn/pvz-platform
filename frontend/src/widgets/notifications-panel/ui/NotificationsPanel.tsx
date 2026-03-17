@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, CheckCheck, Bell, Info, AlertTriangle, CheckCircle } from 'lucide-react'
+import { useLang } from '@/shared/i18n'
 import styles from './NotificationsPanel.module.scss'
 
 interface Notification {
@@ -17,8 +18,14 @@ interface Props {
     onUnreadChange: (count: number) => void
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, locale: string): string {
     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+    if (locale === 'en-US') {
+        if (diff < 60) return 'just now'
+        if (diff < 3600) return `${Math.floor(diff / 60)} min ago`
+        if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`
+        return `${Math.floor(diff / 86400)} d ago`
+    }
     if (diff < 60) return 'только что'
     if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`
     if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`
@@ -26,13 +33,14 @@ function timeAgo(iso: string): string {
 }
 
 const TYPE_ICON = {
-    info: <Info size={15} />,
+    info:    <Info size={15} />,
     success: <CheckCircle size={15} />,
     warning: <AlertTriangle size={15} />,
-    error: <AlertTriangle size={15} />,
+    error:   <AlertTriangle size={15} />,
 }
 
 export default function NotificationsPanel({ open, onClose, onUnreadChange }: Props) {
+    const { t } = useLang()
     const [items, setItems] = useState<Notification[]>([])
     const [loading, setLoading] = useState(false)
     const panelRef = useRef<HTMLDivElement>(null)
@@ -53,7 +61,6 @@ export default function NotificationsPanel({ open, onClose, onUnreadChange }: Pr
         if (open) load()
     }, [open])
 
-    // close on outside click
     useEffect(() => {
         if (!open) return
         const handler = (e: MouseEvent) => {
@@ -90,12 +97,12 @@ export default function NotificationsPanel({ open, onClose, onUnreadChange }: Pr
                 <div className={styles.header}>
                     <div className={styles.headerLeft}>
                         <Bell size={18} />
-                        <span>Уведомления</span>
+                        <span>{t.notifications}</span>
                         {unread > 0 && <span className={styles.badge}>{unread}</span>}
                     </div>
                     <div className={styles.headerRight}>
                         {unread > 0 && (
-                            <button className={styles.markAllBtn} onClick={markAllRead} title="Прочитать все">
+                            <button className={styles.markAllBtn} onClick={markAllRead}>
                                 <CheckCheck size={16} />
                             </button>
                         )}
@@ -114,7 +121,7 @@ export default function NotificationsPanel({ open, onClose, onUnreadChange }: Pr
                     {!loading && items.length === 0 && (
                         <div className={styles.empty}>
                             <Bell size={36} strokeWidth={1.2} />
-                            <p>Нет уведомлений</p>
+                            <p>{t.noNotifications}</p>
                         </div>
                     )}
                     {!loading && items.map(n => (
@@ -129,7 +136,7 @@ export default function NotificationsPanel({ open, onClose, onUnreadChange }: Pr
                             <div className={styles.itemContent}>
                                 <div className={styles.itemTitle}>{n.title}</div>
                                 {n.body && <div className={styles.itemBody}>{n.body}</div>}
-                                <div className={styles.itemTime}>{timeAgo(n.created_at)}</div>
+                                <div className={styles.itemTime}>{timeAgo(n.created_at, t.locale)}</div>
                             </div>
                             {!n.is_read && <div className={styles.unreadDot} />}
                         </div>

@@ -1,38 +1,41 @@
 import { useState, useRef, useEffect } from 'react';
 import { Camera, Phone, User, Shield, Lock, Calendar, Check } from 'lucide-react';
+import { useLang } from '@/shared/i18n';
 import styles from './ProfilePage.module.scss';
 
-const ROLE_LABELS: Record<string, string> = {
-  owner: 'Владелец',
-  admin: 'Администратор',
-  operator: 'Оператор',
-  pending: 'Ожидает активации',
-  user: 'Пользователь',
-};
-
 const ROLE_COLORS: Record<string, string> = {
-  owner: '#c0392b',
-  admin: '#2563eb',
+  owner:    '#c0392b',
+  admin:    '#2563eb',
   operator: '#d97706',
-  pending: '#6b7280',
-  user: '#16a34a',
+  pending:  '#6b7280',
+  user:     '#16a34a',
 };
 
 function getInitials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
 }
 
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleDateString('ru-RU', {
-      day: 'numeric', month: 'long', year: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
-}
-
 export default function ProfilePage() {
+  const { t } = useLang();
+
+  const ROLE_LABELS: Record<string, string> = {
+    owner:    t.roleOwnerLabel,
+    admin:    t.roleAdminLabel,
+    operator: t.roleOperatorLabel,
+    pending:  t.rolePendingLabel,
+    user:     t.roleUserLabel,
+  };
+
+  function formatDate(iso: string) {
+    try {
+      return new Date(iso).toLocaleDateString(t.locale, {
+        day: 'numeric', month: 'long', year: 'numeric',
+      });
+    } catch {
+      return iso;
+    }
+  }
+
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -114,11 +117,11 @@ export default function ProfilePage() {
         setTimeout(() => setNameStatus('idle'), 2500);
       } else {
         setNameStatus('err');
-        setNameError('Ошибка сохранения');
+        setNameError(t.saveError);
       }
     } catch {
       setNameStatus('err');
-      setNameError('Ошибка сети');
+      setNameError(t.networkError);
     }
   };
 
@@ -126,12 +129,12 @@ export default function ProfilePage() {
     setNameError('');
     if (newPwd !== confirmPwd) {
       setPwdStatus('err');
-      setPwdError('Пароли не совпадают');
+      setPwdError(t.passwordMismatch);
       return;
     }
     if (newPwd.length < 8) {
       setPwdStatus('err');
-      setPwdError('Пароль должен быть не менее 8 символов');
+      setPwdError(t.passwordTooShort);
       return;
     }
     if (pwdStatus === 'saving') return;
@@ -153,17 +156,17 @@ export default function ProfilePage() {
         setTimeout(() => setPwdStatus('idle'), 2500);
       } else {
         setPwdStatus('err');
-        setPwdError(data.error ?? 'Ошибка смены пароля');
+        setPwdError(data.error ?? t.saveError);
       }
     } catch {
       setPwdStatus('err');
-      setPwdError('Ошибка сети');
+      setPwdError(t.networkError);
     }
   };
 
   const roleLabel = ROLE_LABELS[role] ?? role;
   const roleColor = ROLE_COLORS[role] ?? '#16a34a';
-  const initials = getInitials(fullName);
+  const initials  = getInitials(fullName);
 
   return (
     <div className={styles.grid}>
@@ -186,7 +189,7 @@ export default function ProfilePage() {
                 ? <div className={styles.spinner} />
                 : <>
                     <Camera size={20} color="white" strokeWidth={2.5} />
-                    <span className={styles.avatarOverlayText}>Изменить</span>
+                    <span className={styles.avatarOverlayText}>{t.changeAvatar}</span>
                   </>
               }
             </div>
@@ -204,8 +207,8 @@ export default function ProfilePage() {
             onChange={handleFile}
           />
 
-          {avatarToast === 'ok' && <div className={styles.toast}>✓ Аватар обновлён</div>}
-          {avatarToast === 'err' && <div className={`${styles.toast} ${styles.toastErr}`}>✕ Ошибка загрузки</div>}
+          {avatarToast === 'ok'  && <div className={styles.toast}>{t.avatarUpdated}</div>}
+          {avatarToast === 'err' && <div className={`${styles.toast} ${styles.toastErr}`}>{t.avatarError}</div>}
         </div>
 
         <h2 className={styles.cardName}>{fullName || '—'}</h2>
@@ -221,21 +224,21 @@ export default function ProfilePage() {
           <div className={styles.infoItem}>
             <div className={styles.infoIcon}><Phone size={14} color="#2a7a4a" strokeWidth={2.5} /></div>
             <div className={styles.infoDetails}>
-              <span className={styles.infoLabel}>Телефон</span>
+              <span className={styles.infoLabel}>{t.phoneLabel}</span>
               <span className={styles.infoText}>{phone ? `+${phone}` : '—'}</span>
             </div>
           </div>
           <div className={styles.infoItem}>
             <div className={styles.infoIcon}><Calendar size={14} color="#2a7a4a" strokeWidth={2.5} /></div>
             <div className={styles.infoDetails}>
-              <span className={styles.infoLabel}>В системе с</span>
+              <span className={styles.infoLabel}>{t.memberSince}</span>
               <span className={styles.infoText}>{createdAt ? formatDate(createdAt) : '—'}</span>
             </div>
           </div>
           <div className={styles.infoItem}>
             <div className={styles.infoIcon}><User size={14} color="#2a7a4a" strokeWidth={2.5} /></div>
             <div className={styles.infoDetails}>
-              <span className={styles.infoLabel}>Роль</span>
+              <span className={styles.infoLabel}>{t.roleLabel}</span>
               <span className={styles.infoText} style={{ color: roleColor }}>{roleLabel}</span>
             </div>
           </div>
@@ -248,22 +251,22 @@ export default function ProfilePage() {
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionIconWrap}><User size={15} color="#2a7a4a" strokeWidth={2.5} /></div>
-            <h3 className={styles.sectionTitle}>Редактировать профиль</h3>
+            <h3 className={styles.sectionTitle}>{t.editProfile}</h3>
           </div>
 
           <div className={styles.formField}>
-            <label className={styles.formLabel}>Полное имя</label>
+            <label className={styles.formLabel}>{t.fullName}</label>
             <input
               className={styles.formInput}
               value={editName}
               onChange={e => { setEditName(e.target.value); setNameStatus('idle'); }}
-              placeholder="Иванов Иван Иванович"
+              placeholder={t.fullNamePlaceholder}
             />
           </div>
 
           {nameStatus === 'err' && <p className={styles.errMsg}>{nameError}</p>}
-          {nameStatus === 'ok' && (
-            <p className={styles.okMsg}><Check size={13} strokeWidth={3} /> Сохранено</p>
+          {nameStatus === 'ok'  && (
+            <p className={styles.okMsg}><Check size={13} strokeWidth={3} /> {t.saved}</p>
           )}
 
           <button
@@ -271,7 +274,7 @@ export default function ProfilePage() {
             onClick={saveName}
             disabled={nameStatus === 'saving' || !editName.trim() || editName === fullName}
           >
-            {nameStatus === 'saving' ? 'Сохранение…' : 'Сохранить'}
+            {nameStatus === 'saving' ? t.saving : t.save}
           </button>
         </div>
 
@@ -279,11 +282,11 @@ export default function ProfilePage() {
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionIconWrap}><Lock size={15} color="#2a7a4a" strokeWidth={2.5} /></div>
-            <h3 className={styles.sectionTitle}>Безопасность</h3>
+            <h3 className={styles.sectionTitle}>{t.security}</h3>
           </div>
 
           <div className={styles.formField}>
-            <label className={styles.formLabel}>Текущий пароль</label>
+            <label className={styles.formLabel}>{t.currentPassword}</label>
             <input
               className={styles.formInput}
               type="password"
@@ -295,7 +298,7 @@ export default function ProfilePage() {
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <label className={styles.formLabel}>Новый пароль</label>
+              <label className={styles.formLabel}>{t.newPassword}</label>
               <input
                 className={styles.formInput}
                 type="password"
@@ -305,7 +308,7 @@ export default function ProfilePage() {
               />
             </div>
             <div className={styles.formField}>
-              <label className={styles.formLabel}>Подтвердите пароль</label>
+              <label className={styles.formLabel}>{t.confirmPasswordLabel}</label>
               <input
                 className={`${styles.formInput}${confirmPwd && newPwd !== confirmPwd ? ' ' + styles.formInputErr : ''}`}
                 type="password"
@@ -317,8 +320,8 @@ export default function ProfilePage() {
           </div>
 
           {pwdStatus === 'err' && <p className={styles.errMsg}>{pwdError}</p>}
-          {pwdStatus === 'ok' && (
-            <p className={styles.okMsg}><Check size={13} strokeWidth={3} /> Пароль изменён</p>
+          {pwdStatus === 'ok'  && (
+            <p className={styles.okMsg}><Check size={13} strokeWidth={3} /> {t.passwordChanged}</p>
           )}
 
           <button
@@ -326,7 +329,7 @@ export default function ProfilePage() {
             onClick={changePassword}
             disabled={pwdStatus === 'saving' || !currentPwd || !newPwd || !confirmPwd}
           >
-            {pwdStatus === 'saving' ? 'Изменение…' : 'Изменить пароль'}
+            {pwdStatus === 'saving' ? t.changing : t.changePassword}
           </button>
         </div>
       </div>

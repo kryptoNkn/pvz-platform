@@ -13,9 +13,7 @@ import { AuthPage } from '@/pages/auth'
 export default function App() {
     useEffect(() => {
         const theme = localStorage.getItem('theme') || 'light'
-        const lang  = localStorage.getItem('lang')  || 'ru'
         document.documentElement.setAttribute('data-theme', theme)
-        document.documentElement.setAttribute('lang', lang)
     }, [])
 
     return (

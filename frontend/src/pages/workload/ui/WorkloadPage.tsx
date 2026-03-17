@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useLang } from '@/shared/i18n'
 import styles from './WorkloadPage.module.scss'
 
 interface Pvz {
@@ -20,14 +21,9 @@ interface Stats {
     returns: number
 }
 
-const STATUS_LABEL: Record<string, string> = {
-    active: 'Активен',
-    overloaded: 'Перегружен',
-    closed: 'Неактивен',
-}
-
 export const WorkloadPage = () => {
     const navigate = useNavigate()
+    const { t } = useLang()
     const [pvzList, setPvzList] = useState<Pvz[]>([])
     const [stats, setStats] = useState<Stats | null>(null)
     const [search, setSearch] = useState('')
@@ -44,6 +40,12 @@ export const WorkloadPage = () => {
             .catch(console.error)
     }, [])
 
+    const STATUS_LABEL: Record<string, string> = {
+        active:     t.statusActive,
+        overloaded: t.statusOverloaded,
+        closed:     t.statusInactive,
+    }
+
     const filtered = pvzList.filter(p =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.address.toLowerCase().includes(search.toLowerCase())
@@ -53,19 +55,19 @@ export const WorkloadPage = () => {
         <div className={styles.page}>
             <div className={styles.statsSection}>
                 <div className={`${styles.statBlock} ${styles.statBlock1}`}>
-                    <span className={styles.statLabel}>Всего товаров</span>
+                    <span className={styles.statLabel}>{t.totalItems}</span>
                     <span className={styles.statValue}>{stats?.total_items ?? '—'}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statBlock2}`}>
-                    <span className={styles.statLabel}>Приёмка</span>
+                    <span className={styles.statLabel}>{t.acceptance}</span>
                     <span className={styles.statValue}>{stats?.acceptance ?? '—'}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statBlock3}`}>
-                    <span className={styles.statLabel}>Выдача</span>
+                    <span className={styles.statLabel}>{t.delivery}</span>
                     <span className={styles.statValue}>{stats?.delivery ?? '—'}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statBlock4}`}>
-                    <span className={styles.statLabel}>Возврат</span>
+                    <span className={styles.statLabel}>{t.returns}</span>
                     <span className={styles.statValue}>{stats?.returns ?? '—'}</span>
                 </div>
             </div>
@@ -73,17 +75,17 @@ export const WorkloadPage = () => {
             <div className={styles.searchSection}>
                 <input
                     type="text"
-                    placeholder="Поиск по названию или адресу..."
+                    placeholder={t.searchPlaceholder}
                     className={styles.searchInput}
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
-                <span className={styles.pointsText}>{stats?.total ?? pvzList.length} пунктов</span>
+                <span className={styles.pointsText}>{t.points(stats?.total ?? pvzList.length)}</span>
                 <button className={styles.btnSecondary} onClick={() => navigate('/workload/employees')}>
-                    Сотрудники
+                    {t.employees}
                 </button>
                 <button className={styles.btnPrimary} onClick={() => navigate('/workload/add')}>
-                    Добавить ПВЗ
+                    {t.addPvz}
                 </button>
             </div>
 
@@ -91,12 +93,12 @@ export const WorkloadPage = () => {
                 <table className={styles.table}>
                     <thead className={styles.tableHead}>
                         <tr>
-                            <th className={styles.th}>Название</th>
-                            <th className={styles.th}>Адрес</th>
-                            <th className={styles.th}>Загрузка, %</th>
-                            <th className={styles.th}>Статус</th>
-                            <th className={styles.th}>Часы работы</th>
-                            <th className={styles.th}>Трафик</th>
+                            <th className={styles.th}>{t.colName}</th>
+                            <th className={styles.th}>{t.colAddress}</th>
+                            <th className={styles.th}>{t.colLoad}</th>
+                            <th className={styles.th}>{t.colStatus}</th>
+                            <th className={styles.th}>{t.colHours}</th>
+                            <th className={styles.th}>{t.colTraffic}</th>
                         </tr>
                     </thead>
                     <tbody>

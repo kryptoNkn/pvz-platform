@@ -3,10 +3,12 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { Clock } from 'lucide-react'
 import { Sidebar } from '@/widgets/sidebar'
 import { Topbar } from '@/widgets/topbar'
+import { useLang } from '@/shared/i18n'
 import styles from './ProtectedLayout.module.scss'
 
 export const ProtectedLayout = () => {
     const navigate = useNavigate()
+    const { t } = useLang()
     const [role, setRole] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
 
@@ -28,10 +30,10 @@ export const ProtectedLayout = () => {
             <div className={styles.pendingScreen}>
                 <div className={styles.pendingCard}>
                     <Clock size={40} className={styles.pendingIcon} />
-                    <h2 className={styles.pendingTitle}>Аккаунт зарегистрирован</h2>
+                    <h2 className={styles.pendingTitle}>{t.accountRegistered}</h2>
                     <p className={styles.pendingText}>
-                        Ожидайте назначения роли от администратора.<br />
-                        После назначения обновите страницу.
+                        {t.pendingText}<br />
+                        {t.pendingRefresh}
                     </p>
                 </div>
             </div>

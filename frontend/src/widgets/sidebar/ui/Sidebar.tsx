@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { StatsIcon, WorkloadIcon, FinanceIcon, LeaveIcon } from '@/shared/Icons'
+import { useLang } from '@/shared/i18n'
 import styles from './Sidebar.module.scss'
 // @ts-ignore
 import pvzIconUrl from '@/shared/assets/pvz-icon.svg'
@@ -19,6 +20,7 @@ interface SidebarProps {
 export const Sidebar = ({ role }: SidebarProps) => {
     const { pathname } = useLocation()
     const navigate = useNavigate()
+    const { t } = useLang()
     const [showConfirm, setShowConfirm] = useState(false)
 
     const canManageUsers = role === 'owner' || role === 'admin'
@@ -59,11 +61,11 @@ export const Sidebar = ({ role }: SidebarProps) => {
             {showConfirm && (
                 <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
                     <div className={styles.modal} onClick={e => e.stopPropagation()}>
-                        <h3 className={styles.modalTitle}>Выйти из аккаунта?</h3>
-                        <p className={styles.modalText}>Вы уверены, что хотите выйти?</p>
+                        <h3 className={styles.modalTitle}>{t.logoutTitle}</h3>
+                        <p className={styles.modalText}>{t.logoutConfirm}</p>
                         <div className={styles.modalActions}>
                             <button className={styles.modalCancel} onClick={() => setShowConfirm(false)}>
-                                Отмена
+                                {t.cancel}
                             </button>
                             <button
                                 className={styles.modalConfirm}
@@ -72,7 +74,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
                                     navigate('/login')
                                 }}
                             >
-                                Выйти
+                                {t.logout}
                             </button>
                         </div>
                     </div>

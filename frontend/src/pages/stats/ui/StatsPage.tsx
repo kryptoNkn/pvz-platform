@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLang } from '@/shared/i18n'
 import styles from './StatsPage.module.scss'
 
 interface Stats {
@@ -13,6 +14,7 @@ interface Stats {
 }
 
 export const StatsPage = () => {
+    const { t } = useLang()
     const [stats, setStats] = useState<Stats | null>(null)
 
     useEffect(() => {
@@ -25,61 +27,63 @@ export const StatsPage = () => {
     if (!stats) {
         return (
             <div className={styles.page}>
-                <p className={styles.loading}>Загрузка...</p>
+                <p className={styles.loading}>{t.loading}</p>
             </div>
         )
     }
 
-    const activePercent = stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0
+    const activePercent     = stats.total > 0 ? Math.round((stats.active     / stats.total) * 100) : 0
     const overloadedPercent = stats.total > 0 ? Math.round((stats.overloaded / stats.total) * 100) : 0
-    const closedPercent = 100 - activePercent - overloadedPercent
+    const closedPercent     = 100 - activePercent - overloadedPercent
 
     const opsTotal = stats.acceptance + stats.delivery + stats.returns
-    const accPct = opsTotal > 0 ? Math.round((stats.acceptance / opsTotal) * 100) : 0
-    const delPct = opsTotal > 0 ? Math.round((stats.delivery / opsTotal) * 100) : 0
-    const retPct = 100 - accPct - delPct
+    const accPct   = opsTotal > 0 ? Math.round((stats.acceptance / opsTotal) * 100) : 0
+    const delPct   = opsTotal > 0 ? Math.round((stats.delivery   / opsTotal) * 100) : 0
+    const retPct   = 100 - accPct - delPct
+
+    const fmt = (n: number) => n.toLocaleString(t.locale)
 
     return (
         <div className={styles.page}>
             <div className={styles.statsSection}>
                 <div className={`${styles.statBlock} ${styles.statDark}`}>
-                    <span className={styles.statLabel}>Всего ПВЗ</span>
+                    <span className={styles.statLabel}>{t.totalPvz}</span>
                     <span className={styles.statValue}>{stats.total}</span>
-                    <span className={styles.statSub}>всего объектов</span>
+                    <span className={styles.statSub}>{t.totalPvzSub}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
-                    <span className={styles.statLabel}>Активных</span>
+                    <span className={styles.statLabel}>{t.active}</span>
                     <span className={styles.statValue}>{stats.active}</span>
-                    <span className={styles.statSub}>{activePercent}% от общего числа</span>
+                    <span className={styles.statSub}>{t.ofTotal(activePercent)}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statRed}`}>
-                    <span className={styles.statLabel}>Перегружено</span>
+                    <span className={styles.statLabel}>{t.overloaded}</span>
                     <span className={styles.statValue}>{stats.overloaded}</span>
-                    <span className={styles.statSub}>{overloadedPercent}% от общего числа</span>
+                    <span className={styles.statSub}>{t.ofTotal(overloadedPercent)}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGray}`}>
-                    <span className={styles.statLabel}>Неактивных</span>
+                    <span className={styles.statLabel}>{t.inactive}</span>
                     <span className={styles.statValue}>{stats.closed}</span>
-                    <span className={styles.statSub}>{closedPercent}% от общего числа</span>
+                    <span className={styles.statSub}>{t.ofTotal(closedPercent)}</span>
                 </div>
             </div>
 
             <div className={styles.sectionBlock}>
-                <h2 className={styles.sectionTitle}>Распределение статусов ПВЗ</h2>
+                <h2 className={styles.sectionTitle}>{t.statusDistribution}</h2>
                 <div className={styles.barTrack}>
                     {activePercent > 0 && (
                         <div className={styles.barActive} style={{ flex: activePercent }}>
-                            <span>Активен {activePercent}%</span>
+                            <span>{t.barActive(activePercent)}</span>
                         </div>
                     )}
                     {overloadedPercent > 0 && (
                         <div className={styles.barOverloaded} style={{ flex: overloadedPercent }}>
-                            <span>Перегружен {overloadedPercent}%</span>
+                            <span>{t.barOverloaded(overloadedPercent)}</span>
                         </div>
                     )}
                     {closedPercent > 0 && (
                         <div className={styles.barClosed} style={{ flex: closedPercent }}>
-                            <span>Неактивен {closedPercent}%</span>
+                            <span>{t.barClosed(closedPercent)}</span>
                         </div>
                     )}
                 </div>
@@ -87,43 +91,43 @@ export const StatsPage = () => {
 
             <div className={styles.statsSection}>
                 <div className={`${styles.statBlock} ${styles.statDark}`}>
-                    <span className={styles.statLabel}>Всего товаров</span>
-                    <span className={styles.statValue}>{stats.total_items.toLocaleString('ru-RU')}</span>
-                    <span className={styles.statSub}>на всех ПВЗ</span>
+                    <span className={styles.statLabel}>{t.opsTotal}</span>
+                    <span className={styles.statValue}>{fmt(stats.total_items)}</span>
+                    <span className={styles.statSub}>{t.opsTotalSub}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
-                    <span className={styles.statLabel}>Приёмка</span>
-                    <span className={styles.statValue}>{stats.acceptance.toLocaleString('ru-RU')}</span>
-                    <span className={styles.statSub}>{accPct}% операций</span>
+                    <span className={styles.statLabel}>{t.acceptanceStat}</span>
+                    <span className={styles.statValue}>{fmt(stats.acceptance)}</span>
+                    <span className={styles.statSub}>{t.ofOps(accPct)}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
-                    <span className={styles.statLabel}>Выдача</span>
-                    <span className={styles.statValue}>{stats.delivery.toLocaleString('ru-RU')}</span>
-                    <span className={styles.statSub}>{delPct}% операций</span>
+                    <span className={styles.statLabel}>{t.deliveryStat}</span>
+                    <span className={styles.statValue}>{fmt(stats.delivery)}</span>
+                    <span className={styles.statSub}>{t.ofOps(delPct)}</span>
                 </div>
                 <div className={`${styles.statBlock} ${styles.statGreen}`}>
-                    <span className={styles.statLabel}>Возвраты</span>
-                    <span className={styles.statValue}>{stats.returns.toLocaleString('ru-RU')}</span>
-                    <span className={styles.statSub}>{retPct}% операций</span>
+                    <span className={styles.statLabel}>{t.returnsStat}</span>
+                    <span className={styles.statValue}>{fmt(stats.returns)}</span>
+                    <span className={styles.statSub}>{t.ofOps(retPct)}</span>
                 </div>
             </div>
 
             <div className={styles.sectionBlock}>
-                <h2 className={styles.sectionTitle}>Соотношение операций</h2>
+                <h2 className={styles.sectionTitle}>{t.opsBreakdown}</h2>
                 <div className={styles.barTrack}>
                     {accPct > 0 && (
                         <div className={styles.barActive} style={{ flex: accPct }}>
-                            <span>Приёмка {accPct}%</span>
+                            <span>{t.barAcceptance(accPct)}</span>
                         </div>
                     )}
                     {delPct > 0 && (
                         <div className={styles.barDelivery} style={{ flex: delPct }}>
-                            <span>Выдача {delPct}%</span>
+                            <span>{t.barDelivery(delPct)}</span>
                         </div>
                     )}
                     {retPct > 0 && (
                         <div className={styles.barOverloaded} style={{ flex: retPct }}>
-                            <span>Возвраты {retPct}%</span>
+                            <span>{t.barReturns(retPct)}</span>
                         </div>
                     )}
                 </div>
