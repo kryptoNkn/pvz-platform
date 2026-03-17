@@ -35,6 +35,7 @@ async fn main() -> std::io::Result<()> {
             .configure(routes::auth::init_routes)
             .configure(routes::user::init_routes)
             .configure(routes::pvz::init_routes)
+            .configure(routes::notifications::init_routes)
     })
         .bind("0.0.0.0:8080")?
         .run()

@@ -1,0 +1,273 @@
+.page {
+  padding: 32px;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+
+.toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  animation: slideDown 0.2s ease;
+
+  &.toast_success { background: #163832; color: #40c97e; }
+  &.toast_error   { background: #c0392b; color: #fff; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+// ── Section ───────────────────────────────────────────────────
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #83b69b;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  padding-left: 4px;
+}
+
+// ── Card ──────────────────────────────────────────────────────
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid rgba(22, 56, 50, 0.09);
+  box-shadow: 0 4px 20px rgba(22, 56, 50, 0.07);
+  overflow: hidden;
+}
+
+// ── Profile row ───────────────────────────────────────────────
+
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(22, 56, 50, 0.07);
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #40c97e, #235347);
+  flex-shrink: 0;
+  border: 2px solid rgba(22, 56, 50, 0.12);
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.profileName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #163832;
+}
+
+.profilePhone {
+  font-size: 12px;
+  color: #4a6f5e;
+}
+
+.roleBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  background: rgba(22, 56, 50, 0.08);
+  color: #235347;
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin-top: 2px;
+}
+
+// ── Link row ──────────────────────────────────────────────────
+
+.linkRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  color: #163832;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+  border-top: 1px solid rgba(22, 56, 50, 0.07);
+
+  &:first-child {
+    border-top: none;
+  }
+
+  &:hover {
+    background: #f5fcf8;
+  }
+
+  svg:first-child {
+    color: #40c97e;
+    flex-shrink: 0;
+  }
+
+  span {
+    flex: 1;
+  }
+}
+
+.chevron {
+  color: #aac8b5;
+}
+
+// ── Toggle row ────────────────────────────────────────────────
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  gap: 16px;
+}
+
+.toggleInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+
+  > svg {
+    color: #40c97e;
+    flex-shrink: 0;
+  }
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #163832;
+}
+
+.toggleDesc {
+  font-size: 12px;
+  color: #83b69b;
+  margin-top: 2px;
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #d0dfd7;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &.toggleOn {
+    background: #40c97e;
+  }
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: left 0.2s;
+
+  .toggleOn & {
+    left: 23px;
+  }
+}
+
+// ── Info row ──────────────────────────────────────────────────
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+
+  svg {
+    color: #40c97e;
+    flex-shrink: 0;
+  }
+}
+
+.infoLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #163832;
+  flex: 1;
+}
+
+.infoValue {
+  font-size: 13px;
+  color: #83b69b;
+  font-weight: 500;
+}
+
+// ── Divider ───────────────────────────────────────────────────
+
+.divider {
+  height: 1px;
+  background: rgba(22, 56, 50, 0.07);
+  margin: 0 20px;
+}
+
+// ── Logout ────────────────────────────────────────────────────
+
+.logoutRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+
+  &:hover {
+    background: rgba(192, 57, 43, 0.06);
+  }
+}
