@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Settings, Bell } from 'lucide-react'
 import styles from './Topbar.module.scss'
@@ -15,6 +16,30 @@ export default function Topbar() {
     const navigate = useNavigate()
     const { pathname } = useLocation()
     const title = PAGE_TITLES[pathname] ?? 'ПВЗ Master'
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+    const loadAvatar = () => {
+        fetch('/api/user/profile', { credentials: 'include' })
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+                if (data?.avatar_url) {
+                    setAvatarUrl(data.avatar_url + '?t=' + Date.now())
+                } else {
+                    setAvatarUrl(null)
+                }
+            })
+            .catch(() => {})
+    }
+
+    useEffect(() => {
+        loadAvatar()
+        window.addEventListener('profileUpdated', loadAvatar)
+        return () => window.removeEventListener('profileUpdated', loadAvatar)
+    }, [])
+
+    useEffect(() => {
+        document.title = title
+    }, [title])
 
     return (
         <header className={styles.header}>
@@ -30,6 +55,11 @@ export default function Topbar() {
                     className={styles.avatarBtn}
                     aria-label="Профиль"
                     onClick={() => navigate('/profile')}
+                    style={avatarUrl ? {
+                        backgroundImage: `url(${avatarUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    } : undefined}
                 />
             </div>
         </header>

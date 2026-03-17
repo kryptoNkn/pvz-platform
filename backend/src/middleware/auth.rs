@@ -60,7 +60,7 @@ where
                 "/",
             ];
 
-            if public_routes.iter().any(|&route| path == route) {
+            if public_routes.iter().any(|&route| path == route) || path.starts_with("/uploads/") {
                 let res = srv.call(req).await?;
                 return Ok(res.map_into_left_body());
             }
