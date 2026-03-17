@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedLayout } from '@/widgets/layout'
 import { WorkloadPage } from '@/pages/workload'
@@ -10,6 +11,13 @@ import { SettingsPage } from '@/pages/settings'
 import { AuthPage } from '@/pages/auth'
 
 export default function App() {
+    useEffect(() => {
+        const theme = localStorage.getItem('theme') || 'light'
+        const lang  = localStorage.getItem('lang')  || 'ru'
+        document.documentElement.setAttribute('data-theme', theme)
+        document.documentElement.setAttribute('lang', lang)
+    }, [])
+
     return (
         <BrowserRouter>
             <Routes>

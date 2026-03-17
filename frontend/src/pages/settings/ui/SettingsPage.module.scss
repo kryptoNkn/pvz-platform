@@ -1,6 +1,15 @@
+// ── Outer wrapper (centering) ─────────────────────────────────
+
+.pageOuter {
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px;
+  min-height: 100%;
+}
+
 .page {
-  padding: 32px;
-  max-width: 620px;
+  width: 100%;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -21,7 +30,7 @@
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
   animation: slideDown 0.2s ease;
 
   &.toast_success { background: #163832; color: #40c97e; }
@@ -44,7 +53,7 @@
 .sectionTitle {
   font-size: 11px;
   font-weight: 700;
-  color: #83b69b;
+  color: var(--text-muted);
   letter-spacing: 0.7px;
   text-transform: uppercase;
   padding-left: 4px;
@@ -53,10 +62,10 @@
 // ── Card ──────────────────────────────────────────────────────
 
 .card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 18px;
-  border: 1px solid rgba(22, 56, 50, 0.09);
-  box-shadow: 0 4px 20px rgba(22, 56, 50, 0.07);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
@@ -67,7 +76,7 @@
   align-items: center;
   gap: 14px;
   padding: 18px 20px 14px;
-  border-bottom: 1px solid rgba(22, 56, 50, 0.07);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .avatar {
@@ -88,12 +97,12 @@
 .profileName {
   font-size: 15px;
   font-weight: 700;
-  color: #163832;
+  color: var(--text-primary);
 }
 
 .profilePhone {
   font-size: 12px;
-  color: #4a6f5e;
+  color: var(--text-secondary);
 }
 
 .roleBadge {
@@ -102,8 +111,8 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  background: rgba(22, 56, 50, 0.08);
-  color: #235347;
+  background: rgba(64, 201, 126, 0.12);
+  color: #40c97e;
   border-radius: 6px;
   padding: 2px 8px;
   margin-top: 2px;
@@ -119,34 +128,80 @@
   padding: 14px 20px;
   background: none;
   border: none;
-  color: #163832;
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
   text-align: left;
-  border-top: 1px solid rgba(22, 56, 50, 0.07);
+  border-top: 1px solid var(--color-divider);
 
-  &:first-child {
-    border-top: none;
-  }
+  &:hover { background: var(--color-hover); }
 
-  &:hover {
-    background: #f5fcf8;
-  }
-
-  svg:first-child {
-    color: #40c97e;
-    flex-shrink: 0;
-  }
-
-  span {
-    flex: 1;
-  }
+  svg:first-child { color: #40c97e; flex-shrink: 0; }
+  span { flex: 1; }
 }
 
-.chevron {
-  color: #aac8b5;
+.chevron { color: var(--text-muted); }
+
+// ── Picker row (theme / language) ─────────────────────────────
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  gap: 16px;
+}
+
+.pickerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+
+  > svg { color: #40c97e; flex-shrink: 0; }
+}
+
+.pickerLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+// ── Segmented control ─────────────────────────────────────────
+
+.segmented {
+  display: flex;
+  background: var(--color-hover);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--border-card);
+}
+
+.seg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover { background: var(--color-hover2); }
+
+  &.segActive {
+    background: #163832;
+    color: #40c97e;
+    box-shadow: 0 2px 6px rgba(22, 56, 50, 0.3);
+  }
 }
 
 // ── Toggle row ────────────────────────────────────────────────
@@ -165,21 +220,18 @@
   gap: 12px;
   flex: 1;
 
-  > svg {
-    color: #40c97e;
-    flex-shrink: 0;
-  }
+  > svg { color: #40c97e; flex-shrink: 0; }
 }
 
 .toggleLabel {
   font-size: 14px;
   font-weight: 600;
-  color: #163832;
+  color: var(--text-primary);
 }
 
 .toggleDesc {
   font-size: 12px;
-  color: #83b69b;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -187,32 +239,28 @@
   width: 44px;
   height: 24px;
   border-radius: 999px;
-  background: #d0dfd7;
-  border: none;
+  background: var(--color-divider);
+  border: 1px solid var(--border-card);
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
   transition: background 0.2s;
 
-  &.toggleOn {
-    background: #40c97e;
-  }
+  &.toggleOn { background: #40c97e; border-color: #40c97e; }
 }
 
 .toggleThumb {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: left 0.2s;
 
-  .toggleOn & {
-    left: 23px;
-  }
+  .toggleOn & { left: 23px; }
 }
 
 // ── Info row ──────────────────────────────────────────────────
@@ -223,22 +271,19 @@
   gap: 12px;
   padding: 14px 20px;
 
-  svg {
-    color: #40c97e;
-    flex-shrink: 0;
-  }
+  svg { color: #40c97e; flex-shrink: 0; }
 }
 
 .infoLabel {
   font-size: 14px;
   font-weight: 500;
-  color: #163832;
+  color: var(--text-primary);
   flex: 1;
 }
 
 .infoValue {
   font-size: 13px;
-  color: #83b69b;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -246,7 +291,7 @@
 
 .divider {
   height: 1px;
-  background: rgba(22, 56, 50, 0.07);
+  background: var(--color-divider);
   margin: 0 20px;
 }
 
@@ -267,7 +312,5 @@
   transition: background 0.15s;
   text-align: left;
 
-  &:hover {
-    background: rgba(192, 57, 43, 0.06);
-  }
+  &:hover { background: rgba(192, 57, 43, 0.06); }
 }

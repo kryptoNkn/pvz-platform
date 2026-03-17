@@ -2,7 +2,10 @@ use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
-pub async fn get_notifications(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
+pub async fn get_notifications(
+    req: HttpRequest, 
+    db: web::Data<PgPool>
+) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {
         Some(id) => id,
         None => return HttpResponse::Unauthorized().finish(),
@@ -46,7 +49,10 @@ pub async fn get_notifications(req: HttpRequest, db: web::Data<PgPool>) -> impl 
     }
 }
 
-pub async fn get_unread_count(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
+pub async fn get_unread_count(
+    req: HttpRequest, 
+    db: web::Data<PgPool>
+) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {
         Some(id) => id,
         None => return HttpResponse::Unauthorized().finish(),
@@ -97,7 +103,10 @@ pub async fn mark_read(
     }
 }
 
-pub async fn mark_all_read(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
+pub async fn mark_all_read(
+    req: HttpRequest, 
+    db: web::Data<PgPool>
+) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {
         Some(id) => id,
         None => return HttpResponse::Unauthorized().finish(),

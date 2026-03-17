@@ -1,9 +1,9 @@
 .header {
     height: 64px;
     flex-shrink: 0;
-    background: rgba(245, 252, 248, 0.94);
+    background: var(--bg-header);
     backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(22, 56, 50, 0.10);
+    border-bottom: 1px solid var(--border-header);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -16,7 +16,7 @@
 .title {
     font-size: 18px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     letter-spacing: -0.2px;
 }
 

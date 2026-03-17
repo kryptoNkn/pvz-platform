@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(160deg, #f4fdf8 0%, #dffff2 100%);
+    background: var(--bg-pending);
 }
 
 .pendingCard {
@@ -11,7 +11,7 @@
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    background: #ffffff;
+    background: var(--bg-pending-card);
     border-radius: 24px;
     padding: 48px 56px;
     box-shadow: 0 4px 32px rgba(22, 56, 50, 0.10);
@@ -27,13 +27,13 @@
 .pendingTitle {
     font-size: 22px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .pendingText {
     font-size: 15px;
-    color: #5a7a72;
+    color: var(--text-secondary);
     line-height: 1.6;
     margin: 0;
 }
@@ -42,7 +42,7 @@
     display: flex;
     height: 100%;
     overflow: hidden;
-    background: linear-gradient(160deg, #f4fdf8 0%, #dffff2 100%);
+    background: var(--bg-main);
 }
 
 .column {

@@ -4,20 +4,25 @@ import { Settings, Bell } from 'lucide-react'
 import { NotificationsPanel } from '@/widgets/notifications-panel'
 import styles from './Topbar.module.scss'
 
-const PAGE_TITLES: Record<string, string> = {
-    '/workload': 'Загруженность ПВЗ',
-    '/workload/add': 'Добавить ПВЗ',
-    '/workload/employees': 'Список сотрудников',
-    '/stats': 'Статистика',
-    '/finance': 'Финансы',
-    '/profile': 'Профиль',
-    '/settings': 'Настройки',
+type Lang = 'ru' | 'en'
+
+const PAGE_TITLES: Record<string, Record<Lang, string>> = {
+    '/workload':           { ru: 'Загруженность ПВЗ',   en: 'PVZ Workload' },
+    '/workload/add':       { ru: 'Добавить ПВЗ',         en: 'Add PVZ' },
+    '/workload/employees': { ru: 'Список сотрудников',   en: 'Employees' },
+    '/stats':              { ru: 'Статистика',            en: 'Statistics' },
+    '/finance':            { ru: 'Финансы',               en: 'Finance' },
+    '/profile':            { ru: 'Профиль',               en: 'Profile' },
+    '/settings':           { ru: 'Настройки',             en: 'Settings' },
 }
 
 export default function Topbar() {
     const navigate = useNavigate()
     const { pathname } = useLocation()
-    const title = PAGE_TITLES[pathname] ?? 'ПВЗ Master'
+    const [lang, setLang] = useState<Lang>(
+        () => (localStorage.getItem('lang') as Lang) || 'ru'
+    )
+    const title = PAGE_TITLES[pathname]?.[lang] ?? 'ПВЗ Master'
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
     const [notifOpen, setNotifOpen] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
@@ -45,11 +50,14 @@ export default function Topbar() {
     useEffect(() => {
         loadAvatar()
         loadUnreadCount()
+        const onLang = (e: Event) => setLang((e as CustomEvent<Lang>).detail)
         window.addEventListener('profileUpdated', loadAvatar)
+        window.addEventListener('langChanged', onLang)
         // Poll unread count every 60s
         const interval = setInterval(loadUnreadCount, 60_000)
         return () => {
             window.removeEventListener('profileUpdated', loadAvatar)
+            window.removeEventListener('langChanged', onLang)
             clearInterval(interval)
         }
     }, [])
