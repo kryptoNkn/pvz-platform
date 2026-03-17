@@ -39,13 +39,22 @@ body {
     --border-input:     rgba(22, 56, 50, 0.18);
     --bg-pending:       linear-gradient(160deg, #f4fdf8 0%, #dffff2 100%);
     --bg-pending-card:  #ffffff;
+    --bg-white:         #ffffff;
+    --bg-table-head:    #163832;
+    --bg-row-alt:       #f4fdf8;
+    --bg-row-hover:     #e4f7ee;
+    --border-row:       #e4f0ea;
+    --border-table:     #d8ede5;
+    --bg-stat-green:    #83b69b;
+    --color-on-green:   #1a1a1a;
+    --border-strong:    #163832;
 }
 
 [data-theme="dark"] {
     --bg-main:          linear-gradient(160deg, #0b1c16 0%, #091410 100%);
     --bg-header:        rgba(11, 28, 22, 0.96);
     --border-header:    rgba(64, 201, 126, 0.10);
-    --bg-card:          #0f2318;
+    --bg-card:          #0a1810;
     --border-card:      rgba(64, 201, 126, 0.09);
     --shadow-card:      0 4px 20px rgba(0, 0, 0, 0.25);
     --text-primary:     #cce8dc;
@@ -57,5 +66,14 @@ body {
     --bg-input:         #0c1e14;
     --border-input:     rgba(64, 201, 126, 0.20);
     --bg-pending:       linear-gradient(160deg, #0b1c16 0%, #091410 100%);
-    --bg-pending-card:  #0f2318;
+    --bg-pending-card:  #0a1810;
+    --bg-white:         #0a1810;
+    --bg-table-head:    #091510;
+    --bg-row-alt:       #0d1e16;
+    --bg-row-hover:     #163824;
+    --border-row:       rgba(64, 201, 126, 0.08);
+    --border-table:     rgba(64, 201, 126, 0.12);
+    --bg-stat-green:    #1d4a32;
+    --color-on-green:   #cce8dc;
+    --border-strong:    rgba(64, 201, 126, 0.30);
 }

@@ -4,10 +4,11 @@ use futures_util::TryStreamExt;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 use serde::Deserialize;
-use std::fs;
-use std::io::Write;
-use crate::models::UpdateProfile;
-use crate::utils::password::{hash_password, verify_password};
+use std::{fs,io::Write};
+use crate::{
+    models::UpdateProfile,
+    utils::password::{hash_password, verify_password}
+};
 
 pub async fn profile(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {

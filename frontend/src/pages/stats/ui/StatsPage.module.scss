@@ -31,13 +31,13 @@
 }
 
 .statDark {
-    background: #163832;
+    background: var(--bg-table-head);
     color: #ffffff;
 }
 
 .statGreen {
-    background: #83b69b;
-    color: #1a1a1a;
+    background: var(--bg-stat-green);
+    color: var(--color-on-green);
 }
 
 .statRed {
@@ -74,17 +74,17 @@
 
 /* ── Distribution bar card ── */
 .sectionBlock {
-    background: #ffffff;
+    background: var(--bg-white);
     border-radius: 20px;
     padding: 24px 28px;
     box-shadow: 0 2px 16px rgba(22, 56, 50, 0.07);
-    border: 1.5px solid #d8ede5;
+    border: 1.5px solid var(--border-table);
 }
 
 .sectionTitle {
     font-size: 15px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 0 0 16px;

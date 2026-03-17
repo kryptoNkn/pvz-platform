@@ -25,15 +25,15 @@
 }
 
 .statBlock1 {
-    background: #163832;
+    background: var(--bg-table-head);
     color: #ffffff;
 }
 
 .statBlock2,
 .statBlock3,
 .statBlock4 {
-    background: #83b69b;
-    color: #1a1a1a;
+    background: var(--bg-stat-green);
+    color: var(--color-on-green);
 }
 
 .statLabel {
@@ -62,43 +62,43 @@
     flex: 1;
     height: 48px;
     border-radius: 14px;
-    border: 2px solid #c8e0d8;
+    border: 2px solid var(--border-table);
     padding: 0 18px;
     font-size: 15px;
     outline: none;
-    background: #ffffff;
-    color: #163832;
+    background: var(--bg-input);
+    color: var(--text-primary);
     transition: border-color 0.2s;
 
     &::placeholder {
-        color: #9bbcb0;
+        color: var(--text-muted);
     }
 
     &:focus {
-        border-color: #163832;
+        border-color: var(--text-primary);
     }
 }
 
 .pointsText {
     font-size: 14px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     white-space: nowrap;
-    background: #dffff2;
+    background: var(--color-hover2);
     height: 48px;
     padding: 0 18px;
     border-radius: 14px;
     display: flex;
     align-items: center;
-    border: 2px solid #c8e0d8;
+    border: 2px solid var(--border-table);
 }
 
 .btnSecondary {
     height: 48px;
     padding: 0 22px;
     background: transparent;
-    color: #163832;
-    border: 2px solid #163832;
+    color: var(--text-primary);
+    border: 2px solid var(--border-strong);
     border-radius: 14px;
     font-size: 14px;
     font-weight: 600;
@@ -107,8 +107,8 @@
     transition: background 0.2s, color 0.2s;
 
     &:hover {
-        background: #163832;
-        color: #ffffff;
+        background: var(--color-hover2);
+        color: var(--text-primary);
     }
 }
 
@@ -136,7 +136,7 @@
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 2px 20px rgba(22, 56, 50, 0.09);
-    border: 1.5px solid #c8e0d8;
+    border: 1.5px solid var(--border-table);
 }
 
 .table {
@@ -145,7 +145,7 @@
 }
 
 .tableHead {
-    background: #163832;
+    background: var(--bg-table-head);
     color: #ffffff;
 }
 
@@ -162,19 +162,19 @@
     transition: background 0.12s;
 
     &:nth-child(even) {
-        background: #f4fdf8;
+        background: var(--bg-row-alt);
     }
 
     &:hover {
-        background: #e4f7ee;
+        background: var(--bg-row-hover);
     }
 }
 
 .td {
     padding: 14px 20px;
     font-size: 14px;
-    border-bottom: 1px solid #e4f0ea;
-    color: #1a2e28;
+    border-bottom: 1px solid var(--border-row);
+    color: var(--text-primary);
 }
 
 .statusActive {
@@ -182,7 +182,7 @@
     padding: 3px 12px;
     border-radius: 20px;
     background: rgba(22, 56, 50, 0.10);
-    color: #163832;
+    color: var(--text-primary);
     font-weight: 700;
     font-size: 12px;
 }

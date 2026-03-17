@@ -10,7 +10,7 @@
 .title {
     font-size: 32px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     margin: 0 0 40px;
 }
 
@@ -23,7 +23,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #163832;
+    color: var(--text-primary);
     margin-bottom: 20px;
 }
 
@@ -42,26 +42,26 @@
 .label {
     font-size: 15px;
     font-weight: 600;
-    color: #163832;
+    color: var(--text-primary);
 }
 
 .input {
     width: 100%;
     height: 56px;
     border-radius: 12px;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
     padding: 0 20px;
     font-size: 16px;
     outline: none;
-    background: transparent;
-    color: #163832;
+    background: var(--bg-input);
+    color: var(--text-primary);
 
     &::placeholder {
-        color: #a0b5b0;
+        color: var(--text-muted);
     }
 
     &:focus {
-        border-color: #235347;
+        border-color: var(--text-secondary);
     }
 }
 
@@ -69,7 +69,7 @@
     width: 100%;
     border-radius: 20px;
     overflow: hidden;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
 }
 
 .table {
@@ -78,7 +78,7 @@
 }
 
 .tableHead {
-    background: #163832;
+    background: var(--bg-table-head);
     color: #ffffff;
 }
 
@@ -91,18 +91,19 @@
 
 .tr {
     &:nth-child(even) {
-        background: #f0fff8;
+        background: var(--bg-row-alt);
     }
 
     &:hover {
-        background: #dffff2;
+        background: var(--bg-row-hover);
     }
 }
 
 .td {
     padding: 14px 24px;
     font-size: 15px;
-    border-bottom: 1px solid #e0f0e8;
+    border-bottom: 1px solid var(--border-row);
+    color: var(--text-primary);
 }
 
 .checkboxLabel {
@@ -121,7 +122,7 @@
 }
 
 .workText {
-    color: #163832;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -140,16 +141,16 @@
     width: 80px;
     height: 40px;
     border-radius: 8px;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
     padding: 0 10px;
     font-size: 15px;
     outline: none;
-    background: transparent;
-    color: #163832;
+    background: var(--bg-input);
+    color: var(--text-primary);
     text-align: center;
 
     &:focus {
-        border-color: #235347;
+        border-color: var(--text-secondary);
     }
 
     &:disabled {
@@ -161,7 +162,7 @@
 
 .timeSep {
     font-size: 16px;
-    color: #163832;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -176,9 +177,9 @@
 .btnCancel {
     height: 56px;
     padding: 0 32px;
-    background: #ffffff;
-    color: #163832;
-    border: 2px solid #163832;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: 2px solid var(--border-strong);
     border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
@@ -186,7 +187,7 @@
     transition: background 0.2s;
 
     &:hover {
-        background: #f0f0f0;
+        background: var(--color-hover2);
     }
 }
 

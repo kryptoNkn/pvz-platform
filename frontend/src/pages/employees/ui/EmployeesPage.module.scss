@@ -8,7 +8,7 @@
 .title {
     font-size: 32px;
     font-weight: 700;
-    color: #163832;
+    color: var(--text-primary);
     margin: 0 0 32px;
 }
 
@@ -24,19 +24,19 @@
     flex: 1;
     height: 56px;
     border-radius: 12px;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
     padding: 0 20px;
     font-size: 16px;
     outline: none;
-    background: transparent;
-    color: #163832;
+    background: var(--bg-input);
+    color: var(--text-primary);
 
     &::placeholder {
-        color: #a0b5b0;
+        color: var(--text-muted);
     }
 
     &:focus {
-        border-color: #235347;
+        border-color: var(--text-secondary);
     }
 }
 
@@ -61,7 +61,7 @@
 .tableWrapper {
     border-radius: 20px;
     overflow: hidden;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
 }
 
 .table {
@@ -70,7 +70,7 @@
 }
 
 .tableHead {
-    background: #163832;
+    background: var(--bg-table-head);
     color: #ffffff;
 }
 
@@ -83,25 +83,26 @@
 
 .tr {
     &:nth-child(even) {
-        background: #f0fff8;
+        background: var(--bg-row-alt);
     }
 
     &:hover {
-        background: #dffff2;
+        background: var(--bg-row-hover);
     }
 }
 
 .td {
     padding: 14px 24px;
     font-size: 15px;
-    border-bottom: 1px solid #e0f0e8;
+    border-bottom: 1px solid var(--border-row);
     vertical-align: middle;
+    color: var(--text-primary);
 }
 
 .name {
     display: block;
     font-weight: 600;
-    color: #163832;
+    color: var(--text-primary);
 }
 
 .email {
@@ -121,23 +122,23 @@
 .roleLabel {
     font-size: 14px;
     font-weight: 600;
-    color: #163832;
+    color: var(--text-primary);
 }
 
 .roleSelect {
     height: 40px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 2px solid #163832;
+    border: 2px solid var(--border-strong);
     font-size: 15px;
     font-weight: 500;
-    color: #163832;
-    background: transparent;
+    color: var(--text-primary);
+    background: var(--bg-input);
     outline: none;
     cursor: pointer;
     appearance: auto;
 
     &:focus {
-        border-color: #235347;
+        border-color: var(--text-secondary);
     }
 }
