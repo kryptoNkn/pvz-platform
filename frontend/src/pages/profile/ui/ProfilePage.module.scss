@@ -369,5 +369,47 @@
 }
 
 .saveBtnBlue {
-  background: linear-gradient(135deg, #4f8ef7, #1e40af);
+  background: linear-gradient(135deg, #34d47a, #1a9952);
+}
+
+// ── Dark theme ─────────────────────────────────────────────────
+
+:global([data-theme="dark"]) {
+  .profileCard {
+    background: var(--bg-card);
+    border-color: var(--border-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .section {
+    background: var(--bg-card);
+    border-color: var(--border-card);
+  }
+
+  .cardName,
+  .infoText,
+  .sectionTitle,
+  .formInput {
+    color: var(--text-primary);
+  }
+
+  .infoLabel,
+  .formLabel {
+    color: var(--text-secondary);
+  }
+
+  .roleBadge {
+    background: rgba(64, 201, 126, 0.15);
+    border-color: rgba(64, 201, 126, 0.25);
+    color: #5fe89e;
+  }
+
+  .formInput {
+    background: var(--bg-input);
+    border-color: var(--border-input);
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
 }
