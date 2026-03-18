@@ -10,6 +10,31 @@
 
 ---
 
+## Локальный запуск (для соавторов)
+
+**Требования:** Docker, Rust, Node.js
+
+```bash
+# 1. Поднять PostgreSQL
+docker compose up -d
+
+# 2. Скопировать конфиг окружения
+cp backend/.env.example backend/.env
+
+# 3. Применить миграции (sqlx-cli нужен один раз: cargo install sqlx-cli --no-default-features --features postgres)
+cd backend && sqlx migrate run
+
+# 4. Запустить бэкенд
+cargo run
+
+# 5. Запустить фронтенд (в другом терминале)
+cd frontend && npm install && npm run dev
+```
+
+> `.env` в git не попадает — у каждого свой локальный файл. Менять ничего не нужно, всё уже настроено под локальный Docker.
+
+---
+
 ## Система анализа загрузки пунктов выдачи (ПВЗ)
 ### Описание проекта
 Проект моделирует работу пунктов выдачи заказов (ПВЗ) маркетплейса.  

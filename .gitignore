@@ -12,3 +12,4 @@ backend/target
 .env
 .env.local
 .env*.local
+backend/.env
