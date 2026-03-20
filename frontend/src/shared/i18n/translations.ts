@@ -93,19 +93,30 @@ export interface Translations {
     roleOperator: string
     roleAdmin: string
     roleOwner: string
-    // add-pvz
+    // add-pvz / edit-pvz
     addPvzTitle: string
+    editPvzTitle: string
     mainParams: string
     pvzAddress: string
     enterAddress: string
     throughput: string
     throughputPlaceholder: string
+    locationType: string
+    locationMall: string
+    locationStreet: string
+    locationResidential: string
+    locationOffice: string
+    pvzStatusLabel: string
+    pvzHoursLabel: string
     workSchedule: string
     colDay: string
     colWorkHours: string
+    colActions: string
     dayOff: string
     workDay: string
     saveChanges: string
+    edit: string
+    delete: string
     monday: string
     tuesday: string
     wednesday: string
@@ -255,17 +266,28 @@ const ru: Translations = {
     roleAdmin: 'Администратор',
     roleOwner: 'Владелец',
     addPvzTitle: 'Добавить новый ПВЗ...',
+    editPvzTitle: 'Редактировать ПВЗ',
     mainParams: 'Основные параметры',
     pvzAddress: 'Адрес ПВЗ',
     enterAddress: 'Введите адрес',
-    throughput: 'Пропускная способность (оп/час)',
-    throughputPlaceholder: 'Например, 120',
+    throughput: 'Вместимость (макс. товаров)',
+    throughputPlaceholder: 'Например, 200',
+    locationType: 'Тип расположения',
+    locationMall: 'Торговый центр',
+    locationStreet: 'Улица',
+    locationResidential: 'Жилой дом',
+    locationOffice: 'Офис',
+    pvzStatusLabel: 'Статус',
+    pvzHoursLabel: 'Часы работы',
     workSchedule: 'График работы',
     colDay: 'День',
     colWorkHours: 'Время работы',
+    colActions: 'Действия',
     dayOff: 'Выходной',
     workDay: 'Рабочий',
-    saveChanges: 'Сохранить изменения',
+    saveChanges: 'Сохранить',
+    edit: 'Изменить',
+    delete: 'Удалить',
     monday: 'Понедельник',
     tuesday: 'Вторник',
     wednesday: 'Среда',
@@ -411,17 +433,28 @@ const en: Translations = {
     roleAdmin: 'Administrator',
     roleOwner: 'Owner',
     addPvzTitle: 'Add new PVZ...',
+    editPvzTitle: 'Edit PVZ',
     mainParams: 'Main parameters',
     pvzAddress: 'PVZ address',
     enterAddress: 'Enter address',
-    throughput: 'Throughput (ops/hour)',
-    throughputPlaceholder: 'E.g., 120',
+    throughput: 'Capacity (max items)',
+    throughputPlaceholder: 'E.g., 200',
+    locationType: 'Location type',
+    locationMall: 'Mall',
+    locationStreet: 'Street',
+    locationResidential: 'Residential',
+    locationOffice: 'Office',
+    pvzStatusLabel: 'Status',
+    pvzHoursLabel: 'Working hours',
     workSchedule: 'Work schedule',
     colDay: 'Day',
     colWorkHours: 'Working hours',
+    colActions: 'Actions',
     dayOff: 'Day off',
     workDay: 'Working',
-    saveChanges: 'Save changes',
+    saveChanges: 'Save',
+    edit: 'Edit',
+    delete: 'Delete',
     monday: 'Monday',
     tuesday: 'Tuesday',
     wednesday: 'Wednesday',

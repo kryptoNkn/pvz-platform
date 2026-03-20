@@ -17,7 +17,10 @@ export const AddPvzPage = () => {
     const { t } = useLang()
     const [address, setAddress] = useState('')
     const [capacity, setCapacity] = useState('')
+    const [locationType, setLocationType] = useState('street')
     const [schedule, setSchedule] = useState<DaySchedule[]>(defaultSchedule())
+    const [saving, setSaving] = useState(false)
+    const [error, setError] = useState('')
 
     const DAYS = [
         t.monday, t.tuesday, t.wednesday, t.thursday,
@@ -37,16 +40,27 @@ export const AddPvzPage = () => {
     }
 
     const handleSave = async () => {
-        await fetch('/api/v1/pvz', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                address,
-                max_capacity: Number(capacity) || 100,
-            }),
-        })
-        navigate('/workload')
+        if (!address.trim()) { setError('Введите адрес'); return }
+        setSaving(true)
+        setError('')
+        try {
+            const res = await fetch('/api/v1/pvz', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: address.trim(),
+                    max_capacity: Number(capacity) || 100,
+                    location_type: locationType,
+                }),
+            })
+            if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`)
+            navigate('/workload')
+        } catch (e: any) {
+            setError(e.message ?? 'Неизвестная ошибка')
+        } finally {
+            setSaving(false)
+        }
     }
 
     return (
@@ -73,10 +87,27 @@ export const AddPvzPage = () => {
                         <input
                             className={styles.input}
                             type="number"
+                            min={1}
                             placeholder={t.throughputPlaceholder}
                             value={capacity}
                             onChange={e => setCapacity(e.target.value)}
                         />
+                    </div>
+                </div>
+
+                <div className={styles.fieldsRowSingle}>
+                    <div className={styles.fieldGroup}>
+                        <label className={styles.label}>{t.locationType}</label>
+                        <select
+                            className={styles.input}
+                            value={locationType}
+                            onChange={e => setLocationType(e.target.value)}
+                        >
+                            <option value="mall">{t.locationMall}</option>
+                            <option value="street">{t.locationStreet}</option>
+                            <option value="residential">{t.locationResidential}</option>
+                            <option value="office">{t.locationOffice}</option>
+                        </select>
                     </div>
                 </div>
             </section>
@@ -138,12 +169,14 @@ export const AddPvzPage = () => {
                 </div>
             </section>
 
+            {error && <p className={styles.errorMsg}>{error}</p>}
+
             <div className={styles.actions}>
                 <button className={styles.btnCancel} onClick={() => navigate('/workload')}>
                     {t.cancel}
                 </button>
-                <button className={styles.btnSave} onClick={handleSave}>
-                    {t.saveChanges}
+                <button className={styles.btnSave} onClick={handleSave} disabled={saving}>
+                    {saving ? t.saving : t.saveChanges}
                 </button>
             </div>
         </div>

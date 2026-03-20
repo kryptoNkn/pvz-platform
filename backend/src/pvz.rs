@@ -68,7 +68,6 @@ pub struct FinancialStats {
 }
 
 pub struct AppState {
-    pub pvz_list: Vec<Pvz>,
     pub workload_stats: WorkloadStats,
     pub financial_stats: FinancialStats,
 }
@@ -77,7 +76,6 @@ impl AppState {
     pub fn new() -> Self {
         let mut rng = rand::thread_rng();
         AppState {
-            pvz_list: generate_pvz_list(),
             workload_stats: generate_workload_stats(&mut rng),
             financial_stats: generate_financial_stats(&mut rng),
         }

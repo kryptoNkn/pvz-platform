@@ -58,7 +58,17 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+}
+
+.fieldsRowSingle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   margin-bottom: 8px;
+
+  .fieldGroup {
+    grid-column: 1;
+  }
 }
 
 .fieldGroup {
@@ -85,6 +95,8 @@
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s, background 0.2s;
+  appearance: auto;
+  cursor: pointer;
 
   &::placeholder {
     color: var(--text-muted);
@@ -256,7 +268,23 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #235347;
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.errorMsg {
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.2);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-top: -8px;
 }
