@@ -1,147 +1,200 @@
+// ── StatsPage.module.scss ────────────────────────────────────
+// полностью переработано в стиле SettingsPage
+
 .page {
-    padding: 32px 40px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    gap: 24px;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 24px;
 }
 
 .loading {
-    font-size: 18px;
-    color: #83b69b;
-    padding: 48px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 48px 0;
+  text-align: center;
 }
 
-/* ── Stat card grids ── */
+// ── Stat cards ───────────────────────────────────────────────
+
 .statsSection {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 .statBlock {
-    border-radius: 20px;
-    min-height: 170px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 24px 28px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.09);
+  background: var(--bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(22, 56, 50, 0.12);
+    transform: translateY(-2px);
+  }
 }
 
 .statDark {
-    background: var(--bg-table-head);
+  background: var(--bg-table-head);
+  border-color: transparent;
+
+  .statLabel,
+  .statValue,
+  .statSub {
     color: #ffffff;
+  }
 }
 
 .statGreen {
-    background: var(--bg-stat-green);
-    color: var(--color-on-green);
+  background: var(--bg-card);
+  
+  .statLabel,
+  .statSub {
+    color: var(--text-secondary);
+  }
+  
+  .statValue {
+    color: #40c97e;
+  }
 }
 
 .statRed {
-    background: #c0392b;
-    color: #ffffff;
+  background: var(--bg-card);
+  
+  .statLabel,
+  .statSub {
+    color: var(--text-secondary);
+  }
+  
+  .statValue {
+    color: #c0392b;
+  }
 }
 
 .statGray {
-    background: #8a9e96;
-    color: #ffffff;
+  background: var(--bg-card);
+  
+  .statLabel,
+  .statSub {
+    color: var(--text-secondary);
+  }
+  
+  .statValue {
+    color: var(--text-muted);
+  }
 }
 
 .statLabel {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    opacity: 0.72;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
 }
 
 .statValue {
-    font-size: 52px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -1px;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text-primary);
 }
 
 .statSub {
-    font-size: 12px;
-    font-weight: 500;
-    opacity: 0.65;
-    margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
-/* ── Distribution bar card ── */
+// ── Section cards ────────────────────────────────────────────
+
 .sectionBlock {
-    background: var(--bg-white);
-    border-radius: 20px;
-    padding: 24px 28px;
-    box-shadow: 0 2px 16px rgba(22, 56, 50, 0.07);
-    border: 1.5px solid var(--border-table);
+  background: var(--bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px 28px;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(22, 56, 50, 0.12);
+  }
 }
 
 .sectionTitle {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0 0 16px;
-    opacity: 0.8;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
+  margin: 0 0 16px;
 }
+
+// ── Distribution bars ────────────────────────────────────────
 
 .barTrack {
-    display: flex;
-    height: 48px;
-    border-radius: 12px;
-    overflow: hidden;
-    width: 100%;
-    gap: 3px;
+  display: flex;
+  height: 48px;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  gap: 3px;
+  background: var(--color-hover);
+  padding: 3px;
 }
 
-/* shared bar segment base */
 %bar-segment {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    transition: flex 0.5s ease;
-    min-width: 0;
-    overflow: hidden;
-    border-radius: 10px;
-    padding: 0 12px;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  transition: flex 0.3s ease, opacity 0.2s;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  white-space: nowrap;
 
-    span {
-        display: block;
-        white-space: nowrap;
-        min-width: 0;
-    }
+  span {
+    display: block;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
 .barActive {
-    @extend %bar-segment;
-    background: #163832;
-    color: #ffffff;
+  @extend %bar-segment;
+  background: #163832;
+  color: #ffffff;
 }
 
 .barOverloaded {
-    @extend %bar-segment;
-    background: #c0392b;
-    color: #ffffff;
-    min-width: max-content;
+  @extend %bar-segment;
+  background: #c0392b;
+  color: #ffffff;
 }
 
 .barDelivery {
-    @extend %bar-segment;
-    background: #5a9e80;
-    color: #ffffff;
+  @extend %bar-segment;
+  background: #40c97e;
+  color: #ffffff;
 }
 
 .barClosed {
-    @extend %bar-segment;
-    background: #8a9e96;
-    color: #ffffff;
+  @extend %bar-segment;
+  background: var(--text-muted);
+  color: #ffffff;
 }
