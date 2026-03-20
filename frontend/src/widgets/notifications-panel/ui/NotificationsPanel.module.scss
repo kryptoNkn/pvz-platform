@@ -19,7 +19,7 @@
   right: 0;
   height: 100vh;
   width: 360px;
-  background: #fff;
+  background: var(--bg-card);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -101,7 +101,7 @@
     width: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(22, 56, 50, 0.15);
+    background: var(--border-card);
     border-radius: 4px;
   }
 }
@@ -113,7 +113,7 @@
   justify-content: center;
   gap: 12px;
   height: 200px;
-  color: #83b69b;
+  color: var(--text-muted);
 
   p {
     font-size: 14px;
@@ -124,7 +124,7 @@
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(22, 56, 50, 0.12);
+  border: 3px solid var(--color-divider);
   border-top-color: #40c97e;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -144,21 +144,21 @@
   cursor: pointer;
   transition: background 0.15s;
   position: relative;
-  border-bottom: 1px solid rgba(22, 56, 50, 0.055);
+  border-bottom: 1px solid var(--color-divider);
 
   &:last-child {
     border-bottom: none;
   }
 
   &:hover {
-    background: #f5fcf8;
+    background: var(--color-hover);
   }
 
   &.itemUnread {
-    background: #edfaf4;
+    background: var(--color-hover);
 
     &:hover {
-      background: #ddf4ea;
+      background: var(--color-hover2);
     }
   }
 }
@@ -187,20 +187,20 @@
 .itemTitle {
   font-size: 13px;
   font-weight: 600;
-  color: #163832;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
 .itemBody {
   font-size: 12px;
-  color: #4a6f5e;
+  color: var(--text-secondary);
   margin-top: 3px;
   line-height: 1.45;
 }
 
 .itemTime {
   font-size: 11px;
-  color: #83b69b;
+  color: var(--text-muted);
   margin-top: 5px;
 }
 
