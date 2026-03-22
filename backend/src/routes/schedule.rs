@@ -1,7 +1,6 @@
 use actix_web::{HttpResponse, Responder, web};
 use sqlx::PgPool;
 use uuid::Uuid;
-
 use crate::models::{ScheduleDay, ScheduleDayInput};
 
 pub async fn get_schedule(

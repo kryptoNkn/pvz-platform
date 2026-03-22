@@ -175,6 +175,25 @@ export interface Translations {
     settingsPlatform: string
     settingsLogout: string
     settingsSaved: string
+    // operations page
+    operationsTitle: string
+    addOperation: string
+    addOperationTitle: string
+    opTypeIn: string
+    opTypeOut: string
+    opTypeReturn: string
+    colType: string
+    colQuantity: string
+    colPvz: string
+    colNote: string
+    colDate: string
+    filterAllPvz: string
+    filterAllTypes: string
+    operationsCount: string
+    quantityLabel: string
+    noteLabel: string
+    noOperations: string
+    deleteOperationTitle: string
     // locale for number/date formatting
     locale: string
 }
@@ -343,6 +362,24 @@ const ru: Translations = {
     settingsPlatform: 'Платформа',
     settingsLogout: 'Выйти из аккаунта',
     settingsSaved: 'Настройки сохранены',
+    operationsTitle: 'Учёт операций',
+    addOperation: 'Добавить операцию',
+    addOperationTitle: 'Новая операция',
+    opTypeIn: 'Приёмка',
+    opTypeOut: 'Выдача',
+    opTypeReturn: 'Возврат',
+    colType: 'Тип',
+    colQuantity: 'Кол-во',
+    colPvz: 'ПВЗ',
+    colNote: 'Примечание',
+    colDate: 'Дата и время',
+    filterAllPvz: 'Все ПВЗ',
+    filterAllTypes: 'Все типы',
+    operationsCount: 'записей',
+    quantityLabel: 'Количество',
+    noteLabel: 'Примечание (необязательно)',
+    noOperations: 'Нет операций',
+    deleteOperationTitle: 'Удалить операцию?',
     locale: 'ru-RU',
 }
 
@@ -510,6 +547,24 @@ const en: Translations = {
     settingsPlatform: 'Platform',
     settingsLogout: 'Log out',
     settingsSaved: 'Settings saved',
+    operationsTitle: 'Operations log',
+    addOperation: 'Add operation',
+    addOperationTitle: 'New operation',
+    opTypeIn: 'Acceptance',
+    opTypeOut: 'Delivery',
+    opTypeReturn: 'Return',
+    colType: 'Type',
+    colQuantity: 'Qty',
+    colPvz: 'PVZ',
+    colNote: 'Note',
+    colDate: 'Date & time',
+    filterAllPvz: 'All PVZs',
+    filterAllTypes: 'All types',
+    operationsCount: 'records',
+    quantityLabel: 'Quantity',
+    noteLabel: 'Note (optional)',
+    noOperations: 'No operations',
+    deleteOperationTitle: 'Delete operation?',
     locale: 'en-US',
 }
 

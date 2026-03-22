@@ -116,10 +116,30 @@ pub async fn get_stats(
         }
     };
 
-    let (total_items, acceptance, delivery, returns) = {
-        let s = state.lock().unwrap();
-        (s.workload_stats.total_items, s.workload_stats.acceptance,
-         s.workload_stats.delivery, s.workload_stats.returns)
+    let op_counts = sqlx::query(
+        "SELECT
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'in'), 0) AS acceptance,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'out'), 0) AS delivery,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'return'), 0) AS returns,
+            COALESCE(SUM(quantity), 0) AS total_items
+         FROM operations"
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+
+    let (total_items, acceptance, delivery, returns) = match op_counts {
+        Ok(r) => {
+            let acceptance: i64 = r.get("acceptance");
+            let delivery: i64 = r.get("delivery");
+            let returns: i64 = r.get("returns");
+            let total_items: i64 = r.get("total_items");
+            (total_items, acceptance, delivery, returns)
+        }
+        Err(_) => {
+            let s = state.lock().unwrap();
+            (s.workload_stats.total_items as i64, s.workload_stats.acceptance as i64,
+             s.workload_stats.delivery as i64, s.workload_stats.returns as i64)
+        }
     };
 
     HttpResponse::Ok().json(serde_json::json!({
@@ -160,10 +180,10 @@ pub async fn add_pvz(
                    else { "large" };
 
     let hours = match location_type.as_str() {
-        "mall"        => "10:00 - 22:00",
+        "mall" => "10:00 - 22:00",
         "residential" => "09:00 - 20:00",
-        "office"      => "08:00 - 19:00",
-        _             => "09:00 - 21:00",
+        "office" => "08:00 - 19:00",
+        _ => "09:00 - 21:00",
     };
 
     let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM pvz")
@@ -309,5 +329,8 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
             .route("/pvz/{id}", web::delete().to(delete_pvz))
             .route("/pvz/{id}/schedule", web::get().to(super::schedule::get_schedule))
             .route("/pvz/{id}/schedule", web::put().to(super::schedule::set_schedule))
+            .route("/operations", web::get().to(super::operations::list_operations))
+            .route("/operations", web::post().to(super::operations::add_operation))
+            .route("/operations/{id}", web::delete().to(super::operations::delete_operation))
     );
 }

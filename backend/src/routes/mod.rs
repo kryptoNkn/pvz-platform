@@ -3,3 +3,4 @@ pub mod user;
 pub mod pvz;
 pub mod notifications;
 pub mod schedule;
+pub mod operations;

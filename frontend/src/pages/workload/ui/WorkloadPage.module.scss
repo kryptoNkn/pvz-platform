@@ -395,6 +395,13 @@
   }
 }
 
+.opError {
+  font-size: 13px;
+  color: #c0392b;
+  margin: 0;
+  padding: 0 2px;
+}
+
 .btnModalSave {
   height: 42px;
   padding: 0 24px;
@@ -427,6 +434,123 @@
   &:hover {
     background: rgba(192, 57, 43, 0.15);
     border-color: #c0392b;
+  }
+}
+
+// ── Operations section ─────────────────────────────────────────
+
+.opsHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+  padding: 8px 12px;
+  margin-top: 8px;
+}
+
+.opsTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+.opsFilters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.opsFilterSelect {
+  height: 44px;
+  border: 2px solid transparent;
+  background: var(--color-hover);
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #40c97e;
+  }
+}
+
+.opsFilterDate {
+  height: 44px;
+  border: 2px solid transparent;
+  background: var(--color-hover);
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #40c97e;
+  }
+}
+
+.opsBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.opsType_in {
+  background: rgba(64, 201, 126, 0.12);
+  color: #40c97e;
+}
+
+.opsType_out {
+  background: rgba(240, 165, 0, 0.12);
+  color: #f0a500;
+}
+
+.opsType_return {
+  background: rgba(192, 57, 43, 0.10);
+  color: #c0392b;
+}
+
+.opsEmpty {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.btnDelete {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-card);
+  background: var(--color-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  padding: 0;
+
+  &:hover {
+    background: rgba(192, 57, 43, 0.08);
+    border-color: #c0392b;
+    color: #c0392b;
   }
 }
 

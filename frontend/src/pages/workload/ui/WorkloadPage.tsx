@@ -32,6 +32,16 @@ interface Stats {
     returns: number
 }
 
+interface Operation {
+    id: string
+    pvz_id: string
+    pvz_name: string
+    op_type: 'in' | 'out' | 'return'
+    quantity: number
+    note: string | null
+    created_at: string
+}
+
 type EditForm = {
     address: string
     max_capacity: string
@@ -40,9 +50,17 @@ type EditForm = {
     hours: string
 }
 
+const OP_TYPE_LABEL: Record<string, string> = {
+    in: 'Приёмка',
+    out: 'Выдача',
+    return: 'Возврат',
+}
+
 export const WorkloadPage = () => {
     const navigate = useNavigate()
     const { t } = useLang()
+
+    // PVZ state
     const [pvzList, setPvzList] = useState<Pvz[]>([])
     const [stats, setStats] = useState<Stats | null>(null)
     const [search, setSearch] = useState('')
@@ -53,19 +71,50 @@ export const WorkloadPage = () => {
     const [confirmDeletePvz, setConfirmDeletePvz] = useState<Pvz | null>(null)
     const [editSchedule, setEditSchedule] = useState<DaySchedule[]>(defaultSchedule())
 
+    // Operations state
+    const [ops, setOps] = useState<Operation[]>([])
+    const [filterOpPvz, setFilterOpPvz] = useState('')
+    const [filterOpType, setFilterOpType] = useState('')
+    const [filterFrom, setFilterFrom] = useState('')
+    const [filterTo, setFilterTo] = useState('')
+    const [showAddOp, setShowAddOp] = useState(false)
+    const [opForm, setOpForm] = useState({ pvz_id: '', op_type: 'in', quantity: '1', note: '' })
+    const [confirmDeleteOp, setConfirmDeleteOp] = useState<Operation | null>(null)
+    const [savingOp, setSavingOp] = useState(false)
+    const [opError, setOpError] = useState('')
+
     const loadList = () =>
         fetch('/api/v1/pvz', { credentials: 'include' })
             .then(r => r.json())
             .then(setPvzList)
             .catch(console.error)
 
-    useEffect(() => {
-        loadList()
+    const loadStats = () =>
         fetch('/api/v1/stats', { credentials: 'include' })
             .then(r => r.json())
             .then(setStats)
             .catch(console.error)
+
+    const loadOps = () => {
+        const params = new URLSearchParams()
+        if (filterOpPvz) params.set('pvz_id', filterOpPvz)
+        if (filterOpType) params.set('op_type', filterOpType)
+        if (filterFrom) params.set('date_from', new Date(filterFrom).toISOString())
+        if (filterTo) params.set('date_to', new Date(filterTo + 'T23:59:59').toISOString())
+        fetch(`/api/v1/operations?${params}`, { credentials: 'include' })
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data)) setOps(data) })
+            .catch(console.error)
+    }
+
+    useEffect(() => {
+        loadList()
+        loadStats()
     }, [])
+
+    useEffect(() => {
+        loadOps()
+    }, [filterOpPvz, filterOpType, filterFrom, filterTo])
 
     const openEdit = (pvz: Pvz) => {
         setEditPvz(pvz)
@@ -132,6 +181,64 @@ export const WorkloadPage = () => {
         setEditPvz(null)
     }
 
+    const openAddOp = () => {
+        setOpForm({ pvz_id: pvzList[0]?.id ?? '', op_type: 'in', quantity: '1', note: '' })
+        setOpError('')
+        setShowAddOp(true)
+    }
+
+    const saveOperation = async () => {
+        if (!opForm.pvz_id) {
+            setOpError('Выберите ПВЗ')
+            return
+        }
+        setSavingOp(true)
+        setOpError('')
+        try {
+            const res = await fetch('/api/v1/operations', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pvz_id: opForm.pvz_id,
+                    op_type: opForm.op_type,
+                    quantity: Math.max(1, Number(opForm.quantity) || 1),
+                    note: opForm.note || null,
+                }),
+            })
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}))
+                setOpError(body?.error ?? `Ошибка сервера (${res.status})`)
+                setSavingOp(false)
+                return
+            }
+        } catch {
+            setOpError('Ошибка сети')
+            setSavingOp(false)
+            return
+        }
+        setSavingOp(false)
+        setShowAddOp(false)
+        loadOps()
+        loadStats()
+        loadList()
+    }
+
+    const deleteOp = async () => {
+        if (!confirmDeleteOp) return
+        const res = await fetch(`/api/v1/operations/${confirmDeleteOp.id}`, { method: 'DELETE', credentials: 'include' })
+        if (!res.ok) { console.error('Failed to delete operation:', res.status); return }
+        setConfirmDeleteOp(null)
+        loadOps()
+        loadStats()
+        loadList()
+    }
+
+    const fmtDate = (iso: string) => {
+        const d = new Date(iso)
+        return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+    }
+
     const STATUS_LABEL: Record<string, string> = {
         active:     t.statusActive,
         overloaded: t.statusOverloaded,
@@ -145,6 +252,7 @@ export const WorkloadPage = () => {
 
     return (
         <div className={styles.page}>
+            {/* Stats cards */}
             <div className={styles.statsSection}>
                 <div className={`${styles.statBlock} ${styles.statBlock1}`}>
                     <span className={styles.statLabel}>{t.totalItems}</span>
@@ -164,6 +272,7 @@ export const WorkloadPage = () => {
                 </div>
             </div>
 
+            {/* PVZ search + actions */}
             <div className={styles.searchSection}>
                 <input
                     type="text"
@@ -181,6 +290,7 @@ export const WorkloadPage = () => {
                 </button>
             </div>
 
+            {/* PVZ table */}
             <div className={styles.tableSection}>
                 <table className={styles.table}>
                     <thead className={styles.tableHead}>
@@ -226,6 +336,94 @@ export const WorkloadPage = () => {
                 </table>
             </div>
 
+            {/* ── Operations section ── */}
+            <div className={styles.opsHeader}>
+                <span className={styles.opsTitle}>{t.operationsTitle}</span>
+                <div className={styles.opsFilters}>
+                    <select
+                        className={styles.opsFilterSelect}
+                        value={filterOpPvz}
+                        onChange={e => setFilterOpPvz(e.target.value)}
+                    >
+                        <option value="">{t.filterAllPvz}</option>
+                        {pvzList.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                    </select>
+                    <select
+                        className={styles.opsFilterSelect}
+                        value={filterOpType}
+                        onChange={e => setFilterOpType(e.target.value)}
+                    >
+                        <option value="">{t.filterAllTypes}</option>
+                        <option value="in">{t.opTypeIn}</option>
+                        <option value="out">{t.opTypeOut}</option>
+                        <option value="return">{t.opTypeReturn}</option>
+                    </select>
+                    <input
+                        type="date"
+                        className={styles.opsFilterDate}
+                        value={filterFrom}
+                        onChange={e => setFilterFrom(e.target.value)}
+                    />
+                    <input
+                        type="date"
+                        className={styles.opsFilterDate}
+                        value={filterTo}
+                        onChange={e => setFilterTo(e.target.value)}
+                    />
+                </div>
+                <button className={styles.btnPrimary} onClick={openAddOp}>
+                    {t.addOperation}
+                </button>
+            </div>
+
+            <div className={styles.tableSection}>
+                <table className={styles.table}>
+                    <thead className={styles.tableHead}>
+                        <tr>
+                            <th className={styles.th}>{t.colType}</th>
+                            <th className={styles.th}>{t.colPvz}</th>
+                            <th className={styles.th}>{t.colQuantity}</th>
+                            <th className={styles.th}>{t.colNote}</th>
+                            <th className={styles.th}>{t.colDate}</th>
+                            <th className={`${styles.th} ${styles.thActions}`}>{t.colActions}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {ops.length === 0 && (
+                            <tr>
+                                <td colSpan={6} className={styles.opsEmpty}>{t.noOperations}</td>
+                            </tr>
+                        )}
+                        {ops.map(op => (
+                            <tr key={op.id} className={styles.tr}>
+                                <td className={styles.td}>
+                                    <span className={`${styles.opsBadge} ${styles['opsType_' + op.op_type]}`}>
+                                        {OP_TYPE_LABEL[op.op_type]}
+                                    </span>
+                                </td>
+                                <td className={styles.td}>{op.pvz_name}</td>
+                                <td className={styles.td}>{op.quantity}</td>
+                                <td className={styles.td}>{op.note ?? '—'}</td>
+                                <td className={styles.td}>{fmtDate(op.created_at)}</td>
+                                <td className={`${styles.td} ${styles.tdActions}`}>
+                                    <button
+                                        className={styles.btnDelete}
+                                        title={t.delete}
+                                        onClick={() => setConfirmDeleteOp(op)}
+                                    >
+                                        ✕
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* ── Modals ── */}
+
             {confirmDeletePvz && (
                 <div className={styles.modalOverlay} onClick={() => setConfirmDeletePvz(null)}>
                     <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
@@ -240,6 +438,91 @@ export const WorkloadPage = () => {
                             </button>
                             <button className={styles.btnConfirmDelete} onClick={confirmAndDelete}>
                                 {t.delete}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {confirmDeleteOp && (
+                <div className={styles.modalOverlay} onClick={() => setConfirmDeleteOp(null)}>
+                    <div className={styles.confirmDialog} onClick={e => e.stopPropagation()}>
+                        <div className={styles.confirmIcon}>⚠</div>
+                        <h3 className={styles.confirmTitle}>{t.deleteOperationTitle}</h3>
+                        <p className={styles.confirmBody}>
+                            <strong>{OP_TYPE_LABEL[confirmDeleteOp.op_type]}</strong> × {confirmDeleteOp.quantity} — {confirmDeleteOp.pvz_name}
+                        </p>
+                        <div className={styles.confirmActions}>
+                            <button className={styles.btnModalCancel} onClick={() => setConfirmDeleteOp(null)}>
+                                {t.cancel}
+                            </button>
+                            <button className={styles.btnConfirmDelete} onClick={deleteOp}>
+                                {t.delete}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAddOp && (
+                <div className={styles.modalOverlay} onClick={() => setShowAddOp(false)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        <h2 className={styles.modalTitle}>{t.addOperationTitle}</h2>
+                        <div className={styles.modalFields}>
+                            <div className={styles.modalField}>
+                                <label className={styles.modalLabel}>{t.colPvz}</label>
+                                <select
+                                    className={styles.modalSelect}
+                                    value={opForm.pvz_id}
+                                    onChange={e => setOpForm(f => ({ ...f, pvz_id: e.target.value }))}
+                                >
+                                    {pvzList.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.modalRow}>
+                                <div className={styles.modalField}>
+                                    <label className={styles.modalLabel}>{t.colType}</label>
+                                    <select
+                                        className={styles.modalSelect}
+                                        value={opForm.op_type}
+                                        onChange={e => setOpForm(f => ({ ...f, op_type: e.target.value }))}
+                                    >
+                                        <option value="in">{t.opTypeIn}</option>
+                                        <option value="out">{t.opTypeOut}</option>
+                                        <option value="return">{t.opTypeReturn}</option>
+                                    </select>
+                                </div>
+                                <div className={styles.modalField}>
+                                    <label className={styles.modalLabel}>{t.quantityLabel}</label>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        className={styles.modalInput}
+                                        value={opForm.quantity}
+                                        onChange={e => setOpForm(f => ({ ...f, quantity: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.modalField}>
+                                <label className={styles.modalLabel}>{t.noteLabel}</label>
+                                <input
+                                    type="text"
+                                    className={styles.modalInput}
+                                    value={opForm.note}
+                                    placeholder={t.noteLabel}
+                                    onChange={e => setOpForm(f => ({ ...f, note: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                        {opError && <p className={styles.opError}>{opError}</p>}
+                        <div className={styles.modalActions}>
+                            <button className={styles.btnModalCancel} onClick={() => setShowAddOp(false)}>
+                                {t.cancel}
+                            </button>
+                            <button className={styles.btnModalSave} onClick={saveOperation} disabled={savingOp}>
+                                {savingOp ? t.saving : t.save}
                             </button>
                         </div>
                     </div>
