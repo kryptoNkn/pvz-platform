@@ -298,9 +298,11 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
   padding: 28px 32px;
   width: 520px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   gap: 22px;
+  overflow-y: auto;
 }
 
 .modalTitle {

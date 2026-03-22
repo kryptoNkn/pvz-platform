@@ -299,13 +299,15 @@ pub async fn regenerate(state: web::Data<Arc<Mutex<AppState>>>) -> impl Responde
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
-            .route("/stats",           web::get().to(get_stats))
-            .route("/finance",         web::get().to(get_finance))
-            .route("/pvz",             web::get().to(get_pvz_list))
-            .route("/pvz",             web::post().to(add_pvz))
-            .route("/pvz/regenerate",  web::post().to(regenerate))
-            .route("/pvz/{id}",        web::get().to(get_pvz_by_id))
-            .route("/pvz/{id}",        web::put().to(update_pvz))
-            .route("/pvz/{id}",        web::delete().to(delete_pvz)),
+            .route("/stats", web::get().to(get_stats))
+            .route("/finance", web::get().to(get_finance))
+            .route("/pvz", web::get().to(get_pvz_list))
+            .route("/pvz", web::post().to(add_pvz))
+            .route("/pvz/regenerate", web::post().to(regenerate))
+            .route("/pvz/{id}", web::get().to(get_pvz_by_id))
+            .route("/pvz/{id}", web::put().to(update_pvz))
+            .route("/pvz/{id}", web::delete().to(delete_pvz))
+            .route("/pvz/{id}/schedule", web::get().to(super::schedule::get_schedule))
+            .route("/pvz/{id}/schedule", web::put().to(super::schedule::set_schedule))
     );
 }

@@ -26,3 +26,19 @@ pub struct LoginUser {
 pub struct UpdateProfile {
     pub full_name: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)] 
+pub struct ScheduleDay {
+    pub day_index: i16,
+    pub is_day_off: bool,
+    pub start_time: String,
+    pub end_time: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ScheduleDayInput {
+    pub day_index: i16,
+    pub is_day_off: bool,
+    pub start_time: String,
+    pub end_time: String,
+}

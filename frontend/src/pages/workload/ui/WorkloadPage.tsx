@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { useLang } from '@/shared/i18n'
 import styles from './WorkloadPage.module.scss'
 
+type DaySchedule = {
+    isOff: boolean
+    startTime: string
+    endTime: string
+}
+
+const defaultSchedule = (): DaySchedule[] =>
+    Array(7).fill(null).map(() => ({ isOff: false, startTime: '09:00', endTime: '21:00' }))
+
 interface Pvz {
     id: string
     name: string
@@ -42,6 +51,7 @@ export const WorkloadPage = () => {
         address: '', max_capacity: '', location_type: 'street', status: 'active', hours: '',
     })
     const [confirmDeletePvz, setConfirmDeletePvz] = useState<Pvz | null>(null)
+    const [editSchedule, setEditSchedule] = useState<DaySchedule[]>(defaultSchedule())
 
     const loadList = () =>
         fetch('/api/v1/pvz', { credentials: 'include' })
@@ -66,6 +76,21 @@ export const WorkloadPage = () => {
             status: pvz.status,
             hours: pvz.hours,
         })
+        setEditSchedule(defaultSchedule())
+        fetch(`/api/v1/pvz/${pvz.id}/schedule`, { credentials: 'include' })
+            .then(r => r.json())
+            .then((days: Array<{ day_index: number; is_day_off: boolean; start_time: string; end_time: string }>) => {
+                if (!Array.isArray(days) || days.length === 0) return
+                setEditSchedule(prev =>
+                    prev.map((d, i) => {
+                        const found = days.find(x => x.day_index === i)
+                        return found
+                            ? { isOff: found.is_day_off, startTime: found.start_time, endTime: found.end_time }
+                            : d
+                    })
+                )
+            })
+            .catch(console.error)
     }
 
     const saveEdit = async () => {
@@ -81,6 +106,19 @@ export const WorkloadPage = () => {
                 status: editForm.status,
                 hours: editForm.hours,
             }),
+        })
+        await fetch(`/api/v1/pvz/${editPvz.id}/schedule`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(
+                editSchedule.map((day, i) => ({
+                    day_index: i,
+                    is_day_off: day.isOff,
+                    start_time: day.isOff ? '00:00' : day.startTime,
+                    end_time:   day.isOff ? '00:00' : day.endTime,
+                }))
+            ),
         })
         setEditPvz(null)
         loadList()
@@ -270,6 +308,65 @@ export const WorkloadPage = () => {
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        <div className={styles.modalField} style={{ marginTop: '16px' }}>
+                            <label className={styles.modalLabel}>{t.workSchedule}</label>
+                            <table className={styles.table} style={{ marginTop: '8px' }}>
+                                <thead className={styles.tableHead}>
+                                    <tr>
+                                        <th className={styles.th}>{t.colDay}</th>
+                                        <th className={styles.th}>{t.colStatus}</th>
+                                        <th className={styles.th}>{t.colWorkHours}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {[t.monday, t.tuesday, t.wednesday, t.thursday, t.friday, t.saturday, t.sunday].map((day, i) => (
+                                        <tr key={i} className={styles.tr}>
+                                            <td className={styles.td}>{day}</td>
+                                            <td className={styles.td}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editSchedule[i].isOff}
+                                                        onChange={() => setEditSchedule(prev =>
+                                                            prev.map((d, idx) => idx === i ? { ...d, isOff: !d.isOff } : d)
+                                                        )}
+                                                    />
+                                                    {editSchedule[i].isOff ? t.dayOff : t.workDay}
+                                                </label>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <input
+                                                        className={styles.modalInput}
+                                                        style={{ width: '60px', textAlign: 'center' }}
+                                                        type="text"
+                                                        disabled={editSchedule[i].isOff}
+                                                        value={editSchedule[i].isOff ? '' : editSchedule[i].startTime}
+                                                        placeholder="09:00"
+                                                        onChange={e => setEditSchedule(prev =>
+                                                            prev.map((d, idx) => idx === i ? { ...d, startTime: e.target.value } : d)
+                                                        )}
+                                                    />
+                                                    <span>—</span>
+                                                    <input
+                                                        className={styles.modalInput}
+                                                        style={{ width: '60px', textAlign: 'center' }}
+                                                        type="text"
+                                                        disabled={editSchedule[i].isOff}
+                                                        value={editSchedule[i].isOff ? '' : editSchedule[i].endTime}
+                                                        placeholder="21:00"
+                                                        onChange={e => setEditSchedule(prev =>
+                                                            prev.map((d, idx) => idx === i ? { ...d, endTime: e.target.value } : d)
+                                                        )}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
                         <div className={styles.modalActions}>

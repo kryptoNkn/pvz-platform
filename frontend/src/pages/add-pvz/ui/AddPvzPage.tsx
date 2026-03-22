@@ -55,6 +55,23 @@ export const AddPvzPage = () => {
                 }),
             })
             if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`)
+            const pvz = await res.json()
+
+            const schedRes = await fetch(`/api/v1/pvz/${pvz.id}/schedule`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(
+                    schedule.map((day, i) => ({
+                        day_index: i,
+                        is_day_off: day.isOff,
+                        start_time: day.isOff ? '00:00' : day.startTime,
+                        end_time:   day.isOff ? '00:00' : day.endTime,
+                    }))
+                ),
+            })
+            if (!schedRes.ok) throw new Error(`Ошибка сохранения расписания: ${schedRes.status}`)
+
             navigate('/workload')
         } catch (e: any) {
             setError(e.message ?? 'Неизвестная ошибка')
