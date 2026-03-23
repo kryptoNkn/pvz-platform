@@ -22,6 +22,13 @@ pub struct ListQuery {
     pub offset: Option<i64>,
 }
 
+#[derive(Deserialize)] 
+pub struct OpsPerHourQuery {
+    pub pvz_id: Option<Uuid>,
+    pub date_from: Option<String>,
+    pub date_to: Option<String>,
+}
+
 pub async fn add_operation(
     req: HttpRequest,
     pool: web::Data<PgPool>,
@@ -48,7 +55,7 @@ pub async fn add_operation(
 
     let delta: i32 = match body.op_type.as_str() {
         "out" => -quantity,
-        _     =>  quantity,
+        _ => quantity,
     };
 
     let row = match sqlx::query(
@@ -231,11 +238,75 @@ pub async fn delete_operation(
     }
 }
 
+pub async fn ops_per_hour(
+    pool: web::Data<PgPool>,
+    query: web::Query<OpsPerHourQuery>,
+) -> impl Responder {
+    let date_from = query.date_from.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+    let date_to = query.date_to.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+
+    let rows = match sqlx::query(
+        r#"
+        SELECT
+            EXTRACT(HOUR FROM created_at AT TIME ZONE 'UTC')::int AS hour,
+            op_type,
+            COUNT(*)::int                                          AS ops_count,
+            COALESCE(SUM(quantity), 0)::int                       AS total_qty
+        FROM operations
+        WHERE ($1::uuid IS NULL OR pvz_id = $1)
+          AND ($2::timestamptz IS NULL OR created_at >= $2)
+          AND ($3::timestamptz IS NULL OR created_at <= $3)
+        GROUP BY hour, op_type
+        ORDER BY hour, op_type
+        "#
+    )
+    .bind(query.pvz_id)
+    .bind(date_from)
+    .bind(date_to)
+    .fetch_all(pool.get_ref())
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            log::error!("DB error ops_per_hour: {e}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let mut hours: std::collections::HashMap<i32, serde_json::Value> =
+        std::collections::HashMap::new();
+
+    for row in &rows {
+        let hour: i32 = row.get("hour");
+        let op_type: String = row.get("op_type");
+        let ops_count: i32 = row.get("ops_count");
+        let total_qty: i32 = row.get("total_qty");
+
+        let entry = hours.entry(hour).or_insert_with(|| serde_json::json!({
+            "hour": hour,
+            "in": { "ops": 0, "qty": 0 },
+            "out": { "ops": 0, "qty": 0 },
+            "return": { "ops": 0, "qty": 0 },
+        }));
+
+        entry[&op_type]["ops"] = serde_json::json!(ops_count);
+        entry[&op_type]["qty"] = serde_json::json!(total_qty);
+    }
+
+    let mut result: Vec<serde_json::Value> = hours.into_values().collect();
+    result.sort_by_key(|v| v["hour"].as_i64().unwrap_or(0));
+
+    HttpResponse::Ok().json(result)
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1/operations")
             .route("", web::get().to(list_operations))
             .route("", web::post().to(add_operation))
+            .route("/ops-per-hour", web::get().to(ops_per_hour))
             .route("/{id}", web::delete().to(delete_operation))
     );
 }
