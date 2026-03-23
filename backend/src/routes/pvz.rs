@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
+use chrono::{DateTime, Utc};
 use crate::pvz::{AppState, generate_workload_stats, generate_financial_stats};
 
 fn compute_load_percent(current: i32, max: i32) -> u8 {
@@ -152,6 +153,72 @@ pub async fn get_stats(
         "delivery": delivery,
         "returns": returns,
     }))
+}
+
+#[derive(Deserialize)]
+pub struct WorkloadByHourQuery {
+    pub pvz_id: Option<Uuid>,
+    pub date_from: Option<String>,
+    pub date_to: Option<String>,
+}
+
+pub async fn workload_by_hour(
+    pool: web::Data<PgPool>,
+    query: web::Query<WorkloadByHourQuery>,
+) -> impl Responder {
+    let date_from = query.date_from.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+    let date_to = query.date_to.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+
+    let rows = match sqlx::query(
+        r#"
+        SELECT
+            EXTRACT(HOUR FROM o.created_at AT TIME ZONE 'UTC')::int AS hour,
+            COALESCE(SUM(o.quantity) FILTER (WHERE o.op_type = 'in'),     0)::int AS acceptance,
+            COALESCE(SUM(o.quantity) FILTER (WHERE o.op_type = 'out'),    0)::int AS delivery,
+            COALESCE(SUM(o.quantity) FILTER (WHERE o.op_type = 'return'), 0)::int AS returns,
+            COALESCE(SUM(o.quantity), 0)::int                                     AS total,
+            COUNT(*)::int                                                          AS ops_count
+        FROM operations o
+        WHERE ($1::uuid IS NULL OR o.pvz_id = $1)
+          AND ($2::timestamptz IS NULL OR o.created_at >= $2)
+          AND ($3::timestamptz IS NULL OR o.created_at <= $3)
+        GROUP BY hour
+        ORDER BY hour
+        "#
+    )
+    .bind(query.pvz_id)
+    .bind(date_from)
+    .bind(date_to)
+    .fetch_all(pool.get_ref())
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            log::error!("DB error workload_by_hour: {e}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let result: Vec<serde_json::Value> = rows.iter().map(|r| {
+        let hour: i32 = r.get("hour");
+        let acceptance: i32 = r.get("acceptance");
+        let delivery: i32 = r.get("delivery");
+        let returns: i32 = r.get("returns");
+        let total: i32 = r.get("total");
+        let ops_count: i32  = r.get("ops_count");
+        serde_json::json!({
+            "hour": hour,
+            "acceptance": acceptance,
+            "delivery": delivery,
+            "returns": returns,
+            "total": total,
+            "ops_count": ops_count,
+        })
+    }).collect();
+
+    HttpResponse::Ok().json(result)
 }
 
 pub async fn get_finance(state: web::Data<Arc<Mutex<AppState>>>) -> impl Responder {
@@ -320,6 +387,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
             .route("/stats", web::get().to(get_stats))
+            .route("/stats/workload-by-hour", web::get().to(workload_by_hour))
             .route("/finance", web::get().to(get_finance))
             .route("/pvz", web::get().to(get_pvz_list))
             .route("/pvz", web::post().to(add_pvz))
