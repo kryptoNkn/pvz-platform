@@ -301,11 +301,80 @@ pub async fn ops_per_hour(
     HttpResponse::Ok().json(result)
 }
 
+pub async fn export_operations_csv(
+    pool: web::Data<PgPool>,
+    query: web::Query<ListQuery>,
+) -> impl Responder {
+    let date_from = query.date_from.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+    let date_to = query.date_to.as_deref()
+        .and_then(|s| s.parse::<DateTime<Utc>>().ok());
+
+    let rows = match sqlx::query(
+        r#"
+        SELECT o.id, o.pvz_id, p.name AS pvz_name, o.op_type, o.quantity, o.note, o.created_at
+        FROM operations o
+        JOIN pvz p ON p.id = o.pvz_id
+        WHERE ($1::uuid IS NULL OR o.pvz_id = $1)
+          AND ($2::text IS NULL OR o.op_type = $2)
+          AND ($3::timestamptz IS NULL OR o.created_at >= $3)
+          AND ($4::timestamptz IS NULL OR o.created_at <= $4)
+        ORDER BY o.created_at DESC
+        LIMIT 50000
+        "#
+    )
+    .bind(query.pvz_id)
+    .bind(&query.op_type)
+    .bind(date_from)
+    .bind(date_to)
+    .fetch_all(pool.get_ref())
+    .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            log::error!("DB error exporting operations: {e}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let mut csv = String::from("id,pvz_id,pvz_name,op_type,quantity,note,created_at\n");
+    for r in &rows {
+        let id: Uuid = r.get("id");
+        let pvz_id: Uuid = r.get("pvz_id");
+        let pvz_name: String = r.get("pvz_name");
+        let op_type: String = r.get("op_type");
+        let quantity: i32 = r.get("quantity");
+        let note: Option<String> = r.get("note");
+        let created_at: DateTime<Utc> = r.get("created_at");
+
+        let note_escaped = note
+            .unwrap_or_default()
+            .replace('"', "\"\"");
+
+        csv.push_str(&format!(
+            "{},{},{},\"{}\",{},\"{}\",{}\n",
+            id,
+            pvz_id,
+            pvz_name,
+            op_type,
+            quantity,
+            note_escaped,
+            created_at.format("%Y-%m-%dT%H:%M:%SZ"),
+        ));
+    }
+
+    HttpResponse::Ok()
+        .content_type("text/csv; charset=utf-8")
+        .insert_header(("Content-Disposition", "attachment; filename=\"operations.csv\""))
+        .body(csv)
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1/operations")
             .route("", web::get().to(list_operations))
             .route("", web::post().to(add_operation))
+            .route("/export", web::get().to(export_operations_csv))
             .route("/ops-per-hour", web::get().to(ops_per_hour))
             .route("/{id}", web::delete().to(delete_operation))
     );

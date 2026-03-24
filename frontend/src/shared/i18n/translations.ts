@@ -194,6 +194,7 @@ export interface Translations {
     noteLabel: string
     noOperations: string
     deleteOperationTitle: string
+    exportCsv: string
     // locale for number/date formatting
     locale: string
 }
@@ -380,6 +381,7 @@ const ru: Translations = {
     noteLabel: 'Примечание (необязательно)',
     noOperations: 'Нет операций',
     deleteOperationTitle: 'Удалить операцию?',
+    exportCsv: 'Экспорт CSV',
     locale: 'ru-RU',
 }
 
@@ -565,6 +567,7 @@ const en: Translations = {
     noteLabel: 'Note (optional)',
     noOperations: 'No operations',
     deleteOperationTitle: 'Delete operation?',
+    exportCsv: 'Export CSV',
     locale: 'en-US',
 }
 

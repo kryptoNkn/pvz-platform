@@ -116,6 +116,31 @@ export const WorkloadPage = () => {
         loadOps()
     }, [filterOpPvz, filterOpType, filterFrom, filterTo])
 
+    const handleExportCsv = () => {
+        const escape = (v: string | null) => `"${(v ?? '').replace(/"/g, '""')}"`
+        const rows = [
+            ['id', 'pvz_id', 'pvz_name', 'op_type', 'quantity', 'note', 'created_at'].join(','),
+            ...ops.map(o => [
+                o.id,
+                o.pvz_id,
+                escape(o.pvz_name),
+                escape(o.op_type),
+                o.quantity,
+                escape(o.note),
+                o.created_at,
+            ].join(','))
+        ].join('\n')
+        const blob = new Blob(['\uFEFF' + rows], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'operations.csv'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+    }
+
     const openEdit = (pvz: Pvz) => {
         setEditPvz(pvz)
         setEditForm({
@@ -373,6 +398,9 @@ export const WorkloadPage = () => {
                         onChange={e => setFilterTo(e.target.value)}
                     />
                 </div>
+                <button className={styles.btnSecondary} onClick={handleExportCsv}>
+                    {t.exportCsv}
+                </button>
                 <button className={styles.btnPrimary} onClick={openAddOp}>
                     {t.addOperation}
                 </button>
