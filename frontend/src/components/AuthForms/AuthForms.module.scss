@@ -1,0 +1,231 @@
+$bg-start: #2d4a3e;
+$bg-mid: #3a5f52;
+$bg-end: #1a2f26;
+
+$input-bg: #f2f2f2;
+$input-text: #1a1a1a;
+$input-placeholder: #999;
+$icon-color: #555;
+$link-color: #1a73e8;
+
+$title-color: #1a1a1a;
+$subtitle-color: #666;
+$switch-text: #888;
+
+$r-card: 24px;
+$r-input: 14px;
+$r-btn: 14px;
+
+$ease: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  background: linear-gradient(160deg, $bg-start 0%, $bg-mid 40%, $bg-end 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 32px 32px;
+  background: #fff;
+  border-radius: $r-card;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25),
+              0 4px 16px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  animation: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(
+      180deg,
+      rgba(200, 230, 210, 0.35) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    border-radius: $r-card $r-card 0 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iconCircle {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  background: #f0f5f2;
+  border-radius: 16px;
+  color: $title-color;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.title {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: $title-color;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: $subtitle-color;
+  line-height: 1.4;
+}
+
+.form {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inputGroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  color: $icon-color;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input {
+  width: 100%;
+  height: 52px;
+  padding: 0 48px 0 46px;
+  background: $input-bg;
+  border: 1.5px solid transparent;
+  border-radius: $r-input;
+  font-size: 15px;
+  color: $input-text;
+  outline: none;
+  transition: border-color $ease,
+              background $ease,
+              box-shadow $ease;
+  font-family: inherit;
+
+  &::placeholder {
+    color: $input-placeholder;
+    font-weight: 400;
+  }
+
+  &:focus {
+    border-color: #a8c5b8;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(168, 197, 184, 0.2);
+  }
+}
+
+.togglePassword {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $icon-color;
+  opacity: 0.6;
+  transition: opacity $ease;
+  z-index: 2;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.submitBtn {
+  width: 100%;
+  height: 52px;
+  margin-top: 8px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+  border: none;
+  border-radius: $r-btn;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background $ease,
+              transform 0.15s ease,
+              box-shadow $ease;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  &:hover {
+    background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.985);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.switchText {
+  position: relative;
+  z-index: 1;
+  margin: 24px 0 0;
+  font-size: 14px;
+  color: $switch-text;
+}
+
+.switchLink {
+  background: none;
+  border: none;
+  color: #1a695d;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+  font-family: inherit;
+  transition: color $ease;
+
+  &:hover {
+    color: #0B2B26;
+    text-decoration: underline;
+  }
+}
