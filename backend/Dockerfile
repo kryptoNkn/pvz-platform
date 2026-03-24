@@ -1,4 +1,4 @@
-FROM rust:1.75 AS builder
+FROM rust:1-bookworm AS builder
 WORKDIR /app
 COPY . .
 RUN cargo install sqlx-cli --no-default-features --features postgres
