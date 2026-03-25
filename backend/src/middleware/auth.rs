@@ -53,14 +53,14 @@ where
 
             let path = req.path();
             let public_routes = [
-                "/auth/register",
-                "/auth/login",
-                "/auth/refresh",
-                "/users/check-username",
+                "/api/auth/register",
+                "/api/auth/login",
+                "/api/auth/refresh",
+                "/api/users/check-username",
                 "/",
             ];
 
-            if public_routes.iter().any(|&route| path == route) || path.starts_with("/uploads/") {
+            if public_routes.iter().any(|&route| path == route) || path.starts_with("/api/uploads/") {
                 let res = srv.call(req).await?;
                 return Ok(res.map_into_left_body());
             }
