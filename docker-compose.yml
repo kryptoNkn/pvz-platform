@@ -32,6 +32,8 @@ services:
       - "8080:8080"
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/pvzbd
+      JWT_SECRET: Yt5kL9sPq2x8Vf3wZr6hQn7uE1bC0aJd
+      RUST_LOG: info
     volumes:
       - uploads:/app/uploads
     depends_on:

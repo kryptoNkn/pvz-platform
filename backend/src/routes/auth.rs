@@ -106,7 +106,7 @@ pub async fn login_user(
         r#"
         SELECT id, password_hash, role
         FROM users
-        WHERE email = $1
+        WHERE email = regexp_replace($1, '[^0-9]', '', 'g')
         "#
     )
     .bind(&user.phone)
