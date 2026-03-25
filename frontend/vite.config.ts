@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
+    allowedHosts: ['pvz-project.ru', 'www.pvz-project.ru'],
     proxy: {
       '/api': {
         target: process.env.API_TARGET || 'http://localhost:8080',
