@@ -100,10 +100,12 @@
 }
 
 .statValue {
-  font-size: 42px;
+  font-size: clamp(14px, 1.8vw, 36px);
   font-weight: 800;
   line-height: 1.2;
   color: var(--text-primary);
+  word-break: break-all;
+  overflow: hidden;
 }
 
 .statSub {

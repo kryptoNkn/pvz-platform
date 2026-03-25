@@ -96,10 +96,12 @@
 }
 
 .statValue {
-  font-size: 36px;
+  font-size: clamp(13px, 1.8vw, 32px);
   font-weight: 800;
   line-height: 1.2;
   color: var(--text-primary);
+  word-break: break-all;
+  overflow: hidden;
 }
 
 // ── Secondary stat cards (3 меньших) ─────────────────────────
@@ -127,10 +129,12 @@
 }
 
 .statValue2 {
-  font-size: 28px;
+  font-size: clamp(12px, 1.4vw, 24px);
   font-weight: 800;
   line-height: 1.2;
   color: var(--text-primary);
+  word-break: break-all;
+  overflow: hidden;
 }
 
 .statSub {
