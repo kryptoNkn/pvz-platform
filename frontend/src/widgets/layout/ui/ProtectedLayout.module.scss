@@ -67,5 +67,12 @@
 @media (max-width: 759px) {
     .main {
         padding-bottom: 68px;
+        scrollbar-gutter: auto;
+    }
+
+    .column {
+        width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
     }
 }

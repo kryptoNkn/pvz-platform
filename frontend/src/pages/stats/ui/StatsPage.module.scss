@@ -203,19 +203,34 @@
   .page {
     padding: 16px;
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .statsSection {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
+  .statBlock {
+    padding: 14px 14px;
+    min-width: 0;
+  }
+
   .statValue {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .sectionBlock {
-    padding: 16px 18px;
+    padding: 16px 14px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .barTrack {
+    height: 36px;
   }
 }
 

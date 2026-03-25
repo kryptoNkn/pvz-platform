@@ -416,13 +416,29 @@
 
 @media (max-width: 759px) {
   .grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding: 16px;
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .profileCard {
+    min-width: 0;
+  }
+
+  .rightPanel {
+    min-width: 0;
+  }
+
+  .section {
+    min-width: 0;
   }
 
   .formRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

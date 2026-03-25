@@ -293,20 +293,30 @@
   .page {
     padding: 16px;
     gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .fieldsRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 
   .fieldsRowSingle {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
+  }
+
+  .card {
+    padding: 16px;
+    min-width: 0;
   }
 
   .tableWrapper {
     overflow-x: auto;
+    min-width: 0;
   }
 
   .table {

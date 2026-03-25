@@ -170,11 +170,16 @@
   .page {
     padding: 16px;
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .toolbar {
     flex-wrap: wrap;
     gap: 10px;
+    min-width: 0;
   }
 
   .btnSave {
@@ -183,6 +188,7 @@
 
   .tableWrapper {
     overflow-x: auto;
+    min-width: 0;
   }
 
   .table {

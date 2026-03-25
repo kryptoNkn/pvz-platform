@@ -617,33 +617,63 @@
   .page {
     padding: 16px;
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .statsSection {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
+  .statBlock {
+    padding: 14px 14px;
+    min-width: 0;
+  }
+
   .statValue {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .searchSection {
     flex-wrap: wrap;
     gap: 8px;
+    min-width: 0;
+  }
+
+  .pointsText {
+    flex: 1;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .btnSecondary,
+  .btnPrimary {
+    flex: 1;
   }
 
   .opsHeader {
     flex-wrap: wrap;
     gap: 8px;
+    min-width: 0;
   }
 
   .opsFilters {
     flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .opsFilterSelect,
+  .opsFilterDate {
+    flex: 1;
+    min-width: 120px;
   }
 
   .tableSection {
     overflow-x: auto;
+    min-width: 0;
   }
 
   .table {
