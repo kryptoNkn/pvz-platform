@@ -135,7 +135,7 @@ pub async fn upload_avatar(
             }
         }
 
-        let avatar_url = format!("/uploads/avatars/{}", filename);
+        let avatar_url = format!("/api/uploads/avatars/{}", filename);
         let result = sqlx::query("UPDATE users SET avatar_path = $1 WHERE id = $2")
             .bind(&avatar_url)
             .bind(user_id)
