@@ -445,7 +445,7 @@
 @media (min-width: 760px) and (max-width: 1023px) {
   .grid {
     padding: 24px;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 260px minmax(0, 1fr);
   }
 }
 
