@@ -63,3 +63,9 @@
     scrollbar-gutter: stable;
     min-height: 0;
 }
+
+@media (max-width: 759px) {
+    .main {
+        padding-bottom: 68px;
+    }
+}

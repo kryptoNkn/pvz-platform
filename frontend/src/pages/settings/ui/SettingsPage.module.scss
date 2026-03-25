@@ -315,3 +315,20 @@
 
   &:hover { background: rgba(192, 57, 43, 0.06); }
 }
+
+@media (max-width: 759px) {
+  .pageOuter {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .page {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .pageOuter {
+    padding: 48px 24px;
+  }
+}

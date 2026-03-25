@@ -207,3 +207,57 @@
   font-weight: 700;
   color: #c0392b;
 }
+
+@media (max-width: 759px) {
+  .page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .statsSection {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .statsSection2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .statValue {
+    font-size: 28px;
+  }
+
+  .statValue2 {
+    font-size: 22px;
+  }
+
+  .tableSection {
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 480px;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .page {
+    padding: 24px;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .statsSection2 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    padding: 40px 56px;
+  }
+}

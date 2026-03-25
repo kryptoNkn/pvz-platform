@@ -352,3 +352,39 @@ body {
     transparent 16px
   );
 }
+
+@media (max-width: 759px) {
+  .login-container,
+  .register-container {
+    min-width: 0;
+    width: 100%;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  .login-main,
+  .register-main {
+    transform: scale(1);
+    padding: 28px 20px;
+  }
+
+  .error-popup {
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    transform: scale(1);
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .login-container,
+  .register-container {
+    min-width: 0;
+    padding: 24px;
+  }
+
+  .login-main,
+  .register-main {
+    transform: scale(1);
+  }
+}

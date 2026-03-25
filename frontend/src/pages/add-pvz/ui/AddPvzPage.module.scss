@@ -288,3 +288,58 @@
   padding: 10px 16px;
   margin-top: -8px;
 }
+
+@media (max-width: 759px) {
+  .page {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .fieldsRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .fieldsRowSingle {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 560px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+
+  .btnCancel,
+  .btnSave {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .page {
+    padding: 24px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 560px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    padding: 40px 56px;
+  }
+}

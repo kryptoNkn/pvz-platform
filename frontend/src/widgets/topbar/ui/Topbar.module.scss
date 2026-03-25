@@ -79,3 +79,30 @@
         transform: scale(1.06);
     }
 }
+
+@media (max-width: 759px) {
+    .header {
+        padding: 0 16px;
+        height: 56px;
+    }
+
+    .title {
+        font-size: 15px;
+    }
+
+    .actionBtn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .avatarBtn {
+        width: 34px;
+        height: 34px;
+    }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+    .header {
+        padding: 0 24px;
+    }
+}

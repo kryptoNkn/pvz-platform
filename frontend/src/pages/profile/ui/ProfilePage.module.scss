@@ -413,3 +413,28 @@
     }
   }
 }
+
+@media (max-width: 759px) {
+  .grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .grid {
+    padding: 24px;
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid {
+    padding: 40px 56px;
+  }
+}

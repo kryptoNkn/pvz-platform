@@ -198,3 +198,39 @@
   background: var(--text-muted);
   color: #ffffff;
 }
+
+@media (max-width: 759px) {
+  .page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .statValue {
+    font-size: 28px;
+  }
+
+  .sectionBlock {
+    padding: 16px 18px;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .page {
+    padding: 24px;
+  }
+
+  .statsSection {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    padding: 40px 56px;
+  }
+}

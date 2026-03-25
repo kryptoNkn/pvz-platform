@@ -165,3 +165,47 @@
     cursor: not-allowed;
   }
 }
+
+@media (max-width: 759px) {
+  .page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btnSave {
+    width: 100%;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 480px;
+  }
+}
+
+@media (min-width: 760px) and (max-width: 1023px) {
+  .page {
+    padding: 24px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 500px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .page {
+    padding: 40px 56px;
+  }
+}
