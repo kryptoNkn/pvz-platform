@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
-use rand::Rng;
 use chrono::{DateTime, Utc};
 use crate::pvz::{AppState, generate_workload_stats, generate_financial_stats};
 
@@ -224,9 +223,209 @@ pub async fn workload_by_hour(
     HttpResponse::Ok().json(result)
 }
 
-pub async fn get_finance(state: web::Data<Arc<Mutex<AppState>>>) -> impl Responder {
-    let state = state.lock().unwrap();
-    HttpResponse::Ok().json(&state.financial_stats)
+pub async fn get_finance(
+    pool: web::Data<PgPool>,
+    state: web::Data<Arc<Mutex<AppState>>>,
+) -> impl Responder {
+    let commission_map: std::collections::HashMap<&str, i64> = [
+        ("Ozon", 84i64),
+        ("WB", 57i64),
+        ("Яндекс Маркет", 120i64),
+        ("Авито", 35i64),
+    ].into_iter().collect();
+    let default_commission: i64 = 70;
+    let acceptance_fee: i64 = 20;
+    let return_fee: i64 = 10;
+    let expense_ratio: f64 = 0.65;
+
+    let breakdown_rows = sqlx::query(
+        r#"
+        SELECT
+            COALESCE(p.marketplace, 'Ozon') AS marketplace,
+            COALESCE(SUM(o.quantity) FILTER (WHERE o.op_type = 'out'), 0)::bigint AS delivery_qty,
+            COALESCE(COUNT(o.id)     FILTER (WHERE o.op_type = 'out'), 0)::bigint AS delivery_ops
+        FROM operations o
+        JOIN pvz p ON p.id = o.pvz_id
+        GROUP BY p.marketplace
+        "#
+    )
+    .fetch_all(pool.get_ref())
+    .await
+    .unwrap_or_default();
+
+    let mut breakdown = Vec::new();
+    let mut total_delivery_qty: i64 = 0;
+    let mut total_delivery_ops: i64 = 0;
+    let mut total_delivery_revenue: i64 = 0;
+
+    for row in &breakdown_rows {
+        let marketplace: String = row.get("marketplace");
+        let delivery_qty: i64  = row.get("delivery_qty");
+        let delivery_ops: i64  = row.get("delivery_ops");
+        let commission = *commission_map.get(marketplace.as_str()).unwrap_or(&default_commission);
+        let revenue = delivery_qty * commission;
+        total_delivery_qty     += delivery_qty;
+        total_delivery_ops     += delivery_ops;
+        total_delivery_revenue += revenue;
+        breakdown.push(serde_json::json!({
+            "marketplace":    marketplace,
+            "items_delivered": delivery_qty,
+            "avg_commission": commission,
+            "revenue":        revenue,
+        }));
+    }
+
+    let totals = sqlx::query(
+        r#"
+        SELECT
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'in'),     0)::bigint AS acceptance_qty,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'return'), 0)::bigint AS returns_qty,
+            COALESCE(COUNT(*)      FILTER (WHERE op_type = 'in'),     0)::bigint AS acceptance_ops,
+            COALESCE(COUNT(*)      FILTER (WHERE op_type = 'return'), 0)::bigint AS returns_ops
+        FROM operations
+        "#
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+
+    let (acceptance_qty, returns_qty, acceptance_ops, returns_ops) = match totals {
+        Ok(r) => (
+            r.get::<i64, _>("acceptance_qty"),
+            r.get::<i64, _>("returns_qty"),
+            r.get::<i64, _>("acceptance_ops"),
+            r.get::<i64, _>("returns_ops"),
+        ),
+        Err(_) => {
+            let s = state.lock().unwrap();
+            (s.workload_stats.acceptance as i64, s.workload_stats.returns as i64, 0i64, 0i64)
+        }
+    };
+
+    let acceptance_revenue = acceptance_qty * acceptance_fee;
+    let returns_revenue = returns_qty    * return_fee;
+    let total_revenue = total_delivery_revenue + acceptance_revenue + returns_revenue;
+    let total_expenses = (total_revenue as f64 * expense_ratio) as i64;
+    let net_profit = total_revenue - total_expenses;
+    let transactions = total_delivery_ops + acceptance_ops + returns_ops;
+    let avg_check = if transactions > 0 { total_revenue / transactions } else { 0 };
+
+    let weighted_commission = if total_delivery_qty > 0 {
+        total_delivery_revenue / total_delivery_qty
+    } else {
+        default_commission
+    };
+
+    let month_rows = sqlx::query(
+        r#"
+        SELECT
+            date_trunc('month', created_at AT TIME ZONE 'UTC') AS month_start,
+            EXTRACT(MONTH FROM created_at AT TIME ZONE 'UTC')::int AS month_num,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'out'),    0)::bigint AS delivery_qty,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'in'),     0)::bigint AS acceptance_qty,
+            COALESCE(SUM(quantity) FILTER (WHERE op_type = 'return'), 0)::bigint AS returns_qty
+        FROM operations
+        GROUP BY month_start, month_num
+        ORDER BY month_start DESC
+        LIMIT 6
+        "#
+    )
+    .fetch_all(pool.get_ref())
+    .await
+    .unwrap_or_default();
+
+    const MONTHS_RU: &[&str] = &[
+        "Янв", "Фев", "Мар", "Апр", "Май", "Июн",
+        "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек",
+    ];
+
+    let mut monthly: Vec<serde_json::Value> = if month_rows.is_empty() {
+        use chrono::{Datelike, Utc};
+        let now = Utc::now();
+        (0..6).rev().map(|i| {
+            let offset = i as i32;
+            let mut m = now.month() as i32 - offset;
+            while m <= 0 { m += 12; }
+            serde_json::json!({ "month": MONTHS_RU[(m - 1) as usize], "revenue": 0, "expenses": 0 })
+        }).collect()
+    } else {
+        let mut rows: Vec<serde_json::Value> = month_rows.iter().map(|r| {
+            let month_num: i32 = r.get("month_num");
+            let delivery_qty:   i64 = r.get("delivery_qty");
+            let acceptance_qty: i64 = r.get("acceptance_qty");
+            let returns_qty:    i64 = r.get("returns_qty");
+            let rev = delivery_qty   * weighted_commission
+                    + acceptance_qty * acceptance_fee
+                    + returns_qty    * return_fee;
+            let exp = (rev as f64 * expense_ratio) as i64;
+            serde_json::json!({
+                "month": MONTHS_RU[(month_num - 1).clamp(0, 11) as usize],
+                "revenue": rev,
+                "expenses": exp,
+            })
+        }).collect();
+        rows.reverse();
+        rows
+    };
+
+    monthly.truncate(6);
+
+    if total_revenue == 0 {
+        let s = state.lock().unwrap();
+        let fs = &s.financial_stats;
+
+        let d = fs.transactions as i64;
+        let mp_shares: &[(&str, i64, i64)] = &[
+            ("Ozon", 84, (d * 45 / 100).max(1)),
+            ("WB", 57, (d * 35 / 100).max(1)),
+            ("Яндекс Маркет", 120, (d * 13 / 100).max(1)),
+            ("Авито", 35, (d * 7  / 100).max(1)),
+        ];
+        let demo_breakdown: Vec<serde_json::Value> = mp_shares.iter().map(|(name, comm, qty)| {
+            serde_json::json!({
+                "marketplace": name,
+                "items_delivered": qty,
+                "avg_commission": comm,
+                "revenue": qty * comm,
+            })
+        }).collect();
+
+        let demo_monthly: Vec<serde_json::Value> = fs.monthly.iter().map(|m| {
+            serde_json::json!({
+                "month":    m.month,
+                "revenue":  m.revenue,
+                "expenses": m.expenses,
+            })
+        }).collect();
+
+        let accept_cnt = (fs.transactions as f64 * 1.25) as i64;
+        let ret_cnt    = (fs.transactions as f64 * 0.07) as i64;
+
+        return HttpResponse::Ok().json(serde_json::json!({
+            "total_revenue": fs.total_revenue,
+            "total_expenses": fs.total_expenses,
+            "net_profit": fs.net_profit,
+            "avg_check": fs.avg_check,
+            "transactions": fs.transactions,
+            "delivery_count": fs.transactions,
+            "acceptance_count": accept_cnt,
+            "returns_count": ret_cnt,
+            "monthly": demo_monthly,
+            "breakdown": demo_breakdown,
+        }));
+    }
+
+    HttpResponse::Ok().json(serde_json::json!({
+        "total_revenue": total_revenue,
+        "total_expenses": total_expenses,
+        "net_profit": net_profit,
+        "avg_check": avg_check,
+        "transactions": transactions,
+        "delivery_count": total_delivery_qty,
+        "acceptance_count": acceptance_qty,
+        "returns_count": returns_qty,
+        "monthly": monthly,
+        "breakdown": breakdown,
+    }))
 }
 
 #[derive(Deserialize)]
@@ -398,42 +597,78 @@ pub async fn regenerate(state: web::Data<Arc<Mutex<AppState>>>) -> impl Responde
     HttpResponse::Ok().json(serde_json::json!({ "ok": true }))
 }
 
-pub async fn get_marketplace_items() -> impl Responder {
-    let mut rng = rand::thread_rng();
-    let items = serde_json::json!([
-        {
-            "marketplace": "Ozon",
-            "items_count": rng.gen_range(50_u32..=350),
-            "commission_percent": 3.5,
-            "avg_price": rng.gen_range(800_u32..=4000),
-            "avg_storage_days": rng.gen_range(1_u32..=7),
-            "pending_today": rng.gen_range(10_u32..=80)
-        },
-        {
-            "marketplace": "WB",
-            "items_count": rng.gen_range(100_u32..=500),
-            "commission_percent": 2.8,
-            "avg_price": rng.gen_range(600_u32..=3500),
-            "avg_storage_days": rng.gen_range(1_u32..=6),
-            "pending_today": rng.gen_range(20_u32..=120)
-        },
-        {
-            "marketplace": "Яндекс Маркет",
-            "items_count": rng.gen_range(30_u32..=200),
-            "commission_percent": 4.0,
-            "avg_price": rng.gen_range(1000_u32..=5000),
-            "avg_storage_days": rng.gen_range(1_u32..=5),
-            "pending_today": rng.gen_range(5_u32..=50)
-        },
-        {
-            "marketplace": "Авито",
-            "items_count": rng.gen_range(20_u32..=150),
-            "commission_percent": 2.0,
-            "avg_price": rng.gen_range(500_u32..=3000),
-            "avg_storage_days": rng.gen_range(1_u32..=4),
-            "pending_today": rng.gen_range(5_u32..=40)
-        }
-    ]);
+pub async fn get_marketplace_items(
+    pool: web::Data<PgPool>,
+    state: web::Data<Arc<Mutex<AppState>>>,
+) -> impl Responder {
+    struct MpConfig {
+        name: &'static str,
+        commission_percent: f64,
+        avg_price: u32,
+        avg_storage_days: u32,
+        share_pct: u32,
+        delivery_pct: u32,
+    }
+    let configs = [
+        MpConfig { name: "Ozon", commission_percent: 3.5, avg_price: 2400, avg_storage_days: 3, share_pct: 45, delivery_pct: 40 },
+        MpConfig { name: "WB", commission_percent: 2.8, avg_price: 2050, avg_storage_days: 4, share_pct: 35, delivery_pct: 38 },
+        MpConfig { name: "Яндекс Маркет", commission_percent: 4.0, avg_price: 3000, avg_storage_days: 2, share_pct: 13, delivery_pct: 15 },
+        MpConfig { name: "Авито", commission_percent: 2.0, avg_price: 1750, avg_storage_days: 3, share_pct: 7,  delivery_pct: 7  },
+    ];
+
+    let rows = sqlx::query(
+        r#"
+        SELECT
+            p.marketplace,
+            COALESCE(SUM(p.current_items), 0)::bigint AS items_count,
+            COALESCE(COUNT(o.id) FILTER (
+                WHERE o.op_type = 'out'
+                  AND o.created_at >= date_trunc('day', NOW() AT TIME ZONE 'UTC')
+            ), 0)::bigint AS pending_today
+        FROM pvz p
+        LEFT JOIN operations o ON o.pvz_id = p.id
+        WHERE p.status != 'closed'
+        GROUP BY p.marketplace
+        "#
+    )
+    .fetch_all(pool.get_ref())
+    .await
+    .unwrap_or_default();
+
+    let db_data: std::collections::HashMap<String, (i64, i64)> = rows.iter().map(|r| {
+        let mp: String  = r.get("marketplace");
+        let items: i64  = r.get("items_count");
+        let pending: i64 = r.get("pending_today");
+        (mp, (items, pending))
+    }).collect();
+
+    let total_db_items: i64 = db_data.values().map(|(i, _)| i).sum();
+
+    let (fallback_total, fallback_delivery) = if total_db_items == 0 {
+        let s = state.lock().unwrap();
+        (s.workload_stats.total_items as i64, s.workload_stats.delivery as i64)
+    } else {
+        (0, 0)
+    };
+
+    let items: Vec<serde_json::Value> = configs.iter().map(|cfg| {
+        let (items_count, pending_today) = if total_db_items > 0 {
+            db_data.get(cfg.name).copied().unwrap_or((0, 0))
+        } else {
+            let ic = (fallback_total * cfg.share_pct as i64 / 100).max(1);
+            let pt = (fallback_delivery * cfg.delivery_pct as i64 / 100).max(0);
+            (ic, pt)
+        };
+        serde_json::json!({
+            "marketplace": cfg.name,
+            "items_count": items_count,
+            "commission_percent": cfg.commission_percent,
+            "avg_price": cfg.avg_price,
+            "avg_storage_days": cfg.avg_storage_days,
+            "pending_today": pending_today,
+        })
+    }).collect();
+
     HttpResponse::Ok().json(items)
 }
 

@@ -46,8 +46,13 @@
   border-color: transparent;
 
   .statLabel,
-  .statValue {
+  .statValue,
+  .statSub {
     color: #ffffff;
+  }
+
+  .statSub {
+    opacity: 0.65;
   }
 }
 
@@ -210,6 +215,78 @@
 .profitNeg {
   font-weight: 700;
   color: #c0392b;
+}
+
+// ── Breakdown section ─────────────────────────────────────────
+
+.sectionHint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: -8px 0 14px;
+  line-height: 1.5;
+}
+
+.mpBadge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.commissionNote {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.shareBarWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 90px;
+}
+
+.shareBar {
+  height: 6px;
+  border-radius: 3px;
+  min-width: 4px;
+  max-width: 60px;
+  transition: width 0.3s;
+}
+
+.shareLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.trTotal {
+  border-top: 2px solid var(--border-card);
+  background: var(--color-hover);
+
+  .td {
+    font-weight: 600;
+  }
+}
+
+.additionalRevenue {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: var(--color-hover);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.separator {
+  color: var(--text-muted);
+  margin: 0 2px;
 }
 
 @media (max-width: 759px) {

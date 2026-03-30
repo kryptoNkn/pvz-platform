@@ -83,25 +83,40 @@ impl AppState {
 }
 
 pub fn generate_workload_stats(rng: &mut impl Rng) -> WorkloadStats {
-    let total_items: u32 = rng.gen_range(5_000..=30_000);
-    let acceptance: u32 = rng.gen_range(500..=(total_items / 3));
-    let delivery: u32 = rng.gen_range(500..=(total_items / 3));
-    let returns: u32 = rng.gen_range(50..=(total_items / 10).max(51));
-    WorkloadStats { total_items, acceptance, delivery, returns }
+    let acceptance: u32 = rng.gen_range(800..=4_500);
+    let delivery: u32 = rng.gen_range(600..=4_000);
+    let returns: u32 = rng.gen_range(40..=350);
+    let total_items: u32 = acceptance - delivery + rng.gen_range(0..=200);
+    WorkloadStats { total_items: total_items.max(0), acceptance, delivery, returns }
 }
 
 pub fn generate_financial_stats(rng: &mut impl Rng) -> FinancialStats {
-    let transactions: u32 = rng.gen_range(5_000..=50_000);
-    let avg_check: u32 = rng.gen_range(800..=3_000);
-    let total_revenue: u64 = (transactions as u64) * (avg_check as u64);
-    let expense_ratio: f64 = rng.gen_range(0.55..=0.80);
+    let delivery_qty: u64 = rng.gen_range(600..=4_000);
+    let avg_comm: u64 = rng.gen_range(70..=120);
+    let accept_qty: u64 = (delivery_qty as f64 * rng.gen_range(1.1_f64..=1.4)) as u64;
+    let returns_qty: u64 = (delivery_qty as f64 * rng.gen_range(0.04_f64..=0.12)) as u64;
+
+    let delivery_rev = delivery_qty * avg_comm;
+    let accept_rev = accept_qty   * 20;
+    let returns_rev = returns_qty  * 10;
+    let total_revenue = delivery_rev + accept_rev + returns_rev;
+
+    let expense_ratio: f64 = rng.gen_range(0.60..=0.70);
     let total_expenses: u64 = (total_revenue as f64 * expense_ratio) as u64;
     let net_profit: i64 = total_revenue as i64 - total_expenses as i64;
 
+    let delivery_ops: u32 = (delivery_qty / rng.gen_range(2_u64..=5)) as u32;
+    let accept_ops: u32   = (accept_qty   / rng.gen_range(3_u64..=7)) as u32;
+    let returns_ops: u32  = returns_qty as u32;
+    let transactions = delivery_ops + accept_ops + returns_ops;
+    let avg_check = if transactions > 0 { (total_revenue / transactions as u64) as u32 } else { 0 };
+
     const MONTHS: &[&str] = &["Окт", "Ноя", "Дек", "Янв", "Фев", "Мар"];
+    let monthly_base = total_revenue / 6;
     let monthly: Vec<MonthlyFinance> = MONTHS.iter().map(|m| {
-        let rev: u64 = rng.gen_range(1_000_000..=8_000_000);
-        let exp: u64 = (rev as f64 * rng.gen_range(0.5..=0.8)) as u64;
+        let factor: f64 = rng.gen_range(0.70..=1.30);
+        let rev: u64 = (monthly_base as f64 * factor) as u64;
+        let exp: u64 = (rev as f64 * rng.gen_range(0.58..=0.72)) as u64;
         MonthlyFinance { month: m.to_string(), revenue: rev, expenses: exp }
     }).collect();
 
