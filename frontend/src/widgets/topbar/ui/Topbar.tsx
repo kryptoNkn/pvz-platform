@@ -5,7 +5,7 @@ import { useLang } from '@/shared/i18n'
 import { NotificationsPanel } from '@/widgets/notifications-panel'
 import styles from './Topbar.module.scss'
 
-const PAGE_TITLE_KEYS: Record<string, 'workload' | 'addPvz' | 'employeesList' | 'statsPage' | 'financePage' | 'profilePage' | 'settingsPage'> = {
+const PAGE_TITLE_KEYS: Record<string, 'workload' | 'addPvz' | 'employeesList' | 'statsPage' | 'financePage' | 'profilePage' | 'settingsPage' | 'marketplacePage'> = {
     '/workload':           'workload',
     '/workload/add':       'addPvz',
     '/workload/employees': 'employeesList',
@@ -13,26 +13,29 @@ const PAGE_TITLE_KEYS: Record<string, 'workload' | 'addPvz' | 'employeesList' | 
     '/finance':            'financePage',
     '/profile':            'profilePage',
     '/settings':           'settingsPage',
+    '/marketplace':        'marketplacePage',
 }
 
 const PAGE_TITLES_RU: Record<string, string> = {
-    workload:      'Загруженность ПВЗ',
-    addPvz:        'Добавить ПВЗ',
-    employeesList: 'Список сотрудников',
-    statsPage:     'Статистика',
-    financePage:   'Финансы',
-    profilePage:   'Профиль',
-    settingsPage:  'Настройки',
+    workload:        'Загруженность ПВЗ',
+    addPvz:          'Добавить ПВЗ',
+    employeesList:   'Список сотрудников',
+    statsPage:       'Статистика',
+    financePage:     'Финансы',
+    profilePage:     'Профиль',
+    settingsPage:    'Настройки',
+    marketplacePage: 'Товары на ПВЗ',
 }
 
 const PAGE_TITLES_EN: Record<string, string> = {
-    workload:      'PVZ Workload',
-    addPvz:        'Add PVZ',
-    employeesList: 'Employees',
-    statsPage:     'Statistics',
-    financePage:   'Finance',
-    profilePage:   'Profile',
-    settingsPage:  'Settings',
+    workload:        'PVZ Workload',
+    addPvz:          'Add PVZ',
+    employeesList:   'Employees',
+    statsPage:       'Statistics',
+    financePage:     'Finance',
+    profilePage:     'Profile',
+    settingsPage:    'Settings',
+    marketplacePage: 'Marketplace Items',
 }
 
 export default function Topbar() {
@@ -128,4 +131,3 @@ export default function Topbar() {
         </>
     )
 }
-

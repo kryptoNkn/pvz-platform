@@ -1,0 +1,311 @@
+.page {
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    flex: 1 0 auto;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.heading {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sub {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.loading {
+    font-size: 14px;
+    color: var(--text-muted);
+    padding: 48px 0;
+    text-align: center;
+}
+
+// ── KPI row ───────────────────────────────────────────────────
+
+.kpiRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.kpi {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 18px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 220px;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+}
+
+.kpiIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpiValue {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.kpiLabel {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+// ── Marketplace cards ─────────────────────────────────────────
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 240px;
+    transition: box-shadow 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+}
+
+.cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.share {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.cardValue {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-top: 6px;
+}
+
+.cardLabel {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.shareBar {
+    height: 6px;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.shareBarFill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+.cardStats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-card);
+    margin-top: 4px;
+}
+
+.cardStat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardStatLabel {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.cardStatValue {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+// ── Table ─────────────────────────────────────────────────────
+
+.tableWrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.tableTitle {
+    padding: 16px 20px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+
+    thead tr {
+        border-bottom: 1px solid var(--border-card);
+
+        th {
+            padding: 10px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+    }
+
+    tbody tr {
+        border-top: 1px solid var(--border-card);
+        transition: background 0.15s;
+
+        &:first-child { border-top: none; }
+
+        &:hover { background: var(--bg-hover, rgba(0,0,0,0.025)); }
+
+        td {
+            padding: 14px 20px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+    }
+
+    tfoot tr {
+        border-top: 2px solid var(--border-card);
+
+        td {
+            padding: 13px 20px;
+            font-size: 13px;
+        }
+    }
+}
+
+.numCell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.commissionCell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #40c97e;
+}
+
+.earningsCell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: #CB11AB;
+}
+
+.totalLabel {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+// ── Share bar in table ────────────────────────────────────────
+
+.barWrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bar {
+    height: 8px;
+    border-radius: 99px;
+    min-width: 4px;
+    transition: width 0.4s ease;
+}
+
+.barLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 32px;
+}
+
+// ── Responsive ────────────────────────────────────────────────
+
+@media (max-width: 759px) {
+    .page { padding: 20px 16px; }
+
+    .table {
+        thead { display: none; }
+
+        tbody tr {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 12px 0;
+            gap: 4px;
+
+            td {
+                padding: 4px 16px;
+                flex: 1 1 40%;
+            }
+        }
+    }
+}

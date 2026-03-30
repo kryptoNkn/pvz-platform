@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Users } from 'lucide-react'
+import { Users, Package } from 'lucide-react'
 import { StatsIcon, WorkloadIcon, FinanceIcon, LeaveIcon } from '@/shared/Icons'
 import { useLang } from '@/shared/i18n'
 import styles from './Sidebar.module.scss'
@@ -11,6 +11,7 @@ const navItems = [
     { path: '/stats', icon: <StatsIcon /> },
     { path: '/workload', icon: <WorkloadIcon /> },
     { path: '/finance', icon: <FinanceIcon /> },
+    { path: '/marketplace', icon: <Package width={40} height={40} color="white" /> },
 ]
 
 interface SidebarProps {

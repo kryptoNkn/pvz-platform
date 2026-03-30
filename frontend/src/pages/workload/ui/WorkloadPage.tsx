@@ -12,6 +12,16 @@ type DaySchedule = {
 const defaultSchedule = (): DaySchedule[] =>
     Array(7).fill(null).map(() => ({ isOff: false, startTime: '09:00', endTime: '21:00' }))
 
+const MARKETPLACE_COLORS: Record<string, string> = {
+    'Ozon':          '#005BFF',
+    'WB':            '#CB11AB',
+    'Яндекс Маркет': '#FFCC00',
+    'Авито':         '#00AAFF',
+}
+const MARKETPLACE_TEXT: Record<string, string> = {
+    'Яндекс Маркет': '#1a1a1a',
+}
+
 interface Pvz {
     id: string
     name: string
@@ -22,6 +32,7 @@ interface Pvz {
     location_type: string
     traffic: string
     hours: string
+    marketplace: string
 }
 
 interface Stats {
@@ -48,6 +59,7 @@ type EditForm = {
     location_type: string
     status: string
     hours: string
+    marketplace: string
 }
 
 const OP_TYPE_LABEL: Record<string, string> = {
@@ -66,7 +78,7 @@ export const WorkloadPage = () => {
     const [search, setSearch] = useState('')
     const [editPvz, setEditPvz] = useState<Pvz | null>(null)
     const [editForm, setEditForm] = useState<EditForm>({
-        address: '', max_capacity: '', location_type: 'street', status: 'active', hours: '',
+        address: '', max_capacity: '', location_type: 'street', status: 'active', hours: '', marketplace: 'Ozon',
     })
     const [confirmDeletePvz, setConfirmDeletePvz] = useState<Pvz | null>(null)
     const [editSchedule, setEditSchedule] = useState<DaySchedule[]>(defaultSchedule())
@@ -149,6 +161,7 @@ export const WorkloadPage = () => {
             location_type: pvz.location_type,
             status: pvz.status,
             hours: pvz.hours,
+            marketplace: pvz.marketplace ?? 'Ozon',
         })
         setEditSchedule(defaultSchedule())
         fetch(`/api/v1/pvz/${pvz.id}/schedule`, { credentials: 'include' })
@@ -179,6 +192,7 @@ export const WorkloadPage = () => {
                 location_type: editForm.location_type,
                 status: editForm.status,
                 hours: editForm.hours,
+                marketplace: editForm.marketplace,
             }),
         })
         await fetch(`/api/v1/pvz/${editPvz.id}/schedule`, {
@@ -332,7 +346,19 @@ export const WorkloadPage = () => {
                     <tbody>
                         {filtered.map(pvz => (
                             <tr key={pvz.id} className={styles.tr}>
-                                <td className={styles.td}>{pvz.name}</td>
+                                <td className={styles.td}>
+                                    <span style={{
+                                        display: 'inline-block',
+                                        padding: '2px 10px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        background: MARKETPLACE_COLORS[pvz.marketplace] ?? '#888',
+                                        color: MARKETPLACE_TEXT[pvz.marketplace] ?? '#fff',
+                                    }}>
+                                        {pvz.marketplace}
+                                    </span>
+                                </td>
                                 <td className={styles.td}>{pvz.address}</td>
                                 <td className={styles.td}>{pvz.load_percent}%</td>
                                 <td className={styles.td}>
@@ -618,6 +644,19 @@ export const WorkloadPage = () => {
                                         onChange={e => setEditForm(f => ({ ...f, hours: e.target.value }))}
                                     />
                                 </div>
+                            </div>
+                            <div className={styles.modalField}>
+                                <label className={styles.modalLabel}>Маркетплейс</label>
+                                <select
+                                    className={styles.modalSelect}
+                                    value={editForm.marketplace}
+                                    onChange={e => setEditForm(f => ({ ...f, marketplace: e.target.value }))}
+                                >
+                                    <option value="Ozon">Ozon</option>
+                                    <option value="WB">WB</option>
+                                    <option value="Яндекс Маркет">Яндекс Маркет</option>
+                                    <option value="Авито">Авито</option>
+                                </select>
                             </div>
                         </div>
 

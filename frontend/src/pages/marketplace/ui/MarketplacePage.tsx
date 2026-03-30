@@ -1,0 +1,237 @@
+import { useEffect, useState } from 'react'
+import { TrendingUp, Clock, Package, ArrowDownToLine } from 'lucide-react'
+import styles from './MarketplacePage.module.scss'
+
+interface MarketplaceItem {
+    marketplace: string
+    items_count: number
+    commission_percent: number
+    avg_price: number
+    avg_storage_days: number
+    pending_today: number
+}
+
+const MARKETPLACE_COLORS: Record<string, string> = {
+    'Ozon':          '#005BFF',
+    'WB':            '#CB11AB',
+    'Яндекс Маркет': '#FFCC00',
+    'Авито':         '#00AAFF',
+}
+
+const MARKETPLACE_TEXT: Record<string, string> = {
+    'Яндекс Маркет': '#1a1a1a',
+}
+
+const fmt = (n: number) => n.toLocaleString('ru-RU')
+const fmtRub = (n: number) => fmt(n) + ' ₽'
+
+export const MarketplacePage = () => {
+    const [items, setItems] = useState<MarketplaceItem[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch('/api/v1/marketplace-items', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : [])
+            .then((data: MarketplaceItem[]) => { setItems(data); setLoading(false) })
+            .catch(() => setLoading(false))
+    }, [])
+
+    const totalItems    = items.reduce((s, i) => s + i.items_count, 0)
+    const totalPending  = items.reduce((s, i) => s + i.pending_today, 0)
+    const totalEarnings = items.reduce((s, i) =>
+        s + Math.round(i.items_count * i.avg_price * i.commission_percent / 100), 0)
+    const avgStorage    = items.length
+        ? Math.round(items.reduce((s, i) => s + i.avg_storage_days, 0) / items.length)
+        : 0
+
+    if (loading) return <div className={styles.page}><p className={styles.loading}>Загрузка...</p></div>
+
+    return (
+        <div className={styles.page}>
+
+            {/* ── Заголовок ── */}
+            <div className={styles.header}>
+                <h2 className={styles.heading}>Товары на ПВЗ</h2>
+                <p className={styles.sub}>Распределение по маркетплейсам, комиссии и прогноз выдач</p>
+            </div>
+
+            {/* ── Суммарные KPI ── */}
+            <div className={styles.kpiRow}>
+                <div className={styles.kpi}>
+                    <span className={styles.kpiIcon} style={{ background: 'rgba(64,201,126,0.12)', color: '#40c97e' }}>
+                        <Package size={20} />
+                    </span>
+                    <div>
+                        <div className={styles.kpiValue}>{fmt(totalItems)}</div>
+                        <div className={styles.kpiLabel}>Товаров на хранении</div>
+                    </div>
+                </div>
+                <div className={styles.kpi}>
+                    <span className={styles.kpiIcon} style={{ background: 'rgba(0,91,255,0.1)', color: '#005BFF' }}>
+                        <ArrowDownToLine size={20} />
+                    </span>
+                    <div>
+                        <div className={styles.kpiValue}>{fmt(totalPending)}</div>
+                        <div className={styles.kpiLabel}>Выдач сегодня</div>
+                    </div>
+                </div>
+                <div className={styles.kpi}>
+                    <span className={styles.kpiIcon} style={{ background: 'rgba(255,180,0,0.12)', color: '#e6a800' }}>
+                        <Clock size={20} />
+                    </span>
+                    <div>
+                        <div className={styles.kpiValue}>{avgStorage} дн.</div>
+                        <div className={styles.kpiLabel}>Среднее хранение</div>
+                    </div>
+                </div>
+                <div className={styles.kpi}>
+                    <span className={styles.kpiIcon} style={{ background: 'rgba(203,17,171,0.1)', color: '#CB11AB' }}>
+                        <TrendingUp size={20} />
+                    </span>
+                    <div>
+                        <div className={styles.kpiValue}>{fmtRub(totalEarnings)}</div>
+                        <div className={styles.kpiLabel}>Ожидаемый доход</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Карточки маркетплейсов ── */}
+            <div className={styles.cards}>
+                {items.map(item => {
+                    const earnings = Math.round(item.items_count * item.avg_price * item.commission_percent / 100)
+                    const share = Math.round((item.items_count / totalItems) * 100)
+                    return (
+                        <div className={styles.card} key={item.marketplace}>
+                            <div className={styles.cardTop}>
+                                <span
+                                    className={styles.badge}
+                                    style={{
+                                        background: MARKETPLACE_COLORS[item.marketplace] ?? '#888',
+                                        color: MARKETPLACE_TEXT[item.marketplace] ?? '#fff',
+                                    }}
+                                >
+                                    {item.marketplace}
+                                </span>
+                                <span className={styles.share}>{share}%</span>
+                            </div>
+
+                            <div className={styles.cardValue}>{fmt(item.items_count)}</div>
+                            <div className={styles.cardLabel}>товаров</div>
+
+                            <div
+                                className={styles.shareBar}
+                                style={{ background: `${MARKETPLACE_COLORS[item.marketplace]}22` }}
+                            >
+                                <div
+                                    className={styles.shareBarFill}
+                                    style={{
+                                        width: `${share}%`,
+                                        background: MARKETPLACE_COLORS[item.marketplace] ?? '#888',
+                                    }}
+                                />
+                            </div>
+
+                            <div className={styles.cardStats}>
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>Комиссия ПВЗ</span>
+                                    <span className={styles.cardStatValue} style={{ color: '#40c97e' }}>
+                                        {item.commission_percent}%
+                                    </span>
+                                </div>
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>Ср. цена товара</span>
+                                    <span className={styles.cardStatValue}>{fmtRub(item.avg_price)}</span>
+                                </div>
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>Хранение</span>
+                                    <span className={styles.cardStatValue}>{item.avg_storage_days} дн.</span>
+                                </div>
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>Выдач сегодня</span>
+                                    <span className={styles.cardStatValue}>{fmt(item.pending_today)}</span>
+                                </div>
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>Доход</span>
+                                    <span className={styles.cardStatValue} style={{ color: '#CB11AB' }}>
+                                        {fmtRub(earnings)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* ── Таблица ── */}
+            <div className={styles.tableWrap}>
+                <div className={styles.tableTitle}>Детальная таблица</div>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Маркетплейс</th>
+                            <th>Товаров</th>
+                            <th>Комиссия</th>
+                            <th>Ср. цена</th>
+                            <th>Хранение</th>
+                            <th>Выдач сегодня</th>
+                            <th>Доход (оценка)</th>
+                            <th>Доля</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items.map(item => {
+                            const earnings = Math.round(item.items_count * item.avg_price * item.commission_percent / 100)
+                            const share = Math.round((item.items_count / totalItems) * 100)
+                            return (
+                                <tr key={item.marketplace}>
+                                    <td>
+                                        <span
+                                            className={styles.badge}
+                                            style={{
+                                                background: MARKETPLACE_COLORS[item.marketplace] ?? '#888',
+                                                color: MARKETPLACE_TEXT[item.marketplace] ?? '#fff',
+                                            }}
+                                        >
+                                            {item.marketplace}
+                                        </span>
+                                    </td>
+                                    <td className={styles.numCell}>{fmt(item.items_count)}</td>
+                                    <td className={styles.commissionCell}>{item.commission_percent}%</td>
+                                    <td className={styles.numCell}>{fmtRub(item.avg_price)}</td>
+                                    <td className={styles.numCell}>{item.avg_storage_days} дн.</td>
+                                    <td className={styles.numCell}>{fmt(item.pending_today)}</td>
+                                    <td className={styles.earningsCell}>{fmtRub(earnings)}</td>
+                                    <td>
+                                        <div className={styles.barWrap}>
+                                            <div
+                                                className={styles.bar}
+                                                style={{
+                                                    width: `${share}%`,
+                                                    background: MARKETPLACE_COLORS[item.marketplace] ?? '#888',
+                                                }}
+                                            />
+                                            <span className={styles.barLabel}>{share}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td className={styles.totalLabel}>Итого</td>
+                            <td className={styles.numCell}>{fmt(totalItems)}</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td className={styles.numCell}>{fmt(totalPending)}</td>
+                            <td className={styles.earningsCell}>{fmtRub(totalEarnings)}</td>
+                            <td>100%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+    )
+}

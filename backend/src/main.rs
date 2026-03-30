@@ -44,6 +44,13 @@ async fn main() -> std::io::Result<()> {
     sqlx::query("CREATE INDEX IF NOT EXISTS idx_operations_created_at ON operations(created_at DESC)")
         .execute(&pool).await.ok();
 
+    sqlx::query(
+        "ALTER TABLE pvz ADD COLUMN IF NOT EXISTS marketplace TEXT NOT NULL DEFAULT 'Ozon'"
+    )
+    .execute(&pool)
+    .await
+    .ok();
+
     let app_state = Arc::new(Mutex::new(AppState::new()));
 
     HttpServer::new(move || {

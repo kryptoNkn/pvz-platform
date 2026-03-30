@@ -18,6 +18,7 @@ export const AddPvzPage = () => {
     const [address, setAddress] = useState('')
     const [capacity, setCapacity] = useState('')
     const [locationType, setLocationType] = useState('street')
+    const [marketplace, setMarketplace] = useState('Ozon')
     const [schedule, setSchedule] = useState<DaySchedule[]>(defaultSchedule())
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
@@ -52,6 +53,7 @@ export const AddPvzPage = () => {
                     address: address.trim(),
                     max_capacity: Number(capacity) || 100,
                     location_type: locationType,
+                    marketplace,
                 }),
             })
             if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`)
@@ -112,7 +114,7 @@ export const AddPvzPage = () => {
                     </div>
                 </div>
 
-                <div className={styles.fieldsRowSingle}>
+                <div className={styles.fieldsRow}>
                     <div className={styles.fieldGroup}>
                         <label className={styles.label}>{t.locationType}</label>
                         <select
@@ -124,6 +126,19 @@ export const AddPvzPage = () => {
                             <option value="street">{t.locationStreet}</option>
                             <option value="residential">{t.locationResidential}</option>
                             <option value="office">{t.locationOffice}</option>
+                        </select>
+                    </div>
+                    <div className={styles.fieldGroup}>
+                        <label className={styles.label}>Маркетплейс</label>
+                        <select
+                            className={styles.input}
+                            value={marketplace}
+                            onChange={e => setMarketplace(e.target.value)}
+                        >
+                            <option value="Ozon">Ozon</option>
+                            <option value="WB">WB</option>
+                            <option value="Яндекс Маркет">Яндекс Маркет</option>
+                            <option value="Авито">Авито</option>
                         </select>
                     </div>
                 </div>

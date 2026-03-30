@@ -8,6 +8,7 @@ import { AddPvzPage } from '@/pages/add-pvz'
 import { EmployeesPage } from '@/pages/employees'
 import { ProfilePage } from '@/pages/profile'
 import { SettingsPage } from '@/pages/settings'
+import { MarketplacePage } from '@/pages/marketplace'
 import { AuthPage } from '@/pages/auth'
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
                     <Route path="/finance" element={<FinancePage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/marketplace" element={<MarketplacePage />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>

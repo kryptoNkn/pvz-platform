@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
+use rand::Rng;
 use chrono::{DateTime, Utc};
 use crate::pvz::{AppState, generate_workload_stats, generate_financial_stats};
 
@@ -30,6 +31,7 @@ fn row_to_json(r: &sqlx::postgres::PgRow) -> serde_json::Value {
     let max_capacity: i32 = r.get("max_capacity");
     let current_items: i32 = r.get("current_items");
     let hours: String = r.get("hours");
+    let marketplace: String = r.try_get("marketplace").unwrap_or_else(|_| "Ozon".to_string());
 
     let load_percent = compute_load_percent(current_items, max_capacity);
     let traffic = compute_traffic(&status, load_percent);
@@ -46,12 +48,13 @@ fn row_to_json(r: &sqlx::postgres::PgRow) -> serde_json::Value {
         "load_percent": load_percent,
         "traffic": traffic,
         "hours": hours,
+        "marketplace": marketplace,
     })
 }
 
 pub async fn get_pvz_list(pool: web::Data<PgPool>) -> impl Responder {
     match sqlx::query(
-        "SELECT id, name, address, size_type, location_type, status, max_capacity, current_items, hours
+        "SELECT id, name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace
          FROM pvz ORDER BY created_at"
     )
     .fetch_all(pool.get_ref())
@@ -73,7 +76,7 @@ pub async fn get_pvz_by_id(
 ) -> impl Responder {
     let id = path.into_inner();
     match sqlx::query(
-        "SELECT id, name, address, size_type, location_type, status, max_capacity, current_items, hours
+        "SELECT id, name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace
          FROM pvz WHERE id = $1"
     )
     .bind(id)
@@ -231,6 +234,7 @@ pub struct NewPvzBody {
     pub address: String,
     pub max_capacity: u32,
     pub location_type: Option<String>,
+    pub marketplace: Option<String>,
 }
 
 pub async fn add_pvz(
@@ -253,6 +257,10 @@ pub async fn add_pvz(
         _ => "09:00 - 21:00",
     };
 
+    let marketplace = body.marketplace.clone()
+        .filter(|s| ["Ozon", "WB", "Яндекс Маркет", "Авито"].contains(&s.as_str()))
+        .unwrap_or_else(|| "Ozon".to_string());
+
     let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM pvz")
         .fetch_one(pool.get_ref())
         .await
@@ -260,9 +268,9 @@ pub async fn add_pvz(
     let name = format!("ПВЗ №{}", count + 1);
 
     match sqlx::query(
-        "INSERT INTO pvz (name, address, size_type, location_type, status, max_capacity, current_items, hours)
-         VALUES ($1, $2, $3, $4, 'active', $5, 0, $6)
-         RETURNING id, name, address, size_type, location_type, status, max_capacity, current_items, hours"
+        "INSERT INTO pvz (name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace)
+         VALUES ($1, $2, $3, $4, 'active', $5, 0, $6, $7)
+         RETURNING id, name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace"
     )
     .bind(&name)
     .bind(&body.address)
@@ -270,6 +278,7 @@ pub async fn add_pvz(
     .bind(&location_type)
     .bind(max_capacity)
     .bind(hours)
+    .bind(&marketplace)
     .fetch_one(pool.get_ref())
     .await {
         Ok(r) => HttpResponse::Ok().json(row_to_json(&r)),
@@ -287,6 +296,7 @@ pub struct UpdatePvzBody {
     pub location_type: Option<String>,
     pub status: Option<String>,
     pub hours: Option<String>,
+    pub marketplace: Option<String>,
 }
 
 pub async fn update_pvz(
@@ -297,7 +307,7 @@ pub async fn update_pvz(
     let id = path.into_inner();
 
     let existing = sqlx::query(
-        "SELECT address, location_type, status, max_capacity, hours FROM pvz WHERE id = $1"
+        "SELECT address, location_type, status, max_capacity, hours, marketplace FROM pvz WHERE id = $1"
     )
     .bind(id)
     .fetch_optional(pool.get_ref())
@@ -310,6 +320,7 @@ pub async fn update_pvz(
             let cur_status: String = row.get("status");
             let cur_max_capacity: i32 = row.get("max_capacity");
             let cur_hours: String = row.get("hours");
+            let cur_marketplace: String = row.try_get("marketplace").unwrap_or_else(|_| "Ozon".to_string());
 
             let address = body.address.clone().unwrap_or(cur_address);
             let max_capacity = body.max_capacity.map(|v| v as i32).unwrap_or(cur_max_capacity);
@@ -320,6 +331,9 @@ pub async fn update_pvz(
                 .filter(|s| ["active", "overloaded", "closed"].contains(&s.as_str()))
                 .unwrap_or(cur_status);
             let hours = body.hours.clone().unwrap_or(cur_hours);
+            let marketplace = body.marketplace.clone()
+                .filter(|s| ["Ozon", "WB", "Яндекс Маркет", "Авито"].contains(&s.as_str()))
+                .unwrap_or(cur_marketplace);
             let size_type = if max_capacity <= 150 { "small" }
                            else if max_capacity <= 400 { "medium" }
                            else { "large" };
@@ -327,9 +341,9 @@ pub async fn update_pvz(
             match sqlx::query(
                 "UPDATE pvz
                  SET address = $1, max_capacity = $2, location_type = $3,
-                     status = $4, size_type = $5, hours = $6
-                 WHERE id = $7
-                 RETURNING id, name, address, size_type, location_type, status, max_capacity, current_items, hours"
+                     status = $4, size_type = $5, hours = $6, marketplace = $7
+                 WHERE id = $8
+                 RETURNING id, name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace"
             )
             .bind(&address)
             .bind(max_capacity)
@@ -337,6 +351,7 @@ pub async fn update_pvz(
             .bind(&status)
             .bind(size_type)
             .bind(&hours)
+            .bind(&marketplace)
             .bind(id)
             .fetch_one(pool.get_ref())
             .await {
@@ -383,12 +398,52 @@ pub async fn regenerate(state: web::Data<Arc<Mutex<AppState>>>) -> impl Responde
     HttpResponse::Ok().json(serde_json::json!({ "ok": true }))
 }
 
+pub async fn get_marketplace_items() -> impl Responder {
+    let mut rng = rand::thread_rng();
+    let items = serde_json::json!([
+        {
+            "marketplace": "Ozon",
+            "items_count": rng.gen_range(50_u32..=350),
+            "commission_percent": 3.5,
+            "avg_price": rng.gen_range(800_u32..=4000),
+            "avg_storage_days": rng.gen_range(1_u32..=7),
+            "pending_today": rng.gen_range(10_u32..=80)
+        },
+        {
+            "marketplace": "WB",
+            "items_count": rng.gen_range(100_u32..=500),
+            "commission_percent": 2.8,
+            "avg_price": rng.gen_range(600_u32..=3500),
+            "avg_storage_days": rng.gen_range(1_u32..=6),
+            "pending_today": rng.gen_range(20_u32..=120)
+        },
+        {
+            "marketplace": "Яндекс Маркет",
+            "items_count": rng.gen_range(30_u32..=200),
+            "commission_percent": 4.0,
+            "avg_price": rng.gen_range(1000_u32..=5000),
+            "avg_storage_days": rng.gen_range(1_u32..=5),
+            "pending_today": rng.gen_range(5_u32..=50)
+        },
+        {
+            "marketplace": "Авито",
+            "items_count": rng.gen_range(20_u32..=150),
+            "commission_percent": 2.0,
+            "avg_price": rng.gen_range(500_u32..=3000),
+            "avg_storage_days": rng.gen_range(1_u32..=4),
+            "pending_today": rng.gen_range(5_u32..=40)
+        }
+    ]);
+    HttpResponse::Ok().json(items)
+}
+
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/v1")
             .route("/stats", web::get().to(get_stats))
             .route("/stats/workload-by-hour", web::get().to(workload_by_hour))
             .route("/finance", web::get().to(get_finance))
+            .route("/marketplace-items", web::get().to(get_marketplace_items))
             .route("/pvz", web::get().to(get_pvz_list))
             .route("/pvz", web::post().to(add_pvz))
             .route("/pvz/regenerate", web::post().to(regenerate))
