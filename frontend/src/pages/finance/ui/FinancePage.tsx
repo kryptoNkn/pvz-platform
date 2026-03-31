@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLang } from '@/shared/i18n'
+import { exportCsv } from '@/shared/exportCsv'
 import styles from './FinancePage.module.scss'
 
 interface MarketplaceBreakdown {
@@ -62,6 +63,23 @@ export const FinancePage = () => {
 
     const totalBreakdownRevenue = finance.breakdown.reduce((s, b) => s + b.revenue, 0)
 
+    const exportBreakdown = () => {
+        exportCsv('finance_breakdown.csv',
+            ['Маркетплейс', 'Выдано товаров', 'Комиссия за товар (руб)', 'Выручка (руб)', 'Доля (%)'],
+            finance.breakdown.map(b => {
+                const share = totalBreakdownRevenue > 0 ? Math.round((b.revenue / totalBreakdownRevenue) * 100) : 0
+                return [b.marketplace, b.items_delivered, b.avg_commission, b.revenue, share]
+            })
+        )
+    }
+
+    const exportMonthly = () => {
+        exportCsv('finance_monthly.csv',
+            ['Месяц', 'Выручка (руб)', 'Расходы (руб)', 'Прибыль (руб)'],
+            finance.monthly.map(m => [m.month, m.revenue, m.expenses, m.revenue - m.expenses])
+        )
+    }
+
     return (
         <div className={styles.page}>
 
@@ -114,7 +132,10 @@ export const FinancePage = () => {
             {/* ── Структура выручки по маркетплейсам ── */}
             {finance.breakdown.length > 0 && (
                 <div className={styles.tableSection}>
-                    <h2 className={styles.sectionTitle}>Структура выручки по маркетплейсам</h2>
+                    <div className={styles.tableHeader}>
+                        <h2 className={styles.sectionTitle}>Структура выручки по маркетплейсам</h2>
+                        <button className={styles.exportBtn} onClick={exportBreakdown}>↓ CSV</button>
+                    </div>
                     <p className={styles.sectionHint}>
                         Выручка от выдач = количество выданных товаров × комиссия ПВЗ за товар.
                         Данные по операциям — из раздела «Операции».
@@ -202,7 +223,10 @@ export const FinancePage = () => {
 
             {/* ── Динамика по месяцам ── */}
             <div className={styles.tableSection}>
-                <h2 className={styles.sectionTitle}>{t.monthlyDynamics}</h2>
+                <div className={styles.tableHeader}>
+                    <h2 className={styles.sectionTitle}>{t.monthlyDynamics}</h2>
+                    <button className={styles.exportBtn} onClick={exportMonthly}>↓ CSV</button>
+                </div>
                 <table className={styles.table}>
                     <thead className={styles.tableHead}>
                         <tr>

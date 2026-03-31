@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLang } from '@/shared/i18n'
+import { exportCsv } from '@/shared/exportCsv'
 import styles from './WorkloadPage.module.scss'
 
 type DaySchedule = {
@@ -128,29 +129,18 @@ export const WorkloadPage = () => {
         loadOps()
     }, [filterOpPvz, filterOpType, filterFrom, filterTo])
 
+    const handleExportPvz = () => {
+        exportCsv('pvz_list.csv',
+            ['Название', 'Адрес', 'Маркетплейс', 'Статус', 'Загрузка (%)', 'Макс. вместимость', 'Тип локации', 'Трафик', 'Часы работы'],
+            filtered.map(p => [p.name, p.address, p.marketplace, p.status, p.load_percent, p.max_capacity, p.location_type, p.traffic, p.hours])
+        )
+    }
+
     const handleExportCsv = () => {
-        const escape = (v: string | null) => `"${(v ?? '').replace(/"/g, '""')}"`
-        const rows = [
-            ['id', 'pvz_id', 'pvz_name', 'op_type', 'quantity', 'note', 'created_at'].join(','),
-            ...ops.map(o => [
-                o.id,
-                o.pvz_id,
-                escape(o.pvz_name),
-                escape(o.op_type),
-                o.quantity,
-                escape(o.note),
-                o.created_at,
-            ].join(','))
-        ].join('\n')
-        const blob = new Blob(['\uFEFF' + rows], { type: 'text/csv;charset=utf-8;' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'operations.csv'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
+        exportCsv('operations.csv',
+            ['ПВЗ', 'Тип операции', 'Количество', 'Примечание', 'Дата'],
+            ops.map(o => [o.pvz_name, OP_TYPE_LABEL[o.op_type], o.quantity, o.note ?? '', o.created_at])
+        )
     }
 
     const openEdit = (pvz: Pvz) => {
@@ -331,6 +321,13 @@ export const WorkloadPage = () => {
 
             {/* PVZ table */}
             <div className={styles.tableSection}>
+                <div className={styles.opsTableHeader}>
+                    <span className={styles.opsTableTitle}>
+                        Список ПВЗ
+                        <span className={styles.pvzHint}> — нажмите на строку для фильтрации операций</span>
+                    </span>
+                    <button className={styles.exportBtn} onClick={handleExportPvz}>↓ CSV</button>
+                </div>
                 <table className={styles.table}>
                     <thead className={styles.tableHead}>
                         <tr>
@@ -345,7 +342,15 @@ export const WorkloadPage = () => {
                     </thead>
                     <tbody>
                         {filtered.map(pvz => (
-                            <tr key={pvz.id} className={styles.tr}>
+                            <tr
+                                key={pvz.id}
+                                className={[
+                                    styles.tr,
+                                    styles.trClickable,
+                                    filterOpPvz === pvz.id ? styles.trSelected : '',
+                                ].join(' ')}
+                                onClick={() => setFilterOpPvz(f => f === pvz.id ? '' : pvz.id)}
+                            >
                                 <td className={styles.td}>
                                     <span style={{
                                         display: 'inline-block',
@@ -376,7 +381,7 @@ export const WorkloadPage = () => {
                                     <button
                                         className={styles.btnEdit}
                                         title={t.edit}
-                                        onClick={() => openEdit(pvz)}
+                                        onClick={e => { e.stopPropagation(); openEdit(pvz) }}
                                     >
                                         ✏
                                     </button>
@@ -390,17 +395,16 @@ export const WorkloadPage = () => {
             {/* ── Operations section ── */}
             <div className={styles.opsHeader}>
                 <span className={styles.opsTitle}>{t.operationsTitle}</span>
+                {filterOpPvz && (
+                    <span className={styles.pvzFilterChip}>
+                        {pvzList.find(p => p.id === filterOpPvz)?.name ?? ''}
+                        <button
+                            className={styles.pvzFilterChipClear}
+                            onClick={() => setFilterOpPvz('')}
+                        >×</button>
+                    </span>
+                )}
                 <div className={styles.opsFilters}>
-                    <select
-                        className={styles.opsFilterSelect}
-                        value={filterOpPvz}
-                        onChange={e => setFilterOpPvz(e.target.value)}
-                    >
-                        <option value="">{t.filterAllPvz}</option>
-                        {pvzList.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                    </select>
                     <select
                         className={styles.opsFilterSelect}
                         value={filterOpType}
@@ -424,9 +428,7 @@ export const WorkloadPage = () => {
                         onChange={e => setFilterTo(e.target.value)}
                     />
                 </div>
-                <button className={styles.btnSecondary} onClick={handleExportCsv}>
-                    {t.exportCsv}
-                </button>
+                <button className={styles.exportBtn} onClick={handleExportCsv}>↓ CSV</button>
                 <button className={styles.btnPrimary} onClick={openAddOp}>
                     {t.addOperation}
                 </button>

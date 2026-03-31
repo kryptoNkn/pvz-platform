@@ -159,6 +159,42 @@
   margin-top: 8px;
 }
 
+.opsTableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.opsTableTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  opacity: 0.7;
+}
+
+.exportBtn {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--color-hover);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(64, 201, 126, 0.1);
+    border-color: #40c97e;
+    color: #40c97e;
+  }
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -189,6 +225,59 @@
 
   &:hover {
     background: var(--color-hover);
+  }
+}
+
+.trClickable {
+  cursor: pointer;
+}
+
+.trSelected {
+  background: rgba(64, 201, 126, 0.07) !important;
+
+  &:hover {
+    background: rgba(64, 201, 126, 0.12) !important;
+  }
+}
+
+.pvzHint {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.pvzFilterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 12px;
+  background: rgba(64, 201, 126, 0.1);
+  border: 1px solid rgba(64, 201, 126, 0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #40c97e;
+  white-space: nowrap;
+}
+
+.pvzFilterChipClear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  color: #40c97e;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
   }
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { TrendingUp, Clock, Package, ArrowDownToLine } from 'lucide-react'
+import { exportCsv } from '@/shared/exportCsv'
 import styles from './MarketplacePage.module.scss'
 
 interface MarketplaceItem {
@@ -43,6 +44,17 @@ export const MarketplacePage = () => {
     const avgStorage    = items.length
         ? Math.round(items.reduce((s, i) => s + i.avg_storage_days, 0) / items.length)
         : 0
+
+    const handleExportCsv = () => {
+        exportCsv('marketplace_items.csv',
+            ['Маркетплейс', 'Товаров на хранении', 'Комиссия ПВЗ (%)', 'Ср. цена товара (руб)', 'Хранение (дн.)', 'Выдач сегодня', 'Доход оценка (руб)', 'Доля (%)'],
+            items.map(item => {
+                const earnings = Math.round(item.items_count * item.avg_price * item.commission_percent / 100)
+                const share = totalItems > 0 ? Math.round((item.items_count / totalItems) * 100) : 0
+                return [item.marketplace, item.items_count, item.commission_percent, item.avg_price, item.avg_storage_days, item.pending_today, earnings, share]
+            })
+        )
+    }
 
     if (loading) return <div className={styles.page}><p className={styles.loading}>Загрузка...</p></div>
 
@@ -164,7 +176,10 @@ export const MarketplacePage = () => {
 
             {/* ── Таблица ── */}
             <div className={styles.tableWrap}>
-                <div className={styles.tableTitle}>Детальная таблица</div>
+                <div className={styles.tableHeader}>
+                    <div className={styles.tableTitle}>Детальная таблица</div>
+                    <button className={styles.exportBtn} onClick={handleExportCsv}>↓ CSV</button>
+                </div>
                 <table className={styles.table}>
                     <thead>
                         <tr>
