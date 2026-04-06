@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { Settings, Bell } from 'lucide-react'
 import { useLang } from '@/shared/i18n'
 import { NotificationsPanel } from '@/widgets/notifications-panel'
+import { refreshNotifications } from '@/widgets/notifications-panel/model/mockNotifications'
 import styles from './Topbar.module.scss'
 
 const PAGE_TITLE_KEYS: Record<string, 'workload' | 'addPvz' | 'employeesList' | 'statsPage' | 'financePage' | 'profilePage' | 'settingsPage' | 'marketplacePage'> = {
@@ -63,23 +64,18 @@ export default function Topbar() {
             .catch(() => {})
     }
 
-    const loadUnreadCount = () => {
-        fetch('/api/notifications/unread-count', { credentials: 'include' })
-            .then(r => r.ok ? r.json() : { count: 0 })
-            .then(data => setUnreadCount(data.count ?? 0))
-            .catch(() => {})
-    }
-
     useEffect(() => {
         loadAvatar()
-        loadUnreadCount()
+        setUnreadCount(refreshNotifications(lang).length)
         window.addEventListener('profileUpdated', loadAvatar)
-        const interval = setInterval(loadUnreadCount, 60_000)
+        const interval = setInterval(() => {
+            setUnreadCount(refreshNotifications(lang).length)
+        }, 60_000)
         return () => {
             window.removeEventListener('profileUpdated', loadAvatar)
             clearInterval(interval)
         }
-    }, [])
+    }, [lang])
 
     useEffect(() => {
         document.title = title

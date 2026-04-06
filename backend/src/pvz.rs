@@ -72,6 +72,10 @@ pub struct AppState {
     pub financial_stats: FinancialStats,
 }
 
+fn calculate_total_items(acceptance: u32, delivery: u32, extra_items: u32) -> u32 {
+    acceptance.saturating_sub(delivery).saturating_add(extra_items)
+}
+
 impl AppState {
     pub fn new() -> Self {
         let mut rng = rand::thread_rng();
@@ -86,8 +90,9 @@ pub fn generate_workload_stats(rng: &mut impl Rng) -> WorkloadStats {
     let acceptance: u32 = rng.gen_range(800..=4_500);
     let delivery: u32 = rng.gen_range(600..=4_000);
     let returns: u32 = rng.gen_range(40..=350);
-    let total_items: u32 = acceptance - delivery + rng.gen_range(0..=200);
-    WorkloadStats { total_items: total_items.max(0), acceptance, delivery, returns }
+    let extra_items: u32 = rng.gen_range(0..=200);
+    let total_items = calculate_total_items(acceptance, delivery, extra_items);
+    WorkloadStats { total_items, acceptance, delivery, returns }
 }
 
 pub fn generate_financial_stats(rng: &mut impl Rng) -> FinancialStats {

@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, CheckCheck, Bell, Info, AlertTriangle, CheckCircle } from 'lucide-react'
 import { useLang } from '@/shared/i18n'
+import {
+    getNotifications,
+    markAllNotificationsRead,
+    markNotificationRead,
+    refreshNotifications,
+    type NotificationItem,
+} from '../model/mockNotifications'
 import styles from './NotificationsPanel.module.scss'
-
-interface Notification {
-    id: string
-    title: string
-    body: string
-    type: 'info' | 'success' | 'warning' | 'error'
-    is_read: boolean
-    created_at: string
-}
 
 interface Props {
     open: boolean
@@ -40,26 +38,22 @@ const TYPE_ICON = {
 }
 
 export default function NotificationsPanel({ open, onClose, onUnreadChange }: Props) {
-    const { t } = useLang()
-    const [items, setItems] = useState<Notification[]>([])
+    const { lang, t } = useLang()
+    const [items, setItems] = useState<NotificationItem[]>([])
     const [loading, setLoading] = useState(false)
     const panelRef = useRef<HTMLDivElement>(null)
 
     const load = () => {
         setLoading(true)
-        fetch('/api/notifications', { credentials: 'include' })
-            .then(r => r.ok ? r.json() : [])
-            .then(data => {
-                setItems(data)
-                onUnreadChange(data.filter((n: Notification) => !n.is_read).length)
-            })
-            .catch(() => {})
-            .finally(() => setLoading(false))
+        const data = open ? refreshNotifications(lang) : getNotifications()
+        setItems(data)
+        onUnreadChange(data.filter((n) => !n.is_read).length)
+        setLoading(false)
     }
 
     useEffect(() => {
         if (open) load()
-    }, [open])
+    }, [open, lang])
 
     useEffect(() => {
         if (!open) return
@@ -73,19 +67,15 @@ export default function NotificationsPanel({ open, onClose, onUnreadChange }: Pr
     }, [open, onClose])
 
     const markRead = (id: string) => {
-        fetch(`/api/notifications/${id}/read`, { method: 'PUT', credentials: 'include' })
-            .then(() => {
-                setItems(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
-                onUnreadChange(items.filter(n => !n.is_read && n.id !== id).length)
-            })
+        const nextItems = markNotificationRead(id)
+        setItems(nextItems)
+        onUnreadChange(nextItems.filter((n) => !n.is_read).length)
     }
 
     const markAllRead = () => {
-        fetch('/api/notifications/read-all', { method: 'PUT', credentials: 'include' })
-            .then(() => {
-                setItems(prev => prev.map(n => ({ ...n, is_read: true })))
-                onUnreadChange(0)
-            })
+        const nextItems = markAllNotificationsRead()
+        setItems(nextItems)
+        onUnreadChange(0)
     }
 
     const unread = items.filter(n => !n.is_read).length

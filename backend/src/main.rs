@@ -4,8 +4,7 @@ mod utils;
 mod middleware;
 mod pvz;
 
-use std::env;
-use std::sync::{Arc, Mutex};
+use std::{env, sync::{Arc, Mutex}};
 use actix_cors::Cors;
 use actix_files::Files;
 use actix_web::{web, App, HttpServer};
@@ -16,8 +15,6 @@ use crate::pvz::AppState;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-
-    std::fs::create_dir_all("uploads/avatars").ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await.expect("Failed to connect to DB");
