@@ -1,4 +1,4 @@
-CREATE TABLE operations (
+CREATE TABLE IF NOT EXISTS operations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pvz_id UUID NOT NULL REFERENCES pvz(id) ON DELETE CASCADE,
     op_type VARCHAR(10) NOT NULL CHECK (op_type IN ('in', 'out', 'return')),

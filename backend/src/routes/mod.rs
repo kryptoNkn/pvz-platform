@@ -4,3 +4,4 @@ pub mod pvz;
 pub mod notifications;
 pub mod schedule;
 pub mod operations;
+pub mod marketplace;

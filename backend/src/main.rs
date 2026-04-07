@@ -3,6 +3,8 @@ mod routes;
 mod utils;
 mod middleware;
 mod pvz;
+mod marketplace;
+mod marketplace;
 
 use std::{env, sync::{Arc, Mutex}};
 use actix_cors::Cors;
@@ -11,6 +13,8 @@ use actix_web::{web, App, HttpServer};
 use sqlx::PgPool;
 use crate::middleware::auth::Auth;
 use crate::pvz::AppState;
+use crate::marketplace::adapters::{OzonAdapter, WbAdapter, YandexAdapter, AvitoAdapter, MarketplaceAdapter};
+use crate::marketplace::MarketplaceService;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

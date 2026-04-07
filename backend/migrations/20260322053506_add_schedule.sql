@@ -1,5 +1,5 @@
 -- Add migration script here
-CREATE TABLE pvz_schedule (
+CREATE TABLE IF NOT EXISTS pvz_schedule (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     pvz_id UUID NOT NULL REFERENCES pvz(id) ON DELETE CASCADE,
     day_index SMALLINT NOT NULL CHECK (day_index BETWEEN 0 AND 6),
