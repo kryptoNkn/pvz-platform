@@ -290,6 +290,12 @@
   gap: 12px;
 }
 
+.formRow3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
 .formLabel {
   font-size: 11px;
   font-weight: 700;
@@ -372,6 +378,117 @@
   background: linear-gradient(135deg, #34d47a, #1a9952);
 }
 
+.uploadRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(26, 122, 72, 0.12);
+  color: #1a7a48;
+  border: 1.5px solid rgba(26, 122, 72, 0.25);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.docsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.docsEmpty {
+  color: #6b8b77;
+  font-size: 13px;
+}
+
+.docItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(40, 140, 80, 0.12);
+  border-radius: 12px;
+}
+
+.docMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.docName {
+  color: #1a3528;
+  font-size: 13px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.docDate {
+  color: #7a9a85;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.docActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.docLink {
+  color: #1a7a48;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.docDelete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(200, 32, 32, 0.1);
+  border: 1px solid rgba(200, 32, 32, 0.25);
+  color: #c82020;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
 // ── Dark theme ─────────────────────────────────────────────────
 
 :global([data-theme="dark"]) {
@@ -439,6 +556,20 @@
 
   .formRow {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formRow3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .docActions {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

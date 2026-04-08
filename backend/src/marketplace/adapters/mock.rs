@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use anyhow::Result;
 use chrono::Utc;
-
 use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpOrderItem, MpProduct, SyncState};
 
 pub struct MockAdapter {

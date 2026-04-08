@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, Phone, User, Shield, Lock, Calendar, Check } from 'lucide-react';
+import { Camera, Phone, User, Shield, Lock, Calendar, Check, FileText, Upload, Trash2 } from 'lucide-react';
 import { useLang } from '@/shared/i18n';
 import styles from './ProfilePage.module.scss';
 
@@ -41,6 +41,15 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('');
   const [createdAt, setCreatedAt] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [inn, setInn] = useState('');
+  const [kpp, setKpp] = useState('');
+  const [ogrn, setOgrn] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bik, setBik] = useState('');
+  const [bankAccount, setBankAccount] = useState('');
+  const [corrAccount, setCorrAccount] = useState('');
+  const [legalAddress, setLegalAddress] = useState('');
   const [uploading, setUploading] = useState(false);
   const [avatarToast, setAvatarToast] = useState<'ok' | 'err' | null>(null);
 
@@ -54,7 +63,15 @@ export default function ProfilePage() {
   const [pwdStatus, setPwdStatus] = useState<'idle' | 'saving' | 'ok' | 'err'>('idle');
   const [pwdError, setPwdError] = useState('');
 
+  const [reqStatus, setReqStatus] = useState<'idle' | 'saving' | 'ok' | 'err'>('idle');
+  const [reqError, setReqError] = useState('');
+
+  const [documents, setDocuments] = useState<Array<{ id: string; filename: string; url: string; uploaded_at: string }>>([]);
+  const [docStatus, setDocStatus] = useState<'idle' | 'uploading' | 'err'>('idle');
+  const [docError, setDocError] = useState('');
+
   const fileRef = useRef<HTMLInputElement>(null);
+  const docRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/user/profile', { credentials: 'include' })
@@ -66,7 +83,21 @@ export default function ProfilePage() {
         setRole(data.role ?? '');
         setCreatedAt(data.created_at ?? '');
         setAvatarUrl(data.avatar_url ?? null);
+        setCompanyName(data.company_name ?? '');
+        setInn(data.inn ?? '');
+        setKpp(data.kpp ?? '');
+        setOgrn(data.ogrn ?? '');
+        setBankName(data.bank_name ?? '');
+        setBik(data.bik ?? '');
+        setBankAccount(data.bank_account ?? '');
+        setCorrAccount(data.corr_account ?? '');
+        setLegalAddress(data.legal_address ?? '');
       })
+      .catch(() => {});
+
+    fetch('/api/user/documents', { credentials: 'include' })
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then(data => setDocuments(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
 
@@ -161,6 +192,86 @@ export default function ProfilePage() {
     } catch {
       setPwdStatus('err');
       setPwdError(t.networkError);
+    }
+  };
+
+  const saveRequisites = async () => {
+    if (reqStatus === 'saving') return;
+    setReqStatus('saving');
+    setReqError('');
+    try {
+      const res = await fetch('/api/user/requisites', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: companyName,
+          inn,
+          kpp,
+          ogrn,
+          bank_name: bankName,
+          bik,
+          bank_account: bankAccount,
+          corr_account: corrAccount,
+          legal_address: legalAddress,
+        }),
+      });
+      if (res.ok) {
+        setReqStatus('ok');
+        setTimeout(() => setReqStatus('idle'), 2500);
+      } else {
+        setReqStatus('err');
+        setReqError(t.saveError);
+      }
+    } catch {
+      setReqStatus('err');
+      setReqError(t.networkError);
+    }
+  };
+
+  const uploadDocument = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setDocStatus('uploading');
+    setDocError('');
+    const form = new FormData();
+    form.append('document', file);
+    try {
+      const res = await fetch('/api/user/documents', {
+        method: 'POST',
+        credentials: 'include',
+        body: form,
+      });
+      if (res.ok) {
+        const list = await fetch('/api/user/documents', { credentials: 'include' }).then(r => r.json());
+        setDocuments(Array.isArray(list) ? list : []);
+        setDocStatus('idle');
+      } else {
+        setDocStatus('err');
+        setDocError(t.documentUploadError);
+      }
+    } catch {
+      setDocStatus('err');
+      setDocError(t.documentUploadError);
+    }
+  };
+
+  const deleteDocument = async (id: string) => {
+    try {
+      const res = await fetch(`/api/user/documents/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setDocuments(prev => prev.filter(d => d.id !== id));
+      } else {
+        setDocStatus('err');
+        setDocError(t.documentDeleteError);
+      }
+    } catch {
+      setDocStatus('err');
+      setDocError(t.documentDeleteError);
     }
   };
 
@@ -331,6 +442,165 @@ export default function ProfilePage() {
           >
             {pwdStatus === 'saving' ? t.changing : t.changePassword}
           </button>
+        </div>
+
+        {/* Requisites */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIconWrap}><Shield size={15} color="#2a7a4a" strokeWidth={2.5} /></div>
+            <h3 className={styles.sectionTitle}>{t.requisitesTitle}</h3>
+          </div>
+
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>{t.companyName}</label>
+            <input
+              className={styles.formInput}
+              value={companyName}
+              onChange={e => { setCompanyName(e.target.value); setReqStatus('idle'); }}
+              placeholder={t.companyNamePlaceholder}
+            />
+          </div>
+
+          <div className={styles.formRow3}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.inn}</label>
+              <input
+                className={styles.formInput}
+                value={inn}
+                onChange={e => { setInn(e.target.value); setReqStatus('idle'); }}
+                placeholder="0000000000"
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.kpp}</label>
+              <input
+                className={styles.formInput}
+                value={kpp}
+                onChange={e => { setKpp(e.target.value); setReqStatus('idle'); }}
+                placeholder="000000000"
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.ogrn}</label>
+              <input
+                className={styles.formInput}
+                value={ogrn}
+                onChange={e => { setOgrn(e.target.value); setReqStatus('idle'); }}
+                placeholder="0000000000000"
+              />
+            </div>
+          </div>
+
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>{t.legalAddress}</label>
+            <input
+              className={styles.formInput}
+              value={legalAddress}
+              onChange={e => { setLegalAddress(e.target.value); setReqStatus('idle'); }}
+              placeholder={t.legalAddressPlaceholder}
+            />
+          </div>
+
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>{t.bankName}</label>
+            <input
+              className={styles.formInput}
+              value={bankName}
+              onChange={e => { setBankName(e.target.value); setReqStatus('idle'); }}
+              placeholder={t.bankNamePlaceholder}
+            />
+          </div>
+
+          <div className={styles.formRow3}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.bik}</label>
+              <input
+                className={styles.formInput}
+                value={bik}
+                onChange={e => { setBik(e.target.value); setReqStatus('idle'); }}
+                placeholder="000000000"
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.bankAccount}</label>
+              <input
+                className={styles.formInput}
+                value={bankAccount}
+                onChange={e => { setBankAccount(e.target.value); setReqStatus('idle'); }}
+                placeholder="00000000000000000000"
+              />
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>{t.corrAccount}</label>
+              <input
+                className={styles.formInput}
+                value={corrAccount}
+                onChange={e => { setCorrAccount(e.target.value); setReqStatus('idle'); }}
+                placeholder="00000000000000000000"
+              />
+            </div>
+          </div>
+
+          {reqStatus === 'err' && <p className={styles.errMsg}>{reqError}</p>}
+          {reqStatus === 'ok'  && (
+            <p className={styles.okMsg}><Check size={13} strokeWidth={3} /> {t.requisitesSaved}</p>
+          )}
+
+          <button
+            className={styles.saveBtn}
+            onClick={saveRequisites}
+            disabled={reqStatus === 'saving'}
+          >
+            {reqStatus === 'saving' ? t.saving : t.save}
+          </button>
+        </div>
+
+        {/* Documents */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionIconWrap}><FileText size={15} color="#2a7a4a" strokeWidth={2.5} /></div>
+            <h3 className={styles.sectionTitle}>{t.documentsTitle}</h3>
+          </div>
+
+          <div className={styles.uploadRow}>
+            <input
+              ref={docRef}
+              type="file"
+              style={{ display: 'none' }}
+              onChange={uploadDocument}
+            />
+            <button
+              className={styles.uploadBtn}
+              onClick={() => docRef.current?.click()}
+              disabled={docStatus === 'uploading'}
+            >
+              <Upload size={14} strokeWidth={2.4} />
+              {t.uploadDocument}
+            </button>
+          </div>
+
+          {docStatus === 'err' && <p className={styles.errMsg}>{docError}</p>}
+
+          <div className={styles.docsList}>
+            {documents.length === 0 && (
+              <div className={styles.docsEmpty}>{t.noDocuments}</div>
+            )}
+            {documents.map(doc => (
+              <div key={doc.id} className={styles.docItem}>
+                <div className={styles.docMeta}>
+                  <span className={styles.docName}>{doc.filename}</span>
+                  <span className={styles.docDate}>{doc.uploaded_at}</span>
+                </div>
+                <div className={styles.docActions}>
+                  <a className={styles.docLink} href={doc.url} target="_blank" rel="noreferrer">{t.openDocument}</a>
+                  <button className={styles.docDelete} onClick={() => deleteDocument(doc.id)}>
+                    <Trash2 size={14} />
+                    {t.deleteDocument}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

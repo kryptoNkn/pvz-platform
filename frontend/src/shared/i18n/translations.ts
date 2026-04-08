@@ -153,6 +153,27 @@ export interface Translations {
     passwordChanged: string
     changing: string
     changePassword: string
+    requisitesTitle: string
+    companyName: string
+    companyNamePlaceholder: string
+    inn: string
+    kpp: string
+    ogrn: string
+    legalAddress: string
+    legalAddressPlaceholder: string
+    bankName: string
+    bankNamePlaceholder: string
+    bik: string
+    bankAccount: string
+    corrAccount: string
+    requisitesSaved: string
+    documentsTitle: string
+    uploadDocument: string
+    noDocuments: string
+    openDocument: string
+    deleteDocument: string
+    documentUploadError: string
+    documentDeleteError: string
     // notifications panel
     notifications: string
     noNotifications: string
@@ -341,6 +362,27 @@ const ru: Translations = {
     passwordMismatch: 'Пароли не совпадают',
     passwordTooShort: 'Пароль должен быть не менее 8 символов',
     passwordChanged: '✓ Пароль изменён',
+    requisitesTitle: 'Документы и реквизиты',
+    companyName: 'Название организации',
+    companyNamePlaceholder: 'ООО «Компания»',
+    inn: 'ИНН',
+    kpp: 'КПП',
+    ogrn: 'ОГРН',
+    legalAddress: 'Юридический адрес',
+    legalAddressPlaceholder: 'г. Москва, ул. Примерная, д. 1',
+    bankName: 'Банк',
+    bankNamePlaceholder: 'ПАО Сбербанк',
+    bik: 'БИК',
+    bankAccount: 'Р/с',
+    corrAccount: 'К/с',
+    requisitesSaved: '✓ Реквизиты сохранены',
+    documentsTitle: 'Документы',
+    uploadDocument: 'Загрузить документ',
+    noDocuments: 'Документов пока нет',
+    openDocument: 'Открыть',
+    deleteDocument: 'Удалить',
+    documentUploadError: 'Ошибка загрузки документа',
+    documentDeleteError: 'Ошибка удаления документа',
     changing: 'Изменение…',
     changePassword: 'Изменить пароль',
     notifications: 'Уведомления',
@@ -527,6 +569,27 @@ const en: Translations = {
     passwordMismatch: 'Passwords do not match',
     passwordTooShort: 'Password must be at least 8 characters',
     passwordChanged: '✓ Password changed',
+    requisitesTitle: 'Documents & requisites',
+    companyName: 'Company name',
+    companyNamePlaceholder: 'ACME LLC',
+    inn: 'INN',
+    kpp: 'KPP',
+    ogrn: 'OGRN',
+    legalAddress: 'Legal address',
+    legalAddressPlaceholder: '1 Example st., Moscow',
+    bankName: 'Bank',
+    bankNamePlaceholder: 'Sberbank',
+    bik: 'BIK',
+    bankAccount: 'Account',
+    corrAccount: 'Corr. account',
+    requisitesSaved: '✓ Requisites saved',
+    documentsTitle: 'Documents',
+    uploadDocument: 'Upload document',
+    noDocuments: 'No documents yet',
+    openDocument: 'Open',
+    deleteDocument: 'Delete',
+    documentUploadError: 'Document upload error',
+    documentDeleteError: 'Document delete error',
     changing: 'Changing...',
     changePassword: 'Change password',
     notifications: 'Notifications',
