@@ -1,4 +1,4 @@
-# П23. DFD (Data Flow Diagram)
+# П23. Построение DFD (Data Flow Diagram)
 
 **Поток данных:**
 1. Пользователь (React) отправляет запросы в Actix Web API.
