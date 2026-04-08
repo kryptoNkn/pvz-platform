@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use anyhow::Result;
 use reqwest::Client;
-
 use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpProduct, SyncState};
 
 pub struct YandexAdapter {
