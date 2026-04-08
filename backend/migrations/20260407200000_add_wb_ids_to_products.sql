@@ -1,0 +1,3 @@
+ALTER TABLE products
+    ADD COLUMN IF NOT EXISTS wb_nm_id BIGINT,
+    ADD COLUMN IF NOT EXISTS wb_chrt_id BIGINT;

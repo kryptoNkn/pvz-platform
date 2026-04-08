@@ -187,6 +187,54 @@
     overflow: hidden;
 }
 
+.ordersWrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.actionsRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 8px 0 6px;
+}
+
+.actionBtn {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-card);
+    background: #fff;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.actionBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    border-color: #d5d5d5;
+}
+
+.actionBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.actionMsg {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-left: 6px;
+}
+
 .tableHeader {
     display: flex;
     align-items: center;

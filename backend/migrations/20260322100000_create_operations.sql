@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS operations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_operations_pvz_id ON operations(pvz_id);
-CREATE INDEX idx_operations_op_type ON operations(op_type);
-CREATE INDEX idx_operations_created_at ON operations(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_operations_pvz_id ON operations(pvz_id);
+CREATE INDEX IF NOT EXISTS idx_operations_op_type ON operations(op_type);
+CREATE INDEX IF NOT EXISTS idx_operations_created_at ON operations(created_at DESC);

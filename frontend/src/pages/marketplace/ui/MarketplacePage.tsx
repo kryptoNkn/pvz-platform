@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, Clock, Package, ArrowDownToLine } from 'lucide-react'
+import { TrendingUp, Clock, Package, ArrowDownToLine, RefreshCcw, Upload } from 'lucide-react'
 import { exportCsv } from '@/shared/exportCsv'
 import styles from './MarketplacePage.module.scss'
 
@@ -10,6 +10,21 @@ interface MarketplaceItem {
     avg_price: number
     avg_storage_days: number
     pending_today: number
+}
+
+interface OrderItem {
+    article: string
+    quantity: number
+    price: number
+}
+
+interface MarketplaceOrder {
+    id: string
+    marketplace: string
+    external_id: string
+    status: string
+    created_at: string
+    items: OrderItem[]
 }
 
 const MARKETPLACE_COLORS: Record<string, string> = {
@@ -28,7 +43,10 @@ const fmtRub = (n: number) => fmt(n) + ' ₽'
 
 export const MarketplacePage = () => {
     const [items, setItems] = useState<MarketplaceItem[]>([])
+    const [orders, setOrders] = useState<MarketplaceOrder[]>([])
     const [loading, setLoading] = useState(true)
+    const [actionsLoading, setActionsLoading] = useState(false)
+    const [actionMsg, setActionMsg] = useState('')
 
     useEffect(() => {
         fetch('/api/v1/marketplace-items', { credentials: 'include' })
@@ -36,6 +54,32 @@ export const MarketplacePage = () => {
             .then((data: MarketplaceItem[]) => { setItems(data); setLoading(false) })
             .catch(() => setLoading(false))
     }, [])
+
+    const loadOrders = () => {
+        fetch('/api/marketplace/orders', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : [])
+            .then((data: MarketplaceOrder[]) => setOrders(data))
+            .catch(() => setOrders([]))
+    }
+
+    useEffect(() => {
+        loadOrders()
+    }, [])
+
+    const runAction = async (url: string, label: string) => {
+        setActionsLoading(true)
+        setActionMsg('')
+        try {
+            const res = await fetch(url, { method: 'POST', credentials: 'include' })
+            if (!res.ok) throw new Error('failed')
+            setActionMsg(`${label}: OK`)
+            loadOrders()
+        } catch {
+            setActionMsg(`${label}: ошибка`)
+        } finally {
+            setActionsLoading(false)
+        }
+    }
 
     const totalItems    = items.reduce((s, i) => s + i.items_count, 0)
     const totalPending  = items.reduce((s, i) => s + i.pending_today, 0)
@@ -65,6 +109,39 @@ export const MarketplacePage = () => {
             <div className={styles.header}>
                 <h2 className={styles.heading}>Товары на ПВЗ</h2>
                 <p className={styles.sub}>Распределение по маркетплейсам, комиссии и прогноз выдач</p>
+            </div>
+
+            {/* ── Действия API ── */}
+            <div className={styles.actionsRow}>
+                <button
+                    className={styles.actionBtn}
+                    disabled={actionsLoading}
+                    onClick={() => runAction('/api/marketplace/sync-orders', 'Синк заказов')}
+                >
+                    <RefreshCcw size={16} /> Синк заказов
+                </button>
+                <button
+                    className={styles.actionBtn}
+                    disabled={actionsLoading}
+                    onClick={() => runAction('/api/marketplace/wb/sync-cards', 'WB: карточки')}
+                >
+                    <RefreshCcw size={16} /> WB карточки
+                </button>
+                <button
+                    className={styles.actionBtn}
+                    disabled={actionsLoading}
+                    onClick={() => runAction('/api/marketplace/wb/push-prices', 'WB: цены')}
+                >
+                    <Upload size={16} /> WB цены
+                </button>
+                <button
+                    className={styles.actionBtn}
+                    disabled={actionsLoading}
+                    onClick={() => runAction('/api/marketplace/wb/push-stocks', 'WB: остатки')}
+                >
+                    <Upload size={16} /> WB остатки
+                </button>
+                {actionMsg && <span className={styles.actionMsg}>{actionMsg}</span>}
             </div>
 
             {/* ── Суммарные KPI ── */}
@@ -244,6 +321,50 @@ export const MarketplacePage = () => {
                             <td>100%</td>
                         </tr>
                     </tfoot>
+                </table>
+            </div>
+
+            {/* ── Заказы ── */}
+            <div className={styles.ordersWrap}>
+                <div className={styles.tableHeader}>
+                    <div className={styles.tableTitle}>Последние заказы</div>
+                    <button className={styles.exportBtn} onClick={loadOrders}>Обновить</button>
+                </div>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>Маркетплейс</th>
+                            <th>ID</th>
+                            <th>Статус</th>
+                            <th>Создан</th>
+                            <th>Позиции</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map(o => (
+                            <tr key={o.id}>
+                                <td>
+                                    <span
+                                        className={styles.badge}
+                                        style={{
+                                            background: MARKETPLACE_COLORS[o.marketplace] ?? '#888',
+                                            color: MARKETPLACE_TEXT[o.marketplace] ?? '#fff',
+                                        }}
+                                    >
+                                        {o.marketplace}
+                                    </span>
+                                </td>
+                                <td className={styles.numCell}>{o.external_id}</td>
+                                <td>{o.status}</td>
+                                <td>{new Date(o.created_at).toLocaleString('ru-RU')}</td>
+                                <td>
+                                    {o.items?.length
+                                        ? o.items.map(it => `${it.article} ×${it.quantity}`).join(', ')
+                                        : '—'}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
                 </table>
             </div>
 
