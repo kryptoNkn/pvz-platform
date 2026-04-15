@@ -59,7 +59,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
                             to="/workload/employees"
                             className={`${styles.navIcon} ${pathname === '/workload/employees' ? styles.navIconActive : ''}`}
                         >
-                            <Users width={40} height={40} />
+                            <Users width={40} height={40} color="white" />
                         </Link>
                     )}
                 </nav>
