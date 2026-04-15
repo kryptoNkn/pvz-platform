@@ -5,3 +5,5 @@ pub mod notifications;
 pub mod schedule;
 pub mod operations;
 pub mod marketplace;
+pub mod health;
+pub mod metrics;

@@ -2,6 +2,7 @@ use anyhow::Result;
 use sqlx::{PgPool, Row, Postgres, Transaction};
 use crate::marketplace::{MarketplaceAdapter, MpProduct, MpOrder, Marketplace, SyncState};
 use crate::marketplace::adapters::WbAdapter;
+use crate::observability::{SYNC_ERRORS_TOTAL, SYNC_ORDERS_TOTAL, SyncTimer};
 
 pub struct MarketplaceService {
     adapters: Vec<Box<dyn MarketplaceAdapter>>,
@@ -14,9 +15,50 @@ impl MarketplaceService {
 
     pub async fn sync_orders_all(&self, pool: &PgPool, state: &SyncState) -> Result<()> {
         for adapter in &self.adapters {
-            let orders = adapter.fetch_orders(state).await?;
             let mp = adapter.marketplace();
-            self.save_orders(pool, mp, &orders).await?;
+            let marketplace_name = marketplace_to_str(mp);
+            let timer = SyncTimer::start(marketplace_name, "sync_orders");
+
+            let orders = match adapter.fetch_orders(state).await {
+                Ok(orders) => orders,
+                Err(err) => {
+                    SYNC_ERRORS_TOTAL
+                        .with_label_values(&[marketplace_name, "fetch_orders"])
+                        .inc();
+                    timer.observe_error();
+                    tracing::error!(
+                        marketplace = marketplace_name,
+                        error = %err,
+                        "failed to fetch orders"
+                    );
+                    return Err(err);
+                }
+            };
+
+            SYNC_ORDERS_TOTAL
+                .with_label_values(&[marketplace_name, "fetched"])
+                .inc_by(orders.len() as f64);
+
+            if let Err(err) = self.save_orders(pool, mp, &orders).await {
+                SYNC_ERRORS_TOTAL
+                    .with_label_values(&[marketplace_name, "save_orders"])
+                    .inc();
+                timer.observe_error();
+                tracing::error!(
+                    marketplace = marketplace_name,
+                    orders = orders.len(),
+                    error = %err,
+                    "failed to save orders"
+                );
+                return Err(err);
+            }
+
+            timer.observe_success();
+            tracing::info!(
+                marketplace = marketplace_name,
+                orders = orders.len(),
+                "orders synced"
+            );
         }
         Ok(())
     }

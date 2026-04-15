@@ -4,6 +4,7 @@ mod utils;
 mod middleware;
 mod pvz;
 mod marketplace;
+mod observability;
 
 use std::{env, sync::{Arc, Mutex}};
 use actix_cors::Cors;
@@ -12,6 +13,10 @@ use actix_web::{web, App, HttpServer};
 use reqwest::Client;
 use sqlx::PgPool;
 use std::time::Duration;
+use tracing_subscriber::EnvFilter;
+use tracing_actix_web::TracingLogger;
+use crate::middleware::request_id::RequestId;
+use crate::middleware::request_metrics::RequestMetrics;
 use crate::middleware::auth::Auth;
 use crate::pvz::AppState;
 use crate::marketplace::adapters::{OzonAdapter, WbAdapter, YandexAdapter, AvitoAdapter, MockAdapter};
@@ -21,12 +26,55 @@ fn require_env(name: &str) -> String {
     env::var(name).unwrap_or_else(|_| panic!("Missing required env var: {name}"))
 }
 
+async fn seed_test_accounts(pool: &PgPool) {
+    let _ = sqlx::query(
+        r#"
+        INSERT INTO users (id, username, email, password_hash, role)
+        VALUES
+            (
+                '11111111-1111-1111-1111-111111111111',
+                'Operator Test',
+                '90000000001',
+                '$argon2id$v=19$m=4096,t=3,p=1$hawjkAuZOR9+s12QtlQvuA$rMixsE7Q37THJ+udIWi/D3HZZJkfw8nGsn1RKDBSJdo',
+                'operator'
+            ),
+            (
+                '22222222-2222-2222-2222-222222222222',
+                'Admin Test',
+                '90000000002',
+                '$argon2id$v=19$m=4096,t=3,p=1$EPlaDY0bgUWqwOKgB+3BvQ$Wz4NgLLsJgZrSYA9GgKqrg4TrPfmDg2xmn8ZjiFTUKE',
+                'admin'
+            ),
+            (
+                '33333333-3333-3333-3333-333333333333',
+                'Owner Test',
+                '90000000003',
+                '$argon2id$v=19$m=4096,t=3,p=1$ZqpZsOXdWDHWGJV+scRlXA$teIc/slDbax3GC0vv4NUzH6FSfjhxbGFrYX01Nq2RNo',
+                'owner'
+            )
+        ON CONFLICT (email) DO NOTHING
+        "#
+    )
+    .execute(pool)
+    .await;
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPool::connect(&database_url).await.expect("Failed to connect to DB");
+    seed_test_accounts(&pool).await;
+
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info,sqlx=warn,reqwest=warn"));
+
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_target(false)
+        .json()
+        .init();
 
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS operations (
@@ -116,13 +164,16 @@ async fn main() -> std::io::Result<()> {
             interval.tick().await;
             let state = crate::marketplace::SyncState::default();
             if let Err(e) = mp_for_worker.sync_orders_all(&pool_for_worker, &state).await {
-                log::error!("marketplace worker sync_orders error: {e}");
+                tracing::error!(error = %e, "marketplace worker sync_orders error");
             }
         }
     });
 
     HttpServer::new(move || {
         App::new()
+            .wrap(TracingLogger::default())
+            .wrap(RequestMetrics)
+            .wrap(RequestId)
             .wrap(Cors::permissive())
             .wrap(Auth)
             .app_data(web::Data::new(pool.clone()))
@@ -138,6 +189,8 @@ async fn main() -> std::io::Result<()> {
                     .configure(routes::notifications::init_routes)
                     .configure(routes::marketplace::init_routes)
                     .configure(routes::operations::init_routes)
+                    .configure(routes::health::init_routes)
+                    .configure(routes::metrics::init_routes),
             )
     })
         .bind("0.0.0.0:8080")?

@@ -14,8 +14,10 @@ const navItems = [
     { path: '/marketplace', icon: <Package width={40} height={40} color="white" /> },
 ]
 
+type Role = 'operator' | 'admin' | 'owner' | null
+
 interface SidebarProps {
-    role: string
+    role: Role
 }
 
 export const Sidebar = ({ role }: SidebarProps) => {
@@ -25,6 +27,14 @@ export const Sidebar = ({ role }: SidebarProps) => {
     const [showConfirm, setShowConfirm] = useState(false)
 
     const canManageUsers = role === 'owner' || role === 'admin'
+    const canViewFinance = role === 'owner' || role === 'admin'
+    const canViewMarketplace = role === 'owner' || role === 'admin'
+
+    const visibleNavItems = navItems.filter(item => {
+        if (item.path === '/finance') return canViewFinance
+        if (item.path === '/marketplace') return canViewMarketplace
+        return true
+    })
 
     return (
         <>
@@ -35,7 +45,7 @@ export const Sidebar = ({ role }: SidebarProps) => {
                 </div>
 
                 <nav className={styles.nav}>
-                    {navItems.map(item => (
+                    {visibleNavItems.map(item => (
                         <Link
                             key={item.path}
                             to={item.path}

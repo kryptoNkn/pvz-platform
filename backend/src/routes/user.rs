@@ -3,6 +3,8 @@ use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use futures_util::TryStreamExt;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
+
+use crate::utils::roles::Role;
 use serde::Deserialize;
 use std::{fs,io::Write};
 use std::path::Path;
@@ -18,7 +20,7 @@ pub async fn profile(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder 
     };
 
     let row = sqlx::query(
-        "SELECT username, email, role, avatar_path, created_at,\n+                company_name, inn, kpp, ogrn, bank_name, bik, bank_account, corr_account, legal_address\n+         FROM users WHERE id = $1"
+        "SELECT username, email, role, avatar_path, created_at,\n                company_name, inn, kpp, ogrn, bank_name, bik, bank_account, corr_account, legal_address\n         FROM users WHERE id = $1"
     )
     .bind(user_id)
     .fetch_optional(db.get_ref())
@@ -114,7 +116,7 @@ pub async fn update_requisites(
     };
 
     let result = sqlx::query(
-        "UPDATE users SET company_name = $1, inn = $2, kpp = $3, ogrn = $4,\n+                bank_name = $5, bik = $6, bank_account = $7, corr_account = $8, legal_address = $9\n+         WHERE id = $10"
+        "UPDATE users SET company_name = $1, inn = $2, kpp = $3, ogrn = $4,\n                bank_name = $5, bik = $6, bank_account = $7, corr_account = $8, legal_address = $9\n         WHERE id = $10"
     )
     .bind(&body.company_name)
     .bind(&body.inn)
@@ -231,7 +233,7 @@ pub async fn list_documents(
     };
 
     let rows = sqlx::query(
-        "SELECT id, filename, file_path, uploaded_at\n+         FROM user_documents\n+         WHERE user_id = $1\n+         ORDER BY uploaded_at DESC"
+        "SELECT id, filename, file_path, uploaded_at\n         FROM user_documents\n         WHERE user_id = $1\n         ORDER BY uploaded_at DESC"
     )
     .bind(user_id)
     .fetch_all(db.get_ref())
@@ -327,7 +329,7 @@ pub async fn upload_document(
 
         let file_url = format!("/api/uploads/docs/{}/{}", user_id, stored_name);
         let result = sqlx::query(
-            "INSERT INTO user_documents (id, user_id, filename, file_path)\n+             VALUES ($1, $2, $3, $4)"
+            "INSERT INTO user_documents (id, user_id, filename, file_path)\n             VALUES ($1, $2, $3, $4)"
         )
         .bind(doc_id)
         .bind(user_id)
@@ -494,17 +496,12 @@ pub async fn get_users(
         None => return HttpResponse::Unauthorized().finish(),
     };
 
-    let row = sqlx::query("SELECT role FROM users WHERE id = $1")
-        .bind(requester_id)
-        .fetch_optional(db.get_ref())
-        .await;
-
-    let requester_role: String = match row {
-        Ok(Some(r)) => r.get("role"),
-        _ => return HttpResponse::Unauthorized().finish(),
+    let requester_role = match req.extensions().get::<Role>().copied() {
+        Some(role) => role,
+        None => return HttpResponse::Unauthorized().finish(),
     };
 
-    if requester_role != "owner" && requester_role != "admin" {
+    if !requester_role.can_manage_users() {
         return HttpResponse::Forbidden().finish();
     }
 
@@ -543,28 +540,23 @@ pub async fn assign_role(
     path: web::Path<Uuid>,
     body: web::Json<AssignRoleBody>,
 ) -> impl Responder {
-    let requester_id = match req.extensions().get::<Uuid>().cloned() {
-        Some(id) => id,
+    let target_id = path.into_inner();
+
+    let requester_role = match req.extensions().get::<Role>().copied() {
+        Some(role) => role,
         None => return HttpResponse::Unauthorized().finish(),
     };
 
-    let target_id = path.into_inner();
-
-    let row = sqlx::query("SELECT role FROM users WHERE id = $1")
-        .bind(requester_id)
-        .fetch_optional(db.get_ref())
-        .await;
-
-    let requester_role: String = match row {
-        Ok(Some(r)) => r.get("role"),
-        _ => return HttpResponse::Unauthorized().finish(),
+    let target_role = match Role::from_db(&body.role) {
+        Some(role) => role,
+        None => {
+            return HttpResponse::BadRequest().json(
+                serde_json::json!({ "error": "Invalid role" })
+            );
+        }
     };
 
-    let allowed = match requester_role.as_str() {
-        "owner" => matches!(body.role.as_str(), "operator" | "admin"),
-        "admin" => matches!(body.role.as_str(), "operator"),
-        _ => false,
-    };
+    let allowed = requester_role.can_edit_role(target_role);
 
     if !allowed {
         return HttpResponse::Forbidden().json(

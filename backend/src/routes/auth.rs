@@ -8,7 +8,7 @@ use crate::utils::{
     password::{hash_password, verify_password},
     refresh_tokens::{save_refresh_token},
     tokens::{generate_access_token, generate_refresh_token, get_jwt_secret},
-    validation::{validate_login_input, validate_register_input},
+    validation::{validate_login_input, validate_register_input, ValidationError},
     cookies::{access_cookie, refresh_cookie},
 };
 
@@ -32,6 +32,11 @@ pub async fn register_user(
 
     let user_id = Uuid::new_v4();
     let role = "operator".to_string();
+    let normalized_phone: String = user
+        .phone
+        .chars()
+        .filter(|c| c.is_ascii_digit())
+        .collect();
 
     let result = sqlx::query(
         r#"
@@ -41,7 +46,7 @@ pub async fn register_user(
     )
     .bind(user_id)
     .bind(&user.full_name)
-    .bind(&user.phone)
+    .bind(&normalized_phone)
     .bind(&password_hash)
     .bind(&role)
     .execute(db.get_ref())
@@ -86,6 +91,11 @@ pub async fn register_user(
                 }))
         },
         Err(e) => {
+            if let sqlx::Error::Database(db_err) = &e {
+                if db_err.code().as_deref() == Some("23505") {
+                    return validation_error_to_response(vec![ValidationError::PhoneTaken]);
+                }
+            }
             log::error!("DB error: {e}");
             HttpResponse::InternalServerError().finish()
         }

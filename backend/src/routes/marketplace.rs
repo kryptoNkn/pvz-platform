@@ -1,16 +1,35 @@
 use std::sync::Arc;
 
-use actix_web::{HttpResponse, Responder, web};
+use actix_web::{HttpRequest, HttpResponse, Responder, web, HttpMessage};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use crate::marketplace::{MarketplaceService, MpProduct, SyncState};
+use crate::utils::roles::Role;
+
+fn require_marketplace_access(req: &HttpRequest) -> Result<Role, HttpResponse> {
+    let role = req.extensions().get::<Role>().copied().ok_or_else(|| {
+        HttpResponse::Unauthorized().finish()
+    })?;
+
+    if role.can_manage_marketplace() {
+        Ok(role)
+    } else {
+        Err(HttpResponse::Forbidden().json(serde_json::json!({
+            "error": "Insufficient permissions"
+        })))
+    }
+}
 
 pub async fn sync_orders(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     let state = SyncState::default();
     match service.sync_orders_all(pool.get_ref(), &state).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
@@ -22,9 +41,13 @@ pub async fn sync_orders(
 }
 
 pub async fn push_prices(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     body: web::Json<Vec<MpProduct>>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     match service.push_prices_all(&body).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
         Err(e) => {
@@ -35,9 +58,13 @@ pub async fn push_prices(
 }
 
 pub async fn push_stocks(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     body: web::Json<Vec<MpProduct>>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     match service.push_stocks_all(&body).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
         Err(e) => {
@@ -48,9 +75,13 @@ pub async fn push_stocks(
 }
 
 pub async fn wb_sync_cards(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     match service.wb_sync_cards(pool.get_ref()).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
         Err(e) => {
@@ -61,9 +92,13 @@ pub async fn wb_sync_cards(
 }
 
 pub async fn wb_push_prices(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     match service.wb_push_prices_from_db(pool.get_ref()).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
         Err(e) => {
@@ -74,9 +109,13 @@ pub async fn wb_push_prices(
 }
 
 pub async fn wb_push_stocks(
+    req: HttpRequest,
     service: web::Data<Arc<MarketplaceService>>,
     pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if let Err(resp) = require_marketplace_access(&req) {
+        return resp;
+    }
     match service.wb_push_stocks_from_db(pool.get_ref()).await {
         Ok(_) => HttpResponse::Ok().json(serde_json::json!({"ok": true})),
         Err(e) => {

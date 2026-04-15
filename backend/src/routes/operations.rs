@@ -3,6 +3,17 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
+use crate::utils::roles::Role;
+
+fn require_admin_or_owner(req: &HttpRequest) -> Result<Role, HttpResponse> {
+    match req.extensions().get::<Role>().copied() {
+        Some(role @ Role::Admin) | Some(role @ Role::Owner) => Ok(role),
+        Some(_) => Err(HttpResponse::Forbidden().json(serde_json::json!({
+            "error": "Insufficient permissions"
+        }))),
+        None => Err(HttpResponse::Unauthorized().finish()),
+    }
+}
 
 #[derive(Deserialize)]
 pub struct NewOperationBody {
@@ -178,9 +189,14 @@ pub async fn list_operations(
 }
 
 pub async fn delete_operation(
+    req: HttpRequest,
     pool: web::Data<PgPool>,
     path: web::Path<Uuid>,
 ) -> impl Responder {
+    if let Err(resp) = require_admin_or_owner(&req) {
+        return resp;
+    }
+
     let id = path.into_inner();
 
     let op = sqlx::query("SELECT pvz_id, op_type, quantity FROM operations WHERE id = $1")

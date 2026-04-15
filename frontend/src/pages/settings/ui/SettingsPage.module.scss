@@ -2,10 +2,12 @@
 
 .pageOuter {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 32px 24px;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 32px 24px 48px;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .page {
@@ -14,6 +16,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  margin: 0 auto;
 }
 
 // ── Toast ─────────────────────────────────────────────────────
@@ -144,6 +147,18 @@
 }
 
 .chevron { color: var(--text-muted); }
+
+.good {
+  color: #40c97e;
+}
+
+.warn {
+  color: #e6a800;
+}
+
+.bad {
+  color: #e05252;
+}
 
 // ── Picker row (theme / language) ─────────────────────────────
 

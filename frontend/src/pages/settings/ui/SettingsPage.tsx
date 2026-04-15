@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
     User, Lock, Bell, Info, ChevronRight,
     Shield, LogOut, CheckCircle, XCircle,
-    Sun, Moon, Globe
+    Sun, Moon, Globe, Server, Activity, RefreshCcw, CircleAlert
 } from 'lucide-react'
 import { useLang } from '@/shared/i18n'
 import type { Lang } from '@/shared/i18n/translations'
@@ -17,6 +17,15 @@ interface Profile {
 }
 
 type Theme = 'light' | 'dark'
+
+type HealthState = 'loading' | 'ok' | 'degraded' | 'error'
+
+interface ObservabilityState {
+    health: HealthState
+    ready: HealthState
+    lastSync: string | null
+    loading: boolean
+}
 
 function applyTheme(theme: Theme) {
     document.documentElement.setAttribute('data-theme', theme)
@@ -37,6 +46,12 @@ export default function SettingsPage() {
     const [notifSystem, setNotifSystem] = useState(() =>
         localStorage.getItem('notif_system') !== 'false'
     )
+    const [obs, setObs] = useState<ObservabilityState>({
+        health: 'loading',
+        ready: 'loading',
+        lastSync: null,
+        loading: true,
+    })
 
     const showToast = (type: 'success' | 'error', text: string) => {
         setToast({ type, text })
@@ -48,6 +63,58 @@ export default function SettingsPage() {
             .then(r => r.ok ? r.json() : null)
             .then(setProfile)
             .catch(() => {})
+    }, [])
+
+    const loadObservability = async () => {
+        setObs(prev => ({ ...prev, loading: true }))
+
+        const healthRes = await fetch('/api/health', { credentials: 'include' }).catch(() => null)
+        const readyRes = await fetch('/api/ready', { credentials: 'include' }).catch(() => null)
+        const metricsRes = await fetch('/api/metrics', { credentials: 'include' }).catch(() => null)
+
+        let health: HealthState = 'error'
+        let ready: HealthState = 'error'
+        let lastSync: string | null = null
+
+        if (healthRes?.ok) {
+            health = 'ok'
+        }
+
+        if (readyRes?.ok) {
+            ready = 'ok'
+        } else if (readyRes) {
+            ready = 'degraded'
+        }
+
+        if (metricsRes?.ok) {
+            const text = await metricsRes.text()
+            const line = text.split('\n').find(l => l.startsWith('marketplace_sync_last_success_timestamp '))
+            const ts = line?.split(' ')[1]
+            if (ts && ts !== '0') {
+                const dt = new Date(Number(ts) * 1000)
+                if (!Number.isNaN(dt.getTime())) {
+                    lastSync = dt.toLocaleString('ru-RU')
+                }
+            }
+        }
+
+        setObs({
+            health,
+            ready,
+            lastSync,
+            loading: false,
+        })
+    }
+
+    useEffect(() => {
+        loadObservability().catch(() => {
+            setObs({
+                health: 'error',
+                ready: 'error',
+                lastSync: null,
+                loading: false,
+            })
+        })
     }, [])
 
     const handleTheme = (next: Theme) => {
@@ -232,6 +299,40 @@ export default function SettingsPage() {
                             <span className={styles.infoLabel}>{t.settingsPlatform}</span>
                             <span className={styles.infoValue}>ПВЗ Master</span>
                         </div>
+                    </div>
+                </section>
+
+                <section className={styles.section}>
+                    <h2 className={styles.sectionTitle}>Состояние системы</h2>
+                    <div className={styles.card}>
+                        <div className={styles.infoRow}>
+                            <Server size={16} />
+                            <span className={styles.infoLabel}>Health</span>
+                            <span className={`${styles.infoValue} ${obs.health === 'ok' ? styles.good : obs.health === 'degraded' ? styles.warn : styles.bad}`}>
+                                {obs.loading ? 'Проверка...' : obs.health.toUpperCase()}
+                            </span>
+                        </div>
+                        <div className={styles.divider} />
+                        <div className={styles.infoRow}>
+                            <Activity size={16} />
+                            <span className={styles.infoLabel}>Readiness</span>
+                            <span className={`${styles.infoValue} ${obs.ready === 'ok' ? styles.good : obs.ready === 'degraded' ? styles.warn : styles.bad}`}>
+                                {obs.loading ? 'Проверка...' : obs.ready.toUpperCase()}
+                            </span>
+                        </div>
+                        <div className={styles.divider} />
+                        <div className={styles.infoRow}>
+                            <RefreshCcw size={16} />
+                            <span className={styles.infoLabel}>Последний sync</span>
+                            <span className={styles.infoValue}>
+                                {obs.loading ? 'Загрузка...' : (obs.lastSync ?? 'нет данных')}
+                            </span>
+                        </div>
+                        <button className={styles.linkRow} onClick={() => loadObservability()}>
+                            <CircleAlert size={16} />
+                            <span>Обновить статус</span>
+                            <ChevronRight size={16} className={styles.chevron} />
+                        </button>
                     </div>
                 </section>
 

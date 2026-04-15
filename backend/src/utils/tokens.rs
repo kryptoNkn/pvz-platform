@@ -13,6 +13,7 @@ pub fn generate_access_token(user_id: Uuid) -> Result<String, JwtError> {
     let claims = AccessClaims {
         sub: user_id,
         exp: access_exp(),
+        role: None,
     };
 
     encode(

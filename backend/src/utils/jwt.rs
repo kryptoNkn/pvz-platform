@@ -7,6 +7,7 @@ use chrono::Utc;
 pub struct AccessClaims {
     pub sub: Uuid,
     pub exp: usize,
+    pub role: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

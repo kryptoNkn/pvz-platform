@@ -1,12 +1,14 @@
 use actix_web::{
     dev::{ServiceRequest, ServiceResponse, Transform, Service, forward_ready},
-    Error, HttpResponse, HttpMessage,
+    Error, HttpResponse, HttpMessage, web,
     body::EitherBody,
 };
 use futures_util::future::{LocalBoxFuture, ready, Ready};
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use std::rc::Rc;
+use sqlx::{PgPool, Row};
 use crate::utils::jwt::AccessClaims;
+use crate::utils::roles::Role;
 use crate::utils::tokens::get_jwt_secret;
 
 pub struct Auth;
@@ -57,6 +59,9 @@ where
                 "/api/auth/login",
                 "/api/auth/refresh",
                 "/api/users/check-username",
+                "/api/health",
+                "/api/ready",
+                "/api/metrics",
                 "/",
             ];
 
@@ -81,7 +86,22 @@ where
                     &DecodingKey::from_secret(&secret),
                     &Validation::default(),
                 ) {
-                    req.extensions_mut().insert(data.claims.sub);
+                    let user_id = data.claims.sub;
+                    req.extensions_mut().insert(user_id);
+
+                    if let Some(pool) = req.app_data::<web::Data<PgPool>>() {
+                        if let Ok(Some(row)) = sqlx::query("SELECT role FROM users WHERE id = $1")
+                            .bind(user_id)
+                            .fetch_optional(pool.get_ref())
+                            .await
+                        {
+                            let role: String = row.get("role");
+                            if let Some(parsed) = Role::from_db(&role) {
+                                req.extensions_mut().insert(parsed);
+                            }
+                        }
+                    }
+
                     let res = srv.call(req).await?;
                     return Ok(res.map_into_left_body());
                 }

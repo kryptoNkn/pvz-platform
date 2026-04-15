@@ -1,10 +1,11 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse, Responder, HttpMessage};
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
 use chrono::{DateTime, Utc};
 use crate::pvz::{AppState, generate_workload_stats, generate_financial_stats};
+use crate::utils::roles::Role;
 
 fn compute_load_percent(current: i32, max: i32) -> u8 {
     if max <= 0 { return 0; }
@@ -224,9 +225,20 @@ pub async fn workload_by_hour(
 }
 
 pub async fn get_finance(
+    req: HttpRequest,
     pool: web::Data<PgPool>,
     state: web::Data<Arc<Mutex<AppState>>>,
 ) -> impl Responder {
+    match req.extensions().get::<Role>().copied() {
+        Some(Role::Admin) | Some(Role::Owner) => {}
+        Some(_) => {
+            return HttpResponse::Forbidden().json(serde_json::json!({
+                "error": "Insufficient permissions"
+            }));
+        }
+        None => return HttpResponse::Unauthorized().finish(),
+    }
+
     let commission_map: std::collections::HashMap<&str, i64> = [
         ("Ozon", 84i64),
         ("WB", 57i64),
