@@ -37,6 +37,7 @@ docs/README.md — Карта всей проектной документаци
 | Жданюк Даниил Юрьевич     | Ydemi      |Frontend Developer|
 | Пчелкин Алексей Сергеевич | destrOFFik |Backend Developer |
 | Руденко Егор Юрьевич      | Soutyx     |Frontend Developer|
+| Руднев Яромир Ильич       | Kertikez   |Backend Developer |
 
 ---
 
