@@ -13,6 +13,7 @@ interface MarketplaceItem {
 }
 
 interface OrderItem {
+    name: string
     article: string
     quantity: number
     price: number
@@ -47,6 +48,7 @@ export const MarketplacePage = () => {
     const [loading, setLoading] = useState(true)
     const [actionsLoading, setActionsLoading] = useState(false)
     const [actionMsg, setActionMsg] = useState('')
+    const [selectedOrder, setSelectedOrder] = useState<MarketplaceOrder | null>(null)
 
     useEffect(() => {
         fetch('/api/v1/marketplace-items', { credentials: 'include' })
@@ -65,6 +67,20 @@ export const MarketplacePage = () => {
     useEffect(() => {
         loadOrders()
     }, [])
+
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setSelectedOrder(null)
+            }
+        }
+
+        if (selectedOrder) {
+            window.addEventListener('keydown', onKeyDown)
+        }
+
+        return () => window.removeEventListener('keydown', onKeyDown)
+    }, [selectedOrder])
 
     const runAction = async (url: string, label: string) => {
         setActionsLoading(true)
@@ -342,7 +358,19 @@ export const MarketplacePage = () => {
                     </thead>
                     <tbody>
                         {orders.map(o => (
-                            <tr key={o.id}>
+                            <tr
+                                key={o.id}
+                                className={styles.clickableRow}
+                                tabIndex={0}
+                                role="button"
+                                onClick={() => setSelectedOrder(o)}
+                                onKeyDown={event => {
+                                    if (event.key === 'Enter' || event.key === ' ') {
+                                        event.preventDefault()
+                                        setSelectedOrder(o)
+                                    }
+                                }}
+                            >
                                 <td>
                                     <span
                                         className={styles.badge}
@@ -359,7 +387,7 @@ export const MarketplacePage = () => {
                                 <td>{new Date(o.created_at).toLocaleString('ru-RU')}</td>
                                 <td>
                                     {o.items?.length
-                                        ? o.items.map(it => `${it.article} ×${it.quantity}`).join(', ')
+                                        ? o.items.map(it => `${it.name} ×${it.quantity}`).join(', ')
                                         : '—'}
                                 </td>
                             </tr>
@@ -367,6 +395,75 @@ export const MarketplacePage = () => {
                     </tbody>
                 </table>
             </div>
+
+            {selectedOrder && (
+                <div className={styles.modalOverlay} onClick={() => setSelectedOrder(null)}>
+                    <div className={styles.modal} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalTop}>
+                            <div>
+                                <h3 className={styles.modalTitle}>Информация о заказе</h3>
+                                <p className={styles.modalSubtitle}>{selectedOrder.external_id}</p>
+                            </div>
+                            <button className={styles.modalClose} onClick={() => setSelectedOrder(null)}>
+                                Закрыть
+                            </button>
+                        </div>
+
+                        <div className={styles.detailGrid}>
+                            <div className={styles.detailCard}>
+                                <span className={styles.detailLabel}>Маркетплейс</span>
+                                <span className={styles.detailValue}>
+                                    <span
+                                        className={styles.badge}
+                                        style={{
+                                            background: MARKETPLACE_COLORS[selectedOrder.marketplace] ?? '#888',
+                                            color: MARKETPLACE_TEXT[selectedOrder.marketplace] ?? '#fff',
+                                        }}
+                                    >
+                                        {selectedOrder.marketplace}
+                                    </span>
+                                </span>
+                            </div>
+                            <div className={styles.detailCard}>
+                                <span className={styles.detailLabel}>Статус</span>
+                                <span className={styles.detailValue}>{selectedOrder.status}</span>
+                            </div>
+                            <div className={styles.detailCard}>
+                                <span className={styles.detailLabel}>Создан</span>
+                                <span className={styles.detailValue}>
+                                    {new Date(selectedOrder.created_at).toLocaleString('ru-RU')}
+                                </span>
+                            </div>
+                            <div className={styles.detailCard}>
+                                <span className={styles.detailLabel}>Адрес ПВЗ</span>
+                                <span className={styles.detailValue}>не передан в текущих данных</span>
+                            </div>
+                        </div>
+
+                        <div className={styles.itemsBlock}>
+                            <h4 className={styles.itemsTitle}>Товары</h4>
+                            <div className={styles.itemsList}>
+                                {selectedOrder.items?.length ? (
+                                    selectedOrder.items.map((item, index) => (
+                                        <div className={styles.itemRow} key={`${item.article}-${index}`}>
+                                            <div className={styles.itemMain}>
+                                                <div className={styles.itemName}>{item.name}</div>
+                                                <div className={styles.itemMeta}>Артикул: {item.article}</div>
+                                            </div>
+                                            <div className={styles.itemStats}>
+                                                <span>Кол-во: {item.quantity}</span>
+                                                <span>Цена: {fmtRub(item.price)}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className={styles.emptyState}>Позиции в заказе отсутствуют.</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     )

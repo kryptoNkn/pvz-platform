@@ -20,6 +20,7 @@ pub struct MpOrder {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MpOrderItem {
     pub article: String,
+    pub name: String,
     pub qty: i32,
     pub price: i64,
 }

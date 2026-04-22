@@ -50,6 +50,7 @@ impl MarketplaceAdapter for WbAdapter {
                 } else {
                     vec![MpOrderItem {
                         article,
+                        name: o["name"].as_str().unwrap_or("WB product").to_string(),
                         qty: 1,
                         price,
                     }]

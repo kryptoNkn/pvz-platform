@@ -133,6 +133,7 @@ pub async fn list_orders(pool: web::Data<PgPool>) -> impl Responder {
         external_id: String,
         status: String,
         created_at: DateTime<Utc>,
+        item_name: Option<String>,
         article: Option<String>,
         quantity: Option<i32>,
         price: Option<i64>,
@@ -146,6 +147,7 @@ pub async fn list_orders(pool: web::Data<PgPool>) -> impl Responder {
             mo.external_id,
             mo.status,
             mo.created_at,
+            COALESCE(p.name, p.article) AS item_name,
             p.article,
             moi.quantity,
             moi.price
@@ -173,6 +175,7 @@ pub async fn list_orders(pool: web::Data<PgPool>) -> impl Responder {
             external_id: r.get("external_id"),
             status: r.get("status"),
             created_at: r.get("created_at"),
+            item_name: r.try_get("item_name").ok(),
             article: r.try_get("article").ok(),
             quantity: r.try_get("quantity").ok(),
             price: r.try_get("price").ok(),
@@ -189,11 +192,12 @@ pub async fn list_orders(pool: web::Data<PgPool>) -> impl Responder {
             })
         });
 
-        if let (Some(article), Some(quantity), Some(price)) =
-            (row.article, row.quantity, row.price)
+        if let (Some(name), Some(article), Some(quantity), Some(price)) =
+            (row.item_name, row.article, row.quantity, row.price)
         {
             if let Some(items) = entry.get_mut("items").and_then(|v| v.as_array_mut()) {
                 items.push(serde_json::json!({
+                    "name": name,
                     "article": article,
                     "quantity": quantity,
                     "price": price

@@ -62,8 +62,15 @@ impl MarketplaceAdapter for OzonAdapter {
                     .and_then(|s| s.parse().ok())
                     .unwrap_or_else(|| chrono::Utc::now()),
                 items: items.iter().map(|it| {
+                    let article = it["offer_id"].as_str().unwrap_or_default().to_string();
+                    let name = it["name"]
+                        .as_str()
+                        .or_else(|| it["offer_name"].as_str())
+                        .unwrap_or(&article)
+                        .to_string();
                     MpOrderItem {
-                        article: it["offer_id"].as_str().unwrap_or_default().to_string(),
+                        article,
+                        name,
                         qty: it["quantity"].as_i64().unwrap_or(0) as i32,
                         price: it["price"].as_i64().unwrap_or(0),
                     }

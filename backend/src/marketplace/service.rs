@@ -193,24 +193,27 @@ impl MarketplaceService {
                     INSERT INTO products (article, name, base_price)
                     VALUES ($1, $2, $3)
                     ON CONFLICT (article)
-                    DO UPDATE SET name = EXCLUDED.name
+                    DO UPDATE SET
+                        name = EXCLUDED.name,
+                        base_price = EXCLUDED.base_price
                     RETURNING id
                     "#
                 )
                 .bind(&item.article)
-                .bind(&item.article)
+                .bind(&item.name)
                 .bind(item.price)
                 .fetch_one(&mut *tx)
                 .await?;
 
                 sqlx::query(
                     r#"
-                    INSERT INTO marketplace_order_items (order_id, product_id, quantity, price)
-                    VALUES ($1, $2, $3, $4)
+                    INSERT INTO marketplace_order_items (order_id, product_id, name, quantity, price)
+                    VALUES ($1, $2, $3, $4, $5)
                     "#
                 )
                 .bind(order_id)
                 .bind(product_id)
+                .bind(&item.name)
                 .bind(item.qty)
                 .bind(item.price)
                 .execute(&mut *tx)
