@@ -10,6 +10,7 @@
 | Дорожная карта проекта, Gantt | [docs/01_Project_Launch/P5_Roadmap_Gantt.md](./01_Project_Launch/P5_Roadmap_Gantt.md) |
 | Сокращенная версия ТЗ | [docs/98_Source_Materials/P1_TZ_Short.md](./98_Source_Materials/P1_TZ_Short.md) |
 | Архитектурная схема системы | [docs/04_Data_Architecture/P25_System_Architecture.md](./04_Data_Architecture/P25_System_Architecture.md) |
+| Схема базы данных | [docs/04_Data_Architecture/P26_DB_Schema.md](./04_Data_Architecture/P26_DB_Schema.md) |
 | Приложения | [docs/06_Appendices/P1_Applications.md](./06_Appendices/P1_Applications.md) |
 
 Дополнительно уже есть:
