@@ -7,6 +7,8 @@ docs/98_Source_Materials/ — Техническое задание (сокра�
 
 docs/README.md — Карта всей проектной документации.
 
+docs/06_Appendices/ — Приложения: ERD и Swagger UI.
+
 **CP1** — Исследование и концепция.
 
 **CP2** — Процессы и Wireframes.
