@@ -20,8 +20,8 @@ VALUES
     ('Авито', 'AV-MOCK-ORDER-1', 'created', NOW())
 ON CONFLICT (marketplace, external_id) DO NOTHING;
 
-INSERT INTO marketplace_order_items (order_id, product_id, name, quantity, price)
-SELECT mo.id, p.id, p.name, 1, p.base_price
+INSERT INTO marketplace_order_items (order_id, product_id, quantity, price)
+SELECT mo.id, p.id, 1, p.base_price
 FROM marketplace_orders mo
 JOIN products p ON p.article = 'OZ-SKU-001'
 WHERE mo.external_id = 'OZ-MOCK-ORDER-1'
