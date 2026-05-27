@@ -1,17 +1,19 @@
 use std::sync::Arc;
 
-use actix_web::{HttpRequest, HttpResponse, Responder, web, HttpMessage};
-use sqlx::{PgPool, Row};
-use uuid::Uuid;
-use chrono::{DateTime, Utc};
-use std::collections::HashMap;
 use crate::marketplace::{MarketplaceService, MpProduct, SyncState};
 use crate::utils::roles::Role;
+use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, web};
+use chrono::{DateTime, Utc};
+use sqlx::{PgPool, Row};
+use std::collections::HashMap;
+use uuid::Uuid;
 
 fn require_marketplace_access(req: &HttpRequest) -> Result<Role, HttpResponse> {
-    let role = req.extensions().get::<Role>().copied().ok_or_else(|| {
-        HttpResponse::Unauthorized().finish()
-    })?;
+    let role = req
+        .extensions()
+        .get::<Role>()
+        .copied()
+        .ok_or_else(|| HttpResponse::Unauthorized().finish())?;
 
     if role.can_manage_marketplace() {
         Ok(role)
@@ -156,10 +158,11 @@ pub async fn list_orders(pool: web::Data<PgPool>) -> impl Responder {
         LEFT JOIN products p ON p.id = moi.product_id
         ORDER BY mo.created_at DESC
         LIMIT 50
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
-    .await {
+    .await
+    {
         Ok(r) => r,
         Err(e) => {
             log::error!("list_orders error: {e}");
@@ -225,6 +228,6 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
             .route("/wb/sync-cards", web::post().to(wb_sync_cards))
             .route("/wb/push-prices", web::post().to(wb_push_prices))
             .route("/wb/push-stocks", web::post().to(wb_push_stocks))
-            .route("/orders", web::get().to(list_orders))
+            .route("/orders", web::get().to(list_orders)),
     );
 }

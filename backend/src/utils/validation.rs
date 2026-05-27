@@ -1,4 +1,4 @@
-use crate::models::{RegisterUser, LoginUser};
+use crate::models::{LoginUser, RegisterUser};
 
 #[derive(Debug, Clone)]
 pub enum ValidationError {
@@ -54,9 +54,9 @@ fn is_valid_full_name(name: &str) -> bool {
         return false;
     }
 
-    words.iter().all(|word| {
-        word.len() >= 2 && word.chars().all(|c| c.is_alphabetic())
-    })
+    words
+        .iter()
+        .all(|word| word.len() >= 2 && word.chars().all(|c| c.is_alphabetic()))
 }
 
 fn is_valid_phone(phone: &str) -> bool {

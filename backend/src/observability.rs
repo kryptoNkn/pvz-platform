@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use prometheus::{
-    register_counter_vec, register_histogram_vec, register_int_gauge, CounterVec, HistogramVec,
-    IntGauge,
+    CounterVec, HistogramVec, IntGauge, register_counter_vec, register_histogram_vec,
+    register_int_gauge,
 };
 use std::time::Instant;
 

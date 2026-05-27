@@ -1,5 +1,8 @@
 -- Refresh marketplace demo data with richer product names and multi-item orders.
 
+ALTER TABLE marketplace_order_items
+    ADD COLUMN IF NOT EXISTS name TEXT;
+
 INSERT INTO products (article, name, base_price)
 VALUES
     ('IF17P-256', 'iPhone 17 Pro 256 GB', 149990),

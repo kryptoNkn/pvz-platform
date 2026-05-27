@@ -1,10 +1,10 @@
-use async_trait::async_trait;
-use anyhow::Result;
-use std::any::Any;
 use crate::marketplace::{Marketplace, MpOrder, MpProduct, SyncState};
+use anyhow::Result;
+use async_trait::async_trait;
+use std::any::Any;
 
 #[async_trait]
-pub trait MarketplaceAdapter: Send + Sync  {
+pub trait MarketplaceAdapter: Send + Sync {
     fn marketplace(&self) -> Marketplace;
     fn as_any(&self) -> &dyn Any;
 
@@ -13,14 +13,14 @@ pub trait MarketplaceAdapter: Send + Sync  {
     async fn update_prices(&self, products: &[MpProduct]) -> Result<()>;
 }
 
+pub mod avito;
+pub mod mock;
 pub mod ozon;
 pub mod wb;
 pub mod yandex;
-pub mod avito;
-pub mod mock;
 
+pub use avito::AvitoAdapter;
+pub use mock::MockAdapter;
 pub use ozon::OzonAdapter;
 pub use wb::WbAdapter;
 pub use yandex::YandexAdapter;
-pub use avito::AvitoAdapter;
-pub use mock::MockAdapter;

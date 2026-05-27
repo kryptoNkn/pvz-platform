@@ -1,12 +1,9 @@
+use crate::models::{ScheduleDay, ScheduleDayInput};
 use actix_web::{HttpResponse, Responder, web};
 use sqlx::PgPool;
 use uuid::Uuid;
-use crate::models::{ScheduleDay, ScheduleDayInput};
 
-pub async fn get_schedule(
-    db: web::Data<PgPool>,
-    path: web::Path<Uuid>,
-) -> impl Responder {
+pub async fn get_schedule(db: web::Data<PgPool>, path: web::Path<Uuid>) -> impl Responder {
     let pvz_id = path.into_inner();
 
     match sqlx::query_as::<_, ScheduleDay>(
@@ -15,11 +12,12 @@ pub async fn get_schedule(
         FROM pvz_schedule
         WHERE pvz_id = $1
         ORDER BY day_index
-        "#
+        "#,
     )
     .bind(pvz_id)
     .fetch_all(db.get_ref())
-    .await {
+    .await
+    {
         Ok(r) => HttpResponse::Ok().json(r),
         Err(e) => {
             log::error!("DB error: {e}");
@@ -36,7 +34,8 @@ pub async fn set_schedule(
     let pvz_id = path.into_inner();
 
     if body.len() != 7 {
-        return HttpResponse::BadRequest().json(serde_json::json!({ "error": "schedule must contain exactly 7 days" }));
+        return HttpResponse::BadRequest()
+            .json(serde_json::json!({ "error": "schedule must contain exactly 7 days" }));
     }
 
     for day in body.iter() {
@@ -47,17 +46,15 @@ pub async fn set_schedule(
         }
     }
 
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM pvz WHERE id = $1)"
-    )
-    .bind(pvz_id)
-    .fetch_one(db.get_ref())
-    .await
-    .unwrap_or(false);
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pvz WHERE id = $1)")
+        .bind(pvz_id)
+        .fetch_one(db.get_ref())
+        .await
+        .unwrap_or(false);
 
     if !exists {
-        return HttpResponse::NotFound().json(serde_json::json!({ 
-            "error": "pvz not found" 
+        return HttpResponse::NotFound().json(serde_json::json!({
+            "error": "pvz not found"
         }));
     }
 
@@ -84,7 +81,7 @@ pub async fn set_schedule(
         }
     }
 
-    HttpResponse::Ok().json(serde_json::json!({ 
-        "ok": true 
+    HttpResponse::Ok().json(serde_json::json!({
+        "ok": true
     }))
 }

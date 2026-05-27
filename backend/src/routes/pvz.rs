@@ -1,14 +1,16 @@
-use actix_web::{web, HttpRequest, HttpResponse, Responder, HttpMessage};
-use std::sync::{Arc, Mutex};
-use uuid::Uuid;
+use crate::pvz::{AppState, generate_financial_stats, generate_workload_stats};
+use crate::utils::roles::Role;
+use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, web};
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
-use chrono::{DateTime, Utc};
-use crate::pvz::{AppState, generate_workload_stats, generate_financial_stats};
-use crate::utils::roles::Role;
+use std::sync::{Arc, Mutex};
+use uuid::Uuid;
 
 fn compute_load_percent(current: i32, max: i32) -> u8 {
-    if max <= 0 { return 0; }
+    if max <= 0 {
+        return 0;
+    }
     ((current as f64 / max as f64) * 100.0).round() as u8
 }
 
@@ -31,7 +33,9 @@ fn row_to_json(r: &sqlx::postgres::PgRow) -> serde_json::Value {
     let max_capacity: i32 = r.get("max_capacity");
     let current_items: i32 = r.get("current_items");
     let hours: String = r.get("hours");
-    let marketplace: String = r.try_get("marketplace").unwrap_or_else(|_| "Ozon".to_string());
+    let marketplace: String = r
+        .try_get("marketplace")
+        .unwrap_or_else(|_| "Ozon".to_string());
 
     let load_percent = compute_load_percent(current_items, max_capacity);
     let traffic = compute_traffic(&status, load_percent);
@@ -70,10 +74,7 @@ pub async fn get_pvz_list(pool: web::Data<PgPool>) -> impl Responder {
     }
 }
 
-pub async fn get_pvz_by_id(
-    pool: web::Data<PgPool>,
-    path: web::Path<Uuid>,
-) -> impl Responder {
+pub async fn get_pvz_by_id(pool: web::Data<PgPool>, path: web::Path<Uuid>) -> impl Responder {
     let id = path.into_inner();
     match sqlx::query(
         "SELECT id, name, address, size_type, location_type, status, max_capacity, current_items, hours, marketplace
@@ -101,7 +102,7 @@ pub async fn get_stats(
             COUNT(*) FILTER (WHERE status = 'active') as active,
             COUNT(*) FILTER (WHERE status = 'overloaded') as overloaded,
             COUNT(*) FILTER (WHERE status = 'closed') as closed
-         FROM pvz"
+         FROM pvz",
     )
     .fetch_one(pool.get_ref())
     .await;
@@ -126,7 +127,7 @@ pub async fn get_stats(
             COALESCE(SUM(quantity) FILTER (WHERE op_type = 'out'), 0) AS delivery,
             COALESCE(SUM(quantity) FILTER (WHERE op_type = 'return'), 0) AS returns,
             COALESCE(SUM(quantity), 0) AS total_items
-         FROM operations"
+         FROM operations",
     )
     .fetch_one(pool.get_ref())
     .await;
@@ -141,8 +142,12 @@ pub async fn get_stats(
         }
         Err(_) => {
             let s = state.lock().unwrap();
-            (s.workload_stats.total_items as i64, s.workload_stats.acceptance as i64,
-             s.workload_stats.delivery as i64, s.workload_stats.returns as i64)
+            (
+                s.workload_stats.total_items as i64,
+                s.workload_stats.acceptance as i64,
+                s.workload_stats.delivery as i64,
+                s.workload_stats.returns as i64,
+            )
         }
     };
 
@@ -169,9 +174,13 @@ pub async fn workload_by_hour(
     pool: web::Data<PgPool>,
     query: web::Query<WorkloadByHourQuery>,
 ) -> impl Responder {
-    let date_from = query.date_from.as_deref()
+    let date_from = query
+        .date_from
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
-    let date_to = query.date_to.as_deref()
+    let date_to = query
+        .date_to
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
     let rows = match sqlx::query(
@@ -189,7 +198,7 @@ pub async fn workload_by_hour(
           AND ($3::timestamptz IS NULL OR o.created_at <= $3)
         GROUP BY hour
         ORDER BY hour
-        "#
+        "#,
     )
     .bind(query.pvz_id)
     .bind(date_from)
@@ -204,22 +213,25 @@ pub async fn workload_by_hour(
         }
     };
 
-    let result: Vec<serde_json::Value> = rows.iter().map(|r| {
-        let hour: i32 = r.get("hour");
-        let acceptance: i32 = r.get("acceptance");
-        let delivery: i32 = r.get("delivery");
-        let returns: i32 = r.get("returns");
-        let total: i32 = r.get("total");
-        let ops_count: i32  = r.get("ops_count");
-        serde_json::json!({
-            "hour": hour,
-            "acceptance": acceptance,
-            "delivery": delivery,
-            "returns": returns,
-            "total": total,
-            "ops_count": ops_count,
+    let result: Vec<serde_json::Value> = rows
+        .iter()
+        .map(|r| {
+            let hour: i32 = r.get("hour");
+            let acceptance: i32 = r.get("acceptance");
+            let delivery: i32 = r.get("delivery");
+            let returns: i32 = r.get("returns");
+            let total: i32 = r.get("total");
+            let ops_count: i32 = r.get("ops_count");
+            serde_json::json!({
+                "hour": hour,
+                "acceptance": acceptance,
+                "delivery": delivery,
+                "returns": returns,
+                "total": total,
+                "ops_count": ops_count,
+            })
         })
-    }).collect();
+        .collect();
 
     HttpResponse::Ok().json(result)
 }
@@ -244,7 +256,9 @@ pub async fn get_finance(
         ("WB", 57i64),
         ("Яндекс Маркет", 120i64),
         ("Авито", 35i64),
-    ].into_iter().collect();
+    ]
+    .into_iter()
+    .collect();
     let default_commission: i64 = 70;
     let acceptance_fee: i64 = 20;
     let return_fee: i64 = 10;
@@ -259,7 +273,7 @@ pub async fn get_finance(
         FROM operations o
         JOIN pvz p ON p.id = o.pvz_id
         GROUP BY p.marketplace
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
@@ -272,12 +286,14 @@ pub async fn get_finance(
 
     for row in &breakdown_rows {
         let marketplace: String = row.get("marketplace");
-        let delivery_qty: i64  = row.get("delivery_qty");
-        let delivery_ops: i64  = row.get("delivery_ops");
-        let commission = *commission_map.get(marketplace.as_str()).unwrap_or(&default_commission);
+        let delivery_qty: i64 = row.get("delivery_qty");
+        let delivery_ops: i64 = row.get("delivery_ops");
+        let commission = *commission_map
+            .get(marketplace.as_str())
+            .unwrap_or(&default_commission);
         let revenue = delivery_qty * commission;
-        total_delivery_qty     += delivery_qty;
-        total_delivery_ops     += delivery_ops;
+        total_delivery_qty += delivery_qty;
+        total_delivery_ops += delivery_ops;
         total_delivery_revenue += revenue;
         breakdown.push(serde_json::json!({
             "marketplace":    marketplace,
@@ -295,7 +311,7 @@ pub async fn get_finance(
             COALESCE(COUNT(*)      FILTER (WHERE op_type = 'in'),     0)::bigint AS acceptance_ops,
             COALESCE(COUNT(*)      FILTER (WHERE op_type = 'return'), 0)::bigint AS returns_ops
         FROM operations
-        "#
+        "#,
     )
     .fetch_one(pool.get_ref())
     .await;
@@ -309,17 +325,26 @@ pub async fn get_finance(
         ),
         Err(_) => {
             let s = state.lock().unwrap();
-            (s.workload_stats.acceptance as i64, s.workload_stats.returns as i64, 0i64, 0i64)
+            (
+                s.workload_stats.acceptance as i64,
+                s.workload_stats.returns as i64,
+                0i64,
+                0i64,
+            )
         }
     };
 
     let acceptance_revenue = acceptance_qty * acceptance_fee;
-    let returns_revenue = returns_qty    * return_fee;
+    let returns_revenue = returns_qty * return_fee;
     let total_revenue = total_delivery_revenue + acceptance_revenue + returns_revenue;
     let total_expenses = (total_revenue as f64 * expense_ratio) as i64;
     let net_profit = total_revenue - total_expenses;
     let transactions = total_delivery_ops + acceptance_ops + returns_ops;
-    let avg_check = if transactions > 0 { total_revenue / transactions } else { 0 };
+    let avg_check = if transactions > 0 {
+        total_revenue / transactions
+    } else {
+        0
+    };
 
     let weighted_commission = if total_delivery_qty > 0 {
         total_delivery_revenue / total_delivery_qty
@@ -339,15 +364,14 @@ pub async fn get_finance(
         GROUP BY month_start, month_num
         ORDER BY month_start DESC
         LIMIT 6
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
     .unwrap_or_default();
 
     const MONTHS_RU: &[&str] = &[
-        "Янв", "Фев", "Мар", "Апр", "Май", "Июн",
-        "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек",
+        "Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек",
     ];
 
     let mut monthly: Vec<serde_json::Value> = if month_rows.is_empty() {
@@ -360,21 +384,24 @@ pub async fn get_finance(
             serde_json::json!({ "month": MONTHS_RU[(m - 1) as usize], "revenue": 0, "expenses": 0 })
         }).collect()
     } else {
-        let mut rows: Vec<serde_json::Value> = month_rows.iter().map(|r| {
-            let month_num: i32 = r.get("month_num");
-            let delivery_qty:   i64 = r.get("delivery_qty");
-            let acceptance_qty: i64 = r.get("acceptance_qty");
-            let returns_qty:    i64 = r.get("returns_qty");
-            let rev = delivery_qty   * weighted_commission
+        let mut rows: Vec<serde_json::Value> = month_rows
+            .iter()
+            .map(|r| {
+                let month_num: i32 = r.get("month_num");
+                let delivery_qty: i64 = r.get("delivery_qty");
+                let acceptance_qty: i64 = r.get("acceptance_qty");
+                let returns_qty: i64 = r.get("returns_qty");
+                let rev = delivery_qty * weighted_commission
                     + acceptance_qty * acceptance_fee
-                    + returns_qty    * return_fee;
-            let exp = (rev as f64 * expense_ratio) as i64;
-            serde_json::json!({
-                "month": MONTHS_RU[(month_num - 1).clamp(0, 11) as usize],
-                "revenue": rev,
-                "expenses": exp,
+                    + returns_qty * return_fee;
+                let exp = (rev as f64 * expense_ratio) as i64;
+                serde_json::json!({
+                    "month": MONTHS_RU[(month_num - 1).clamp(0, 11) as usize],
+                    "revenue": rev,
+                    "expenses": exp,
+                })
             })
-        }).collect();
+            .collect();
         rows.reverse();
         rows
     };
@@ -390,27 +417,34 @@ pub async fn get_finance(
             ("Ozon", 84, (d * 45 / 100).max(1)),
             ("WB", 57, (d * 35 / 100).max(1)),
             ("Яндекс Маркет", 120, (d * 13 / 100).max(1)),
-            ("Авито", 35, (d * 7  / 100).max(1)),
+            ("Авито", 35, (d * 7 / 100).max(1)),
         ];
-        let demo_breakdown: Vec<serde_json::Value> = mp_shares.iter().map(|(name, comm, qty)| {
-            serde_json::json!({
-                "marketplace": name,
-                "items_delivered": qty,
-                "avg_commission": comm,
-                "revenue": qty * comm,
+        let demo_breakdown: Vec<serde_json::Value> = mp_shares
+            .iter()
+            .map(|(name, comm, qty)| {
+                serde_json::json!({
+                    "marketplace": name,
+                    "items_delivered": qty,
+                    "avg_commission": comm,
+                    "revenue": qty * comm,
+                })
             })
-        }).collect();
+            .collect();
 
-        let demo_monthly: Vec<serde_json::Value> = fs.monthly.iter().map(|m| {
-            serde_json::json!({
-                "month":    m.month,
-                "revenue":  m.revenue,
-                "expenses": m.expenses,
+        let demo_monthly: Vec<serde_json::Value> = fs
+            .monthly
+            .iter()
+            .map(|m| {
+                serde_json::json!({
+                    "month":    m.month,
+                    "revenue":  m.revenue,
+                    "expenses": m.expenses,
+                })
             })
-        }).collect();
+            .collect();
 
         let accept_cnt = (fs.transactions as f64 * 1.25) as i64;
-        let ret_cnt    = (fs.transactions as f64 * 0.07) as i64;
+        let ret_cnt = (fs.transactions as f64 * 0.07) as i64;
 
         return HttpResponse::Ok().json(serde_json::json!({
             "total_revenue": fs.total_revenue,
@@ -448,18 +482,21 @@ pub struct NewPvzBody {
     pub marketplace: Option<String>,
 }
 
-pub async fn add_pvz(
-    pool: web::Data<PgPool>,
-    body: web::Json<NewPvzBody>,
-) -> impl Responder {
+pub async fn add_pvz(pool: web::Data<PgPool>, body: web::Json<NewPvzBody>) -> impl Responder {
     let max_capacity = body.max_capacity.max(1) as i32;
-    let location_type = body.location_type.clone()
+    let location_type = body
+        .location_type
+        .clone()
         .filter(|s| ["mall", "street", "residential", "office"].contains(&s.as_str()))
         .unwrap_or_else(|| "street".to_string());
 
-    let size_type = if max_capacity <= 150 { "small" }
-                   else if max_capacity <= 400 { "medium" }
-                   else { "large" };
+    let size_type = if max_capacity <= 150 {
+        "small"
+    } else if max_capacity <= 400 {
+        "medium"
+    } else {
+        "large"
+    };
 
     let hours = match location_type.as_str() {
         "mall" => "10:00 - 22:00",
@@ -468,7 +505,9 @@ pub async fn add_pvz(
         _ => "09:00 - 21:00",
     };
 
-    let marketplace = body.marketplace.clone()
+    let marketplace = body
+        .marketplace
+        .clone()
         .filter(|s| ["Ozon", "WB", "Яндекс Маркет", "Авито"].contains(&s.as_str()))
         .unwrap_or_else(|| "Ozon".to_string());
 
@@ -531,23 +570,38 @@ pub async fn update_pvz(
             let cur_status: String = row.get("status");
             let cur_max_capacity: i32 = row.get("max_capacity");
             let cur_hours: String = row.get("hours");
-            let cur_marketplace: String = row.try_get("marketplace").unwrap_or_else(|_| "Ozon".to_string());
+            let cur_marketplace: String = row
+                .try_get("marketplace")
+                .unwrap_or_else(|_| "Ozon".to_string());
 
             let address = body.address.clone().unwrap_or(cur_address);
-            let max_capacity = body.max_capacity.map(|v| v as i32).unwrap_or(cur_max_capacity);
-            let location_type = body.location_type.clone()
+            let max_capacity = body
+                .max_capacity
+                .map(|v| v as i32)
+                .unwrap_or(cur_max_capacity);
+            let location_type = body
+                .location_type
+                .clone()
                 .filter(|s| ["mall", "street", "residential", "office"].contains(&s.as_str()))
                 .unwrap_or(cur_location_type);
-            let status = body.status.clone()
+            let status = body
+                .status
+                .clone()
                 .filter(|s| ["active", "overloaded", "closed"].contains(&s.as_str()))
                 .unwrap_or(cur_status);
             let hours = body.hours.clone().unwrap_or(cur_hours);
-            let marketplace = body.marketplace.clone()
+            let marketplace = body
+                .marketplace
+                .clone()
                 .filter(|s| ["Ozon", "WB", "Яндекс Маркет", "Авито"].contains(&s.as_str()))
                 .unwrap_or(cur_marketplace);
-            let size_type = if max_capacity <= 150 { "small" }
-                           else if max_capacity <= 400 { "medium" }
-                           else { "large" };
+            let size_type = if max_capacity <= 150 {
+                "small"
+            } else if max_capacity <= 400 {
+                "medium"
+            } else {
+                "large"
+            };
 
             match sqlx::query(
                 "UPDATE pvz
@@ -581,15 +635,13 @@ pub async fn update_pvz(
     }
 }
 
-pub async fn delete_pvz(
-    pool: web::Data<PgPool>,
-    path: web::Path<Uuid>,
-) -> impl Responder {
+pub async fn delete_pvz(pool: web::Data<PgPool>, path: web::Path<Uuid>) -> impl Responder {
     let id = path.into_inner();
     match sqlx::query("DELETE FROM pvz WHERE id = $1")
         .bind(id)
         .execute(pool.get_ref())
-        .await {
+        .await
+    {
         Ok(r) if r.rows_affected() > 0 => {
             HttpResponse::Ok().json(serde_json::json!({ "deleted": true }))
         }
@@ -622,10 +674,38 @@ pub async fn get_marketplace_items(
         delivery_pct: u32,
     }
     let configs = [
-        MpConfig { name: "Ozon", commission_percent: 3.5, avg_price: 2400, avg_storage_days: 3, share_pct: 45, delivery_pct: 40 },
-        MpConfig { name: "WB", commission_percent: 2.8, avg_price: 2050, avg_storage_days: 4, share_pct: 35, delivery_pct: 38 },
-        MpConfig { name: "Яндекс Маркет", commission_percent: 4.0, avg_price: 3000, avg_storage_days: 2, share_pct: 13, delivery_pct: 15 },
-        MpConfig { name: "Авито", commission_percent: 2.0, avg_price: 1750, avg_storage_days: 3, share_pct: 7,  delivery_pct: 7  },
+        MpConfig {
+            name: "Ozon",
+            commission_percent: 3.5,
+            avg_price: 2400,
+            avg_storage_days: 3,
+            share_pct: 45,
+            delivery_pct: 40,
+        },
+        MpConfig {
+            name: "WB",
+            commission_percent: 2.8,
+            avg_price: 2050,
+            avg_storage_days: 4,
+            share_pct: 35,
+            delivery_pct: 38,
+        },
+        MpConfig {
+            name: "Яндекс Маркет",
+            commission_percent: 4.0,
+            avg_price: 3000,
+            avg_storage_days: 2,
+            share_pct: 13,
+            delivery_pct: 15,
+        },
+        MpConfig {
+            name: "Авито",
+            commission_percent: 2.0,
+            avg_price: 1750,
+            avg_storage_days: 3,
+            share_pct: 7,
+            delivery_pct: 7,
+        },
     ];
 
     let rows = sqlx::query(
@@ -641,45 +721,54 @@ pub async fn get_marketplace_items(
         LEFT JOIN operations o ON o.pvz_id = p.id
         WHERE p.status != 'closed'
         GROUP BY p.marketplace
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
     .unwrap_or_default();
 
-    let db_data: std::collections::HashMap<String, (i64, i64)> = rows.iter().map(|r| {
-        let mp: String  = r.get("marketplace");
-        let items: i64  = r.get("items_count");
-        let pending: i64 = r.get("pending_today");
-        (mp, (items, pending))
-    }).collect();
+    let db_data: std::collections::HashMap<String, (i64, i64)> = rows
+        .iter()
+        .map(|r| {
+            let mp: String = r.get("marketplace");
+            let items: i64 = r.get("items_count");
+            let pending: i64 = r.get("pending_today");
+            (mp, (items, pending))
+        })
+        .collect();
 
     let total_db_items: i64 = db_data.values().map(|(i, _)| i).sum();
 
     let (fallback_total, fallback_delivery) = if total_db_items == 0 {
         let s = state.lock().unwrap();
-        (s.workload_stats.total_items as i64, s.workload_stats.delivery as i64)
+        (
+            s.workload_stats.total_items as i64,
+            s.workload_stats.delivery as i64,
+        )
     } else {
         (0, 0)
     };
 
-    let items: Vec<serde_json::Value> = configs.iter().map(|cfg| {
-        let (items_count, pending_today) = if total_db_items > 0 {
-            db_data.get(cfg.name).copied().unwrap_or((0, 0))
-        } else {
-            let ic = (fallback_total * cfg.share_pct as i64 / 100).max(1);
-            let pt = (fallback_delivery * cfg.delivery_pct as i64 / 100).max(0);
-            (ic, pt)
-        };
-        serde_json::json!({
-            "marketplace": cfg.name,
-            "items_count": items_count,
-            "commission_percent": cfg.commission_percent,
-            "avg_price": cfg.avg_price,
-            "avg_storage_days": cfg.avg_storage_days,
-            "pending_today": pending_today,
+    let items: Vec<serde_json::Value> = configs
+        .iter()
+        .map(|cfg| {
+            let (items_count, pending_today) = if total_db_items > 0 {
+                db_data.get(cfg.name).copied().unwrap_or((0, 0))
+            } else {
+                let ic = (fallback_total * cfg.share_pct as i64 / 100).max(1);
+                let pt = (fallback_delivery * cfg.delivery_pct as i64 / 100).max(0);
+                (ic, pt)
+            };
+            serde_json::json!({
+                "marketplace": cfg.name,
+                "items_count": items_count,
+                "commission_percent": cfg.commission_percent,
+                "avg_price": cfg.avg_price,
+                "avg_storage_days": cfg.avg_storage_days,
+                "pending_today": pending_today,
+            })
         })
-    }).collect();
+        .collect();
 
     HttpResponse::Ok().json(items)
 }
@@ -697,10 +786,25 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
             .route("/pvz/{id}", web::get().to(get_pvz_by_id))
             .route("/pvz/{id}", web::put().to(update_pvz))
             .route("/pvz/{id}", web::delete().to(delete_pvz))
-            .route("/pvz/{id}/schedule", web::get().to(super::schedule::get_schedule))
-            .route("/pvz/{id}/schedule", web::put().to(super::schedule::set_schedule))
-            .route("/operations", web::get().to(super::operations::list_operations))
-            .route("/operations", web::post().to(super::operations::add_operation))
-            .route("/operations/{id}", web::delete().to(super::operations::delete_operation))
+            .route(
+                "/pvz/{id}/schedule",
+                web::get().to(super::schedule::get_schedule),
+            )
+            .route(
+                "/pvz/{id}/schedule",
+                web::put().to(super::schedule::set_schedule),
+            )
+            .route(
+                "/operations",
+                web::get().to(super::operations::list_operations),
+            )
+            .route(
+                "/operations",
+                web::post().to(super::operations::add_operation),
+            )
+            .route(
+                "/operations/{id}",
+                web::delete().to(super::operations::delete_operation),
+            ),
     );
 }

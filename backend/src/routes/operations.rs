@@ -1,9 +1,9 @@
-use actix_web::{web, HttpRequest, HttpResponse, HttpMessage, Responder};
+use crate::utils::roles::Role;
+use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, web};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
-use crate::utils::roles::Role;
 
 fn require_admin_or_owner(req: &HttpRequest) -> Result<Role, HttpResponse> {
     match req.extensions().get::<Role>().copied() {
@@ -33,7 +33,7 @@ pub struct ListQuery {
     pub offset: Option<i64>,
 }
 
-#[derive(Deserialize)] 
+#[derive(Deserialize)]
 pub struct OpsPerHourQuery {
     pub pvz_id: Option<Uuid>,
     pub date_from: Option<String>,
@@ -72,7 +72,7 @@ pub async fn add_operation(
     let row = match sqlx::query(
         "INSERT INTO operations (pvz_id, op_type, quantity, operator_id, note)
          VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, pvz_id, op_type, quantity, note, created_at"
+         RETURNING id, pvz_id, op_type, quantity, note, created_at",
     )
     .bind(body.pvz_id)
     .bind(&body.op_type)
@@ -133,9 +133,13 @@ pub async fn list_operations(
     let limit = query.limit.unwrap_or(100).min(500);
     let offset = query.offset.unwrap_or(0);
 
-    let date_from = query.date_from.as_deref()
+    let date_from = query
+        .date_from
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
-    let date_to = query.date_to.as_deref()
+    let date_to = query
+        .date_to
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
     match sqlx::query(
@@ -149,7 +153,7 @@ pub async fn list_operations(
           AND ($4::timestamptz IS NULL OR o.created_at <= $4)
         ORDER BY o.created_at DESC
         LIMIT $5 OFFSET $6
-        "#
+        "#,
     )
     .bind(query.pvz_id)
     .bind(&query.op_type)
@@ -161,24 +165,27 @@ pub async fn list_operations(
     .await
     {
         Ok(rows) => {
-            let ops: Vec<_> = rows.iter().map(|r| {
-                let id: Uuid = r.get("id");
-                let pvz_id: Uuid = r.get("pvz_id");
-                let pvz_name: String = r.get("pvz_name");
-                let op_type: String = r.get("op_type");
-                let quantity: i32 = r.get("quantity");
-                let note: Option<String> = r.get("note");
-                let created_at: DateTime<Utc> = r.get("created_at");
-                serde_json::json!({
-                    "id": id,
-                    "pvz_id": pvz_id,
-                    "pvz_name": pvz_name,
-                    "op_type": op_type,
-                    "quantity": quantity,
-                    "note": note,
-                    "created_at": created_at,
+            let ops: Vec<_> = rows
+                .iter()
+                .map(|r| {
+                    let id: Uuid = r.get("id");
+                    let pvz_id: Uuid = r.get("pvz_id");
+                    let pvz_name: String = r.get("pvz_name");
+                    let op_type: String = r.get("op_type");
+                    let quantity: i32 = r.get("quantity");
+                    let note: Option<String> = r.get("note");
+                    let created_at: DateTime<Utc> = r.get("created_at");
+                    serde_json::json!({
+                        "id": id,
+                        "pvz_id": pvz_id,
+                        "pvz_name": pvz_name,
+                        "op_type": op_type,
+                        "quantity": quantity,
+                        "note": note,
+                        "created_at": created_at,
+                    })
                 })
-            }).collect();
+                .collect();
             HttpResponse::Ok().json(ops)
         }
         Err(e) => {
@@ -211,8 +218,8 @@ pub async fn delete_operation(
             let quantity: i32 = row.get("quantity");
 
             let revert_delta: i32 = match op_type.as_str() {
-                "out" =>  quantity,
-                _     => -quantity,
+                "out" => quantity,
+                _ => -quantity,
             };
 
             if let Err(e) = sqlx::query("DELETE FROM operations WHERE id = $1")
@@ -258,9 +265,13 @@ pub async fn ops_per_hour(
     pool: web::Data<PgPool>,
     query: web::Query<OpsPerHourQuery>,
 ) -> impl Responder {
-    let date_from = query.date_from.as_deref()
+    let date_from = query
+        .date_from
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
-    let date_to = query.date_to.as_deref()
+    let date_to = query
+        .date_to
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
     let rows = match sqlx::query(
@@ -276,7 +287,7 @@ pub async fn ops_per_hour(
           AND ($3::timestamptz IS NULL OR created_at <= $3)
         GROUP BY hour, op_type
         ORDER BY hour, op_type
-        "#
+        "#,
     )
     .bind(query.pvz_id)
     .bind(date_from)
@@ -300,12 +311,14 @@ pub async fn ops_per_hour(
         let ops_count: i32 = row.get("ops_count");
         let total_qty: i32 = row.get("total_qty");
 
-        let entry = hours.entry(hour).or_insert_with(|| serde_json::json!({
-            "hour": hour,
-            "in": { "ops": 0, "qty": 0 },
-            "out": { "ops": 0, "qty": 0 },
-            "return": { "ops": 0, "qty": 0 },
-        }));
+        let entry = hours.entry(hour).or_insert_with(|| {
+            serde_json::json!({
+                "hour": hour,
+                "in": { "ops": 0, "qty": 0 },
+                "out": { "ops": 0, "qty": 0 },
+                "return": { "ops": 0, "qty": 0 },
+            })
+        });
 
         entry[&op_type]["ops"] = serde_json::json!(ops_count);
         entry[&op_type]["qty"] = serde_json::json!(total_qty);
@@ -321,9 +334,13 @@ pub async fn export_operations_csv(
     pool: web::Data<PgPool>,
     query: web::Query<ListQuery>,
 ) -> impl Responder {
-    let date_from = query.date_from.as_deref()
+    let date_from = query
+        .date_from
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
-    let date_to = query.date_to.as_deref()
+    let date_to = query
+        .date_to
+        .as_deref()
         .and_then(|s| s.parse::<DateTime<Utc>>().ok());
 
     let rows = match sqlx::query(
@@ -337,7 +354,7 @@ pub async fn export_operations_csv(
           AND ($4::timestamptz IS NULL OR o.created_at <= $4)
         ORDER BY o.created_at DESC
         LIMIT 50000
-        "#
+        "#,
     )
     .bind(query.pvz_id)
     .bind(&query.op_type)
@@ -363,9 +380,7 @@ pub async fn export_operations_csv(
         let note: Option<String> = r.get("note");
         let created_at: DateTime<Utc> = r.get("created_at");
 
-        let note_escaped = note
-            .unwrap_or_default()
-            .replace('"', "\"\"");
+        let note_escaped = note.unwrap_or_default().replace('"', "\"\"");
 
         csv.push_str(&format!(
             "{},{},{},\"{}\",{},\"{}\",{}\n",
@@ -381,7 +396,10 @@ pub async fn export_operations_csv(
 
     HttpResponse::Ok()
         .content_type("text/csv; charset=utf-8")
-        .insert_header(("Content-Disposition", "attachment; filename=\"operations.csv\""))
+        .insert_header((
+            "Content-Disposition",
+            "attachment; filename=\"operations.csv\"",
+        ))
         .body(csv)
 }
 
@@ -392,6 +410,6 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
             .route("", web::post().to(add_operation))
             .route("/export", web::get().to(export_operations_csv))
             .route("/ops-per-hour", web::get().to(ops_per_hour))
-            .route("/{id}", web::delete().to(delete_operation))
+            .route("/{id}", web::delete().to(delete_operation)),
     );
 }

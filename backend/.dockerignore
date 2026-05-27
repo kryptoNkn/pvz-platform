@@ -2,3 +2,4 @@ target
 .git
 .env*
 uploads
+package-lock.json

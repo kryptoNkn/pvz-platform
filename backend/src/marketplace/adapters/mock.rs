@@ -1,10 +1,12 @@
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
 use chrono::Utc;
 use rand::Rng;
 
-use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpOrderItem, MpProduct, SyncState};
 use crate::marketplace::catalog::products_for_marketplace;
+use crate::marketplace::{
+    Marketplace, MarketplaceAdapter, MpOrder, MpOrderItem, MpProduct, SyncState,
+};
 
 pub struct MockAdapter {
     marketplace: Marketplace,

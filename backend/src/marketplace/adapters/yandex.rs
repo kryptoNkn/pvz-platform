@@ -1,7 +1,7 @@
-use async_trait::async_trait;
+use crate::marketplace::{Marketplace, MarketplaceAdapter, MpOrder, MpProduct, SyncState};
 use anyhow::Result;
+use async_trait::async_trait;
 use reqwest::Client;
-use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpProduct, SyncState};
 
 pub struct YandexAdapter {
     client: Client,
@@ -11,7 +11,11 @@ pub struct YandexAdapter {
 
 impl YandexAdapter {
     pub fn new(client: Client, token: String, business_id: String) -> Self {
-        Self { client, token, business_id }
+        Self {
+            client,
+            token,
+            business_id,
+        }
     }
 }
 
@@ -26,7 +30,8 @@ impl MarketplaceAdapter for YandexAdapter {
     }
 
     async fn fetch_orders(&self, _state: &SyncState) -> Result<Vec<MpOrder>> {
-        let _resp = self.client
+        let _resp = self
+            .client
             .post(format!(
                 "https://api.partner.market.yandex.ru/v1/businesses/{}/orders",
                 self.business_id

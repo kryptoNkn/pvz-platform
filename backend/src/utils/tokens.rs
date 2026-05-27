@@ -1,7 +1,7 @@
-use std::env;
-use jsonwebtoken::{EncodingKey, encode, Header, errors::Error as JwtError};
-use uuid::Uuid;
 use crate::utils::jwt::{AccessClaims, RefreshClaims, access_exp, refresh_exp};
+use jsonwebtoken::{EncodingKey, Header, encode, errors::Error as JwtError};
+use std::env;
+use uuid::Uuid;
 
 pub fn get_jwt_secret() -> Vec<u8> {
     env::var("JWT_SECRET")

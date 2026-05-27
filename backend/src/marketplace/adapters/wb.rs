@@ -1,9 +1,11 @@
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
 use reqwest::Client;
 use sqlx::PgPool;
 
-use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpOrderItem, MpProduct, SyncState};
+use crate::marketplace::{
+    Marketplace, MarketplaceAdapter, MpOrder, MpOrderItem, MpProduct, SyncState,
+};
 
 pub struct WbAdapter {
     client: Client,
@@ -27,7 +29,8 @@ impl MarketplaceAdapter for WbAdapter {
     }
 
     async fn fetch_orders(&self, _state: &SyncState) -> Result<Vec<MpOrder>> {
-        let resp = self.client
+        let resp = self
+            .client
             .get("https://marketplace-api.wildberries.ru/api/v3/dbw/orders/new")
             .header("Authorization", &self.token)
             .send()
@@ -35,14 +38,17 @@ impl MarketplaceAdapter for WbAdapter {
             .json::<serde_json::Value>()
             .await?;
 
-        let orders = resp["orders"].as_array().unwrap_or(&vec![])
+        let orders = resp["orders"]
+            .as_array()
+            .unwrap_or(&vec![])
             .iter()
             .map(|o| {
                 let article = o["article"].as_str().unwrap_or_default().to_string();
                 let price = o["price"].as_i64().unwrap_or(0);
                 let status = o["supplierStatus"].as_str().unwrap_or("new").to_string();
                 let created_at = o["createdAt"]
-                    .as_str().and_then(|s| s.parse().ok())
+                    .as_str()
+                    .and_then(|s| s.parse().ok())
                     .unwrap_or_else(|| chrono::Utc::now());
 
                 let items = if article.is_empty() {
@@ -70,7 +76,8 @@ impl MarketplaceAdapter for WbAdapter {
 
     async fn update_stocks(&self, products: &[MpProduct]) -> Result<()> {
         let warehouse_id = 123;
-        let _resp = self.client
+        let _resp = self
+            .client
             .put(format!(
                 "https://marketplace-api.wildberries.ru/api/v3/stocks/{}",
                 warehouse_id
@@ -90,7 +97,8 @@ impl MarketplaceAdapter for WbAdapter {
     }
 
     async fn update_prices(&self, products: &[MpProduct]) -> Result<()> {
-        let _resp = self.client
+        let _resp = self
+            .client
             .post("https://discounts-prices-api.wildberries.ru/api/v2/upload/task")
             .header("Authorization", &self.token)
             .json(&serde_json::json!({
@@ -115,7 +123,8 @@ impl WbAdapter {
         let limit: i64 = 100;
 
         loop {
-            let cursor = if let (Some(updated_at), Some(nm_id)) = (&cursor_updated_at, cursor_nm_id) {
+            let cursor = if let (Some(updated_at), Some(nm_id)) = (&cursor_updated_at, cursor_nm_id)
+            {
                 serde_json::json!({
                     "limit": limit,
                     "updatedAt": updated_at,
@@ -125,7 +134,8 @@ impl WbAdapter {
                 serde_json::json!({ "limit": limit })
             };
 
-            let resp = self.client
+            let resp = self
+                .client
                 .post("https://content-api.wildberries.ru/content/v2/get/cards/list")
                 .header("Authorization", &self.token)
                 .json(&serde_json::json!({
@@ -162,7 +172,7 @@ impl WbAdapter {
                         name = EXCLUDED.name,
                         wb_nm_id = EXCLUDED.wb_nm_id,
                         wb_chrt_id = EXCLUDED.wb_chrt_id
-                    "#
+                    "#,
                 )
                 .bind(vendor_code)
                 .bind(title)

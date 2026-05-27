@@ -1,17 +1,17 @@
 use actix_multipart::Multipart;
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, web};
 use futures_util::TryStreamExt;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 use crate::utils::roles::Role;
-use serde::Deserialize;
-use std::{fs,io::Write};
-use std::path::Path;
 use crate::{
     models::UpdateProfile,
-    utils::password::{hash_password, verify_password}
+    utils::password::{hash_password, verify_password},
 };
+use serde::Deserialize;
+use std::path::Path;
+use std::{fs, io::Write};
 
 pub async fn profile(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {
@@ -153,7 +153,8 @@ pub async fn upload_avatar(
     const MAX_SIZE: usize = 5 * 1024 * 1024;
 
     while let Ok(Some(mut field)) = payload.try_next().await {
-        let ct = field.content_type()
+        let ct = field
+            .content_type()
             .map(|m| m.to_string())
             .unwrap_or_else(|| "application/octet-stream".to_string());
         if !ct.starts_with("image/") && ct != "application/octet-stream" {
@@ -223,10 +224,7 @@ pub async fn upload_avatar(
     HttpResponse::BadRequest().json(serde_json::json!({"error": "Файл не предоставлен"}))
 }
 
-pub async fn list_documents(
-    req: HttpRequest,
-    db: web::Data<PgPool>,
-) -> impl Responder {
+pub async fn list_documents(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
     let user_id = match req.extensions().get::<Uuid>().cloned() {
         Some(id) => id,
         None => return HttpResponse::Unauthorized().finish(),
@@ -241,18 +239,21 @@ pub async fn list_documents(
 
     match rows {
         Ok(list) => {
-            let docs: Vec<serde_json::Value> = list.iter().map(|r| {
-                let id: Uuid = r.get("id");
-                let filename: String = r.get("filename");
-                let file_path: String = r.get("file_path");
-                let uploaded_at: chrono::DateTime<chrono::Utc> = r.get("uploaded_at");
-                serde_json::json!({
-                    "id": id,
-                    "filename": filename,
-                    "url": file_path,
-                    "uploaded_at": uploaded_at.format("%Y-%m-%dT%H:%M:%S").to_string(),
+            let docs: Vec<serde_json::Value> = list
+                .iter()
+                .map(|r| {
+                    let id: Uuid = r.get("id");
+                    let filename: String = r.get("filename");
+                    let file_path: String = r.get("file_path");
+                    let uploaded_at: chrono::DateTime<chrono::Utc> = r.get("uploaded_at");
+                    serde_json::json!({
+                        "id": id,
+                        "filename": filename,
+                        "url": file_path,
+                        "uploaded_at": uploaded_at.format("%Y-%m-%dT%H:%M:%S").to_string(),
+                    })
                 })
-            }).collect();
+                .collect();
             HttpResponse::Ok().json(docs)
         }
         Err(e) => {
@@ -275,11 +276,15 @@ pub async fn upload_document(
     const MAX_SIZE: usize = 10 * 1024 * 1024;
 
     while let Ok(Some(mut field)) = payload.try_next().await {
-        let ct = field.content_type()
+        let ct = field
+            .content_type()
             .map(|m| m.to_string())
             .unwrap_or_else(|| "application/octet-stream".to_string());
 
-        if !(ct.starts_with("image/") || ct == "application/pdf" || ct == "application/octet-stream") {
+        if !(ct.starts_with("image/")
+            || ct == "application/pdf"
+            || ct == "application/octet-stream")
+        {
             return HttpResponse::BadRequest()
                 .json(serde_json::json!({"error": "Неподдерживаемый тип файла"}));
         }
@@ -365,13 +370,11 @@ pub async fn delete_document(
     };
 
     let doc_id = path.into_inner();
-    let row = sqlx::query(
-        "SELECT file_path FROM user_documents WHERE id = $1 AND user_id = $2"
-    )
-    .bind(doc_id)
-    .bind(user_id)
-    .fetch_optional(db.get_ref())
-    .await;
+    let row = sqlx::query("SELECT file_path FROM user_documents WHERE id = $1 AND user_id = $2")
+        .bind(doc_id)
+        .bind(user_id)
+        .fetch_optional(db.get_ref())
+        .await;
 
     let file_path: String = match row {
         Ok(Some(r)) => r.get("file_path"),
@@ -471,12 +474,11 @@ pub async fn check_username(
     db: web::Data<PgPool>,
     query: web::Query<CheckUsernameQuery>,
 ) -> impl Responder {
-    let exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)"
-    )
-    .bind(&query.username)
-    .fetch_one(db.get_ref())
-    .await;
+    let exists =
+        sqlx::query_scalar::<_, bool>("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)")
+            .bind(&query.username)
+            .fetch_one(db.get_ref())
+            .await;
 
     match exists {
         Ok(taken) => HttpResponse::Ok().json(serde_json::json!({ "available": !taken })),
@@ -487,10 +489,7 @@ pub async fn check_username(
     }
 }
 
-pub async fn get_users(
-    req: HttpRequest,
-    db: web::Data<PgPool>,
-) -> impl Responder {
+pub async fn get_users(req: HttpRequest, db: web::Data<PgPool>) -> impl Responder {
     let requester_id = match req.extensions().get::<Uuid>().cloned() {
         Some(id) => id,
         None => return HttpResponse::Unauthorized().finish(),
@@ -505,21 +504,23 @@ pub async fn get_users(
         return HttpResponse::Forbidden().finish();
     }
 
-    let rows = sqlx::query(
-        "SELECT id, username, role FROM users WHERE id != $1 ORDER BY created_at DESC"
-    )
-    .bind(requester_id)
-    .fetch_all(db.get_ref())
-    .await;
+    let rows =
+        sqlx::query("SELECT id, username, role FROM users WHERE id != $1 ORDER BY created_at DESC")
+            .bind(requester_id)
+            .fetch_all(db.get_ref())
+            .await;
 
     match rows {
         Ok(users) => {
-            let list: Vec<serde_json::Value> = users.iter().map(|r| {
-                let id: Uuid = r.get("id");
-                let full_name: String = r.get("username");
-                let role: String = r.get("role");
-                serde_json::json!({ "id": id, "full_name": full_name, "role": role })
-            }).collect();
+            let list: Vec<serde_json::Value> = users
+                .iter()
+                .map(|r| {
+                    let id: Uuid = r.get("id");
+                    let full_name: String = r.get("username");
+                    let role: String = r.get("role");
+                    serde_json::json!({ "id": id, "full_name": full_name, "role": role })
+                })
+                .collect();
             HttpResponse::Ok().json(list)
         }
         Err(e) => {
@@ -550,18 +551,15 @@ pub async fn assign_role(
     let target_role = match Role::from_db(&body.role) {
         Some(role) => role,
         None => {
-            return HttpResponse::BadRequest().json(
-                serde_json::json!({ "error": "Invalid role" })
-            );
+            return HttpResponse::BadRequest().json(serde_json::json!({ "error": "Invalid role" }));
         }
     };
 
     let allowed = requester_role.can_edit_role(target_role);
 
     if !allowed {
-        return HttpResponse::Forbidden().json(
-            serde_json::json!({ "error": "Insufficient permissions" })
-        );
+        return HttpResponse::Forbidden()
+            .json(serde_json::json!({ "error": "Insufficient permissions" }));
     }
 
     let result = sqlx::query("UPDATE users SET role = $1 WHERE id = $2")
@@ -589,12 +587,12 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
             .route("/password", web::put().to(change_password))
             .route("/documents", web::get().to(list_documents))
             .route("/documents", web::post().to(upload_document))
-            .route("/documents/{id}", web::delete().to(delete_document))
+            .route("/documents/{id}", web::delete().to(delete_document)),
     );
     cfg.service(
         web::scope("/users")
             .route("/check-username", web::get().to(check_username))
             .route("", web::get().to(get_users))
-            .route("/{id}/role", web::put().to(assign_role))
+            .route("/{id}/role", web::put().to(assign_role)),
     );
 }

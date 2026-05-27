@@ -1,8 +1,8 @@
 use actix_web::{
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     Error, HttpMessage,
+    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
 };
-use futures_util::future::{ready, LocalBoxFuture, Ready};
+use futures_util::future::{LocalBoxFuture, Ready, ready};
 use std::rc::Rc;
 use uuid::Uuid;
 
@@ -57,8 +57,9 @@ where
             let mut res = srv.call(req).await?;
             res.headers_mut().insert(
                 actix_web::http::header::HeaderName::from_static("x-request-id"),
-                actix_web::http::header::HeaderValue::from_str(&request_id)
-                    .unwrap_or_else(|_| actix_web::http::header::HeaderValue::from_static("unknown")),
+                actix_web::http::header::HeaderValue::from_str(&request_id).unwrap_or_else(|_| {
+                    actix_web::http::header::HeaderValue::from_static("unknown")
+                }),
             );
 
             Ok(res)

@@ -1,8 +1,8 @@
-use anyhow::Result;
-use sqlx::{PgPool, Row, Postgres, Transaction};
-use crate::marketplace::{MarketplaceAdapter, MpProduct, MpOrder, Marketplace, SyncState};
 use crate::marketplace::adapters::WbAdapter;
+use crate::marketplace::{Marketplace, MarketplaceAdapter, MpOrder, MpProduct, SyncState};
 use crate::observability::{SYNC_ERRORS_TOTAL, SYNC_ORDERS_TOTAL, SyncTimer};
+use anyhow::Result;
+use sqlx::{PgPool, Postgres, Row, Transaction};
 
 pub struct MarketplaceService {
     adapters: Vec<Box<dyn MarketplaceAdapter>>,
@@ -101,22 +101,25 @@ impl MarketplaceService {
             SELECT wb_nm_id, name, base_price
             FROM products
             WHERE wb_nm_id IS NOT NULL
-            "#
+            "#,
         )
         .fetch_all(pool)
         .await?;
 
-        let products: Vec<MpProduct> = rows.iter().filter_map(|r| {
-            let nm_id: i64 = r.get("wb_nm_id");
-            let name: String = r.get("name");
-            let price: i64 = r.get("base_price");
-            Some(MpProduct {
-                article: nm_id.to_string(),
-                name,
-                price,
-                stock: 0,
+        let products: Vec<MpProduct> = rows
+            .iter()
+            .filter_map(|r| {
+                let nm_id: i64 = r.get("wb_nm_id");
+                let name: String = r.get("name");
+                let price: i64 = r.get("base_price");
+                Some(MpProduct {
+                    article: nm_id.to_string(),
+                    name,
+                    price,
+                    stock: 0,
+                })
             })
-        }).collect();
+            .collect();
 
         if !products.is_empty() {
             wb.update_prices(&products).await?;
@@ -136,22 +139,25 @@ impl MarketplaceService {
             FROM products p
             JOIN product_stocks ps ON ps.product_id = p.id
             WHERE ps.marketplace = 'WB' AND p.wb_chrt_id IS NOT NULL
-            "#
+            "#,
         )
         .fetch_all(pool)
         .await?;
 
-        let products: Vec<MpProduct> = rows.iter().filter_map(|r| {
-            let chrt_id: i64 = r.get("wb_chrt_id");
-            let name: String = r.get("name");
-            let stock: i32 = r.get("stock");
-            Some(MpProduct {
-                article: chrt_id.to_string(),
-                name,
-                price: 0,
-                stock,
+        let products: Vec<MpProduct> = rows
+            .iter()
+            .filter_map(|r| {
+                let chrt_id: i64 = r.get("wb_chrt_id");
+                let name: String = r.get("name");
+                let stock: i32 = r.get("stock");
+                Some(MpProduct {
+                    article: chrt_id.to_string(),
+                    name,
+                    price: 0,
+                    stock,
+                })
             })
-        }).collect();
+            .collect();
 
         if !products.is_empty() {
             wb.update_stocks(&products).await?;
@@ -178,7 +184,7 @@ impl MarketplaceService {
                     status = EXCLUDED.status,
                     updated_at = NOW()
                 RETURNING id
-                "#
+                "#,
             )
             .bind(mp_str)
             .bind(&o.id)
@@ -197,7 +203,7 @@ impl MarketplaceService {
                         name = EXCLUDED.name,
                         base_price = EXCLUDED.base_price
                     RETURNING id
-                    "#
+                    "#,
                 )
                 .bind(&item.article)
                 .bind(&item.name)

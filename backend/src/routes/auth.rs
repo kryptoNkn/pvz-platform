@@ -1,16 +1,16 @@
-use actix_web::{web, HttpResponse, Responder};
+use crate::models::{LoginUser, RegisterUser};
+use crate::utils::{
+    cookies::{access_cookie, refresh_cookie},
+    errors::validation_error_to_response,
+    password::{hash_password, verify_password},
+    refresh_tokens::save_refresh_token,
+    tokens::{generate_access_token, generate_refresh_token, get_jwt_secret},
+    validation::{ValidationError, validate_login_input, validate_register_input},
+};
+use actix_web::{HttpResponse, Responder, web};
 use chrono::Utc;
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
-use crate::models::{LoginUser, RegisterUser};
-use crate::utils::{
-    errors::validation_error_to_response,
-    password::{hash_password, verify_password},
-    refresh_tokens::{save_refresh_token},
-    tokens::{generate_access_token, generate_refresh_token, get_jwt_secret},
-    validation::{validate_login_input, validate_register_input, ValidationError},
-    cookies::{access_cookie, refresh_cookie},
-};
 
 pub async fn register_user(
     db: web::Data<PgPool>,
@@ -32,17 +32,13 @@ pub async fn register_user(
 
     let user_id = Uuid::new_v4();
     let role = "operator".to_string();
-    let normalized_phone: String = user
-        .phone
-        .chars()
-        .filter(|c| c.is_ascii_digit())
-        .collect();
+    let normalized_phone: String = user.phone.chars().filter(|c| c.is_ascii_digit()).collect();
 
     let result = sqlx::query(
         r#"
         INSERT INTO users (id, username, email, password_hash, role)
         VALUES ($1, $2, $3, $4, $5)
-        "#
+        "#,
     )
     .bind(user_id)
     .bind(&user.full_name)
@@ -76,7 +72,8 @@ pub async fn register_user(
                 jti,
                 user_id,
                 Utc::now().naive_utc() + chrono::Duration::days(30),
-            ).await
+            )
+            .await
             {
                 log::error!("Saving refresh token failed: {e}");
                 return HttpResponse::InternalServerError().finish();
@@ -89,7 +86,7 @@ pub async fn register_user(
                     "access_token": access_token,
                     "refresh_token": refresh_token
                 }))
-        },
+        }
         Err(e) => {
             if let sqlx::Error::Database(db_err) = &e {
                 if db_err.code().as_deref() == Some("23505") {
@@ -102,10 +99,7 @@ pub async fn register_user(
     }
 }
 
-pub async fn login_user(
-    db: web::Data<PgPool>,
-    user: web::Json<LoginUser>,
-) -> impl Responder {
+pub async fn login_user(db: web::Data<PgPool>, user: web::Json<LoginUser>) -> impl Responder {
     let user = user.into_inner();
 
     if let Err(errors) = validate_login_input(&user) {
@@ -117,7 +111,7 @@ pub async fn login_user(
         SELECT id, password_hash, role
         FROM users
         WHERE email = regexp_replace($1, '[^0-9]', '', 'g')
-        "#
+        "#,
     )
     .bind(&user.phone)
     .fetch_optional(db.get_ref())
@@ -159,7 +153,8 @@ pub async fn login_user(
         jti,
         user_id,
         Utc::now().naive_utc() + chrono::Duration::days(30),
-    ).await
+    )
+    .await
     {
         log::error!("Saving refresh token failed: {e}");
         return HttpResponse::InternalServerError().finish();
@@ -191,7 +186,9 @@ pub async fn refresh_token(
         Err(_) => return HttpResponse::Unauthorized().finish(),
     };
 
-    if let Err(_) = crate::utils::refresh_tokens::validate_refresh_token(db.clone(), claims.jti).await {
+    if let Err(_) =
+        crate::utils::refresh_tokens::validate_refresh_token(db.clone(), claims.jti).await
+    {
         return HttpResponse::Unauthorized().finish();
     }
 
@@ -202,8 +199,10 @@ pub async fn refresh_token(
         db.clone(),
         jti,
         claims.sub,
-        Utc::now().naive_utc() + chrono::Duration::days(30)
-    ).await.unwrap();
+        Utc::now().naive_utc() + chrono::Duration::days(30),
+    )
+    .await
+    .unwrap();
 
     HttpResponse::Ok()
         .cookie(access_cookie(access_token.clone()))
@@ -219,6 +218,6 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
         web::scope("/auth")
             .route("/register", web::post().to(register_user))
             .route("/login", web::post().to(login_user))
-            .route("/refresh", web::post().to(refresh_token))
+            .route("/refresh", web::post().to(refresh_token)),
     );
 }

@@ -1,26 +1,31 @@
+mod marketplace;
+mod middleware;
 mod models;
+mod observability;
+mod pvz;
 mod routes;
 mod utils;
-mod middleware;
-mod pvz;
-mod marketplace;
-mod observability;
 
-use std::{env, sync::{Arc, Mutex}};
+use crate::marketplace::MarketplaceService;
+use crate::marketplace::adapters::{
+    AvitoAdapter, MockAdapter, OzonAdapter, WbAdapter, YandexAdapter,
+};
+use crate::middleware::auth::Auth;
+use crate::middleware::request_id::RequestId;
+use crate::middleware::request_metrics::RequestMetrics;
+use crate::pvz::AppState;
 use actix_cors::Cors;
 use actix_files::Files;
-use actix_web::{web, App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use reqwest::Client;
 use sqlx::PgPool;
 use std::time::Duration;
-use tracing_subscriber::EnvFilter;
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 use tracing_actix_web::TracingLogger;
-use crate::middleware::request_id::RequestId;
-use crate::middleware::request_metrics::RequestMetrics;
-use crate::middleware::auth::Auth;
-use crate::pvz::AppState;
-use crate::marketplace::adapters::{OzonAdapter, WbAdapter, YandexAdapter, AvitoAdapter, MockAdapter};
-use crate::marketplace::MarketplaceService;
+use tracing_subscriber::EnvFilter;
 
 fn require_env(name: &str) -> String {
     env::var(name).unwrap_or_else(|_| panic!("Missing required env var: {name}"))
@@ -64,7 +69,9 @@ async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let pool = PgPool::connect(&database_url).await.expect("Failed to connect to DB");
+    let pool = PgPool::connect(&database_url)
+        .await
+        .expect("Failed to connect to DB");
     seed_test_accounts(&pool).await;
 
     let filter = EnvFilter::try_from_default_env()
@@ -75,35 +82,6 @@ async fn main() -> std::io::Result<()> {
         .with_target(false)
         .json()
         .init();
-
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS operations (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            pvz_id UUID NOT NULL REFERENCES pvz(id) ON DELETE CASCADE,
-            op_type VARCHAR(10) NOT NULL CHECK (op_type IN ('in', 'out', 'return')),
-            quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
-            operator_id UUID REFERENCES users(id) ON DELETE SET NULL,
-            note TEXT,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )"
-    )
-    .execute(&pool)
-    .await
-    .expect("Failed to create operations table");
-
-    sqlx::query("CREATE INDEX IF NOT EXISTS idx_operations_pvz_id     ON operations(pvz_id)")
-        .execute(&pool).await.ok();
-    sqlx::query("CREATE INDEX IF NOT EXISTS idx_operations_op_type    ON operations(op_type)")
-        .execute(&pool).await.ok();
-    sqlx::query("CREATE INDEX IF NOT EXISTS idx_operations_created_at ON operations(created_at DESC)")
-        .execute(&pool).await.ok();
-
-    sqlx::query(
-        "ALTER TABLE pvz ADD COLUMN IF NOT EXISTS marketplace TEXT NOT NULL DEFAULT 'Ozon'"
-    )
-    .execute(&pool)
-    .await
-    .ok();
 
     let app_state = Arc::new(Mutex::new(AppState::new()));
     let http_client = Client::new();
@@ -116,8 +94,12 @@ async fn main() -> std::io::Result<()> {
     let mp_service = if mock_mode {
         MarketplaceService::new(vec![
             Box::new(MockAdapter::new(crate::marketplace::Marketplace::Ozon)),
-            Box::new(MockAdapter::new(crate::marketplace::Marketplace::Wildberries)),
-            Box::new(MockAdapter::new(crate::marketplace::Marketplace::YandexMarket)),
+            Box::new(MockAdapter::new(
+                crate::marketplace::Marketplace::Wildberries,
+            )),
+            Box::new(MockAdapter::new(
+                crate::marketplace::Marketplace::YandexMarket,
+            )),
             Box::new(MockAdapter::new(crate::marketplace::Marketplace::Avito)),
         ])
     } else {
@@ -134,19 +116,13 @@ async fn main() -> std::io::Result<()> {
                 ozon_api_key,
                 ozon_client_id,
             )),
-            Box::new(WbAdapter::new(
-                http_client.clone(),
-                wb_token,
-            )),
+            Box::new(WbAdapter::new(http_client.clone(), wb_token)),
             Box::new(YandexAdapter::new(
                 http_client.clone(),
                 ym_token,
                 ym_business_id,
             )),
-            Box::new(AvitoAdapter::new(
-                http_client.clone(),
-                avito_access_token,
-            )),
+            Box::new(AvitoAdapter::new(http_client.clone(), avito_access_token)),
         ])
     };
 
@@ -163,7 +139,10 @@ async fn main() -> std::io::Result<()> {
         loop {
             interval.tick().await;
             let state = crate::marketplace::SyncState::default();
-            if let Err(e) = mp_for_worker.sync_orders_all(&pool_for_worker, &state).await {
+            if let Err(e) = mp_for_worker
+                .sync_orders_all(&pool_for_worker, &state)
+                .await
+            {
                 tracing::error!(error = %e, "marketplace worker sync_orders error");
             }
         }
@@ -193,7 +172,7 @@ async fn main() -> std::io::Result<()> {
                     .configure(routes::metrics::init_routes),
             )
     })
-        .bind("0.0.0.0:8080")?
-        .run()
-        .await
+    .bind("0.0.0.0:8080")?
+    .run()
+    .await
 }

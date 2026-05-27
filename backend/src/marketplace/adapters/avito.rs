@@ -1,8 +1,8 @@
-use async_trait::async_trait;
 use anyhow::Result;
+use async_trait::async_trait;
 use reqwest::Client;
 
-use crate::marketplace::{MarketplaceAdapter, Marketplace, MpOrder, MpProduct, SyncState};
+use crate::marketplace::{Marketplace, MarketplaceAdapter, MpOrder, MpProduct, SyncState};
 
 pub struct AvitoAdapter {
     client: Client,

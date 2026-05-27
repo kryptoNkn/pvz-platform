@@ -1,5 +1,5 @@
+use argon2::password_hash::{Error as PwdHashError, SaltString};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use argon2::password_hash::{SaltString, Error as PwdHashError};
 use rand::rngs::OsRng;
 
 pub fn hash_password(password: &str) -> Result<String, PwdHashError> {

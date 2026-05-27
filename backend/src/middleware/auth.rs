@@ -1,15 +1,16 @@
-use actix_web::{
-    dev::{ServiceRequest, ServiceResponse, Transform, Service, forward_ready},
-    Error, HttpResponse, HttpMessage, web,
-    body::EitherBody,
-};
-use futures_util::future::{LocalBoxFuture, ready, Ready};
-use jsonwebtoken::{decode, DecodingKey, Validation};
-use std::rc::Rc;
-use sqlx::{PgPool, Row};
 use crate::utils::jwt::AccessClaims;
 use crate::utils::roles::Role;
 use crate::utils::tokens::get_jwt_secret;
+use actix_web::{
+    Error, HttpMessage, HttpResponse,
+    body::EitherBody,
+    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
+    web,
+};
+use futures_util::future::{LocalBoxFuture, Ready, ready};
+use jsonwebtoken::{DecodingKey, Validation, decode};
+use sqlx::{PgPool, Row};
+use std::rc::Rc;
 
 pub struct Auth;
 
@@ -25,7 +26,9 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AuthMiddleware { service: Rc::new(service) }))
+        ready(Ok(AuthMiddleware {
+            service: Rc::new(service),
+        }))
     }
 }
 
@@ -65,7 +68,8 @@ where
                 "/",
             ];
 
-            if public_routes.iter().any(|&route| path == route) || path.starts_with("/api/uploads/") {
+            if public_routes.iter().any(|&route| path == route) || path.starts_with("/api/uploads/")
+            {
                 let res = srv.call(req).await?;
                 return Ok(res.map_into_left_body());
             }
@@ -75,9 +79,7 @@ where
                 .get("Authorization")
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| v.strip_prefix("Bearer ").map(str::to_owned))
-                .or_else(|| {
-                    req.cookie("access_token").map(|c| c.value().to_owned())
-                });
+                .or_else(|| req.cookie("access_token").map(|c| c.value().to_owned()));
 
             if let Some(jwt) = jwt {
                 let secret = get_jwt_secret();

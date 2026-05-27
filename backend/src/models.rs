@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -27,7 +27,7 @@ pub struct UpdateProfile {
     pub full_name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)] 
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct ScheduleDay {
     pub day_index: i16,
     pub is_day_off: bool,

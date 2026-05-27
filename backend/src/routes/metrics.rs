@@ -1,6 +1,6 @@
-use actix_web::{get, HttpResponse, Responder};
-use prometheus::{Encoder, TextEncoder};
 use actix_web::web::ServiceConfig;
+use actix_web::{HttpResponse, Responder, get};
+use prometheus::{Encoder, TextEncoder};
 
 #[get("/metrics")]
 async fn metrics() -> impl Responder {

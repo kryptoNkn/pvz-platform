@@ -1,9 +1,9 @@
 pub mod auth;
-pub mod user;
-pub mod pvz;
-pub mod notifications;
-pub mod schedule;
-pub mod operations;
-pub mod marketplace;
 pub mod health;
+pub mod marketplace;
 pub mod metrics;
+pub mod notifications;
+pub mod operations;
+pub mod pvz;
+pub mod schedule;
+pub mod user;

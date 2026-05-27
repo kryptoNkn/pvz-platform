@@ -1,8 +1,8 @@
 use actix_web::{
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
     Error,
+    dev::{Service, ServiceRequest, ServiceResponse, Transform, forward_ready},
 };
-use futures_util::future::{ready, LocalBoxFuture, Ready};
+use futures_util::future::{LocalBoxFuture, Ready, ready};
 use std::rc::Rc;
 
 use crate::observability::HTTP_REQUESTS_IN_FLIGHT;

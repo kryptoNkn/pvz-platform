@@ -1,6 +1,6 @@
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use rand::Rng;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
@@ -73,7 +73,9 @@ pub struct AppState {
 }
 
 fn calculate_total_items(acceptance: u32, delivery: u32, extra_items: u32) -> u32 {
-    acceptance.saturating_sub(delivery).saturating_add(extra_items)
+    acceptance
+        .saturating_sub(delivery)
+        .saturating_add(extra_items)
 }
 
 impl AppState {
@@ -92,7 +94,12 @@ pub fn generate_workload_stats(rng: &mut impl Rng) -> WorkloadStats {
     let returns: u32 = rng.gen_range(40..=350);
     let extra_items: u32 = rng.gen_range(0..=200);
     let total_items = calculate_total_items(acceptance, delivery, extra_items);
-    WorkloadStats { total_items, acceptance, delivery, returns }
+    WorkloadStats {
+        total_items,
+        acceptance,
+        delivery,
+        returns,
+    }
 }
 
 pub fn generate_financial_stats(rng: &mut impl Rng) -> FinancialStats {
@@ -102,8 +109,8 @@ pub fn generate_financial_stats(rng: &mut impl Rng) -> FinancialStats {
     let returns_qty: u64 = (delivery_qty as f64 * rng.gen_range(0.04_f64..=0.12)) as u64;
 
     let delivery_rev = delivery_qty * avg_comm;
-    let accept_rev = accept_qty   * 20;
-    let returns_rev = returns_qty  * 10;
+    let accept_rev = accept_qty * 20;
+    let returns_rev = returns_qty * 10;
     let total_revenue = delivery_rev + accept_rev + returns_rev;
 
     let expense_ratio: f64 = rng.gen_range(0.60..=0.70);
@@ -111,31 +118,57 @@ pub fn generate_financial_stats(rng: &mut impl Rng) -> FinancialStats {
     let net_profit: i64 = total_revenue as i64 - total_expenses as i64;
 
     let delivery_ops: u32 = (delivery_qty / rng.gen_range(2_u64..=5)) as u32;
-    let accept_ops: u32   = (accept_qty   / rng.gen_range(3_u64..=7)) as u32;
-    let returns_ops: u32  = returns_qty as u32;
+    let accept_ops: u32 = (accept_qty / rng.gen_range(3_u64..=7)) as u32;
+    let returns_ops: u32 = returns_qty as u32;
     let transactions = delivery_ops + accept_ops + returns_ops;
-    let avg_check = if transactions > 0 { (total_revenue / transactions as u64) as u32 } else { 0 };
+    let avg_check = if transactions > 0 {
+        (total_revenue / transactions as u64) as u32
+    } else {
+        0
+    };
 
     const MONTHS: &[&str] = &["Окт", "Ноя", "Дек", "Янв", "Фев", "Мар"];
     let monthly_base = total_revenue / 6;
-    let monthly: Vec<MonthlyFinance> = MONTHS.iter().map(|m| {
-        let factor: f64 = rng.gen_range(0.70..=1.30);
-        let rev: u64 = (monthly_base as f64 * factor) as u64;
-        let exp: u64 = (rev as f64 * rng.gen_range(0.58..=0.72)) as u64;
-        MonthlyFinance { month: m.to_string(), revenue: rev, expenses: exp }
-    }).collect();
+    let monthly: Vec<MonthlyFinance> = MONTHS
+        .iter()
+        .map(|m| {
+            let factor: f64 = rng.gen_range(0.70..=1.30);
+            let rev: u64 = (monthly_base as f64 * factor) as u64;
+            let exp: u64 = (rev as f64 * rng.gen_range(0.58..=0.72)) as u64;
+            MonthlyFinance {
+                month: m.to_string(),
+                revenue: rev,
+                expenses: exp,
+            }
+        })
+        .collect();
 
-    FinancialStats { total_revenue, total_expenses, net_profit, avg_check, transactions, monthly }
+    FinancialStats {
+        total_revenue,
+        total_expenses,
+        net_profit,
+        avg_check,
+        transactions,
+        monthly,
+    }
 }
 
 fn generate_single(rng: &mut impl Rng, index: usize) -> Pvz {
     const CITIES: &[&str] = &[
-        "Москва", "Санкт-Петербург", "Казань",
-        "Екатеринбург", "Новосибирск", "Краснодар",
+        "Москва",
+        "Санкт-Петербург",
+        "Казань",
+        "Екатеринбург",
+        "Новосибирск",
+        "Краснодар",
     ];
     const STREETS: &[&str] = &[
-        "ул. Ленина", "пр. Мира", "ул. Пушкина",
-        "ул. Гагарина", "пр. Победы", "ул. Советская",
+        "ул. Ленина",
+        "пр. Мира",
+        "ул. Пушкина",
+        "ул. Гагарина",
+        "пр. Победы",
+        "ул. Советская",
     ];
 
     let size_type = match rng.gen_range(0u8..3) {
