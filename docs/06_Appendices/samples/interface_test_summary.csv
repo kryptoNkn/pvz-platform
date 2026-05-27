@@ -1,0 +1,9 @@
+area,scenario,expected,actual,status
+frontend-build,Production build,Build succeeds without TypeScript/Vite errors,"npm run build succeeded",passed
+lint,ESLint,No ESLint errors or warnings,"6 errors and 2 warnings found",issues
+auth,Login/Register switch,User can switch forms and reach workload after success,"AuthPage switches and navigates to /workload",confirmed
+security,Protected routes,Unauthorized users are redirected to /login,"ProtectedLayout enforces profile and role redirects",confirmed
+workload,Load dashboard,Stats and PVZ list are displayed,"WorkloadPage loads /api/v1/stats and /api/v1/pvz",confirmed
+stats,Statistics dashboard,Status and workload charts are shown,"StatsPage renders status distribution and ops breakdown",confirmed
+add-pvz,Create PVZ,Address validation and 7-day schedule save work,"AddPvzPage validates address and sends PVZ+schedule",confirmed
+employees,Role management,Owner/Admin manage roles and Operator cannot,"EmployeesPage limits role options by current role",confirmed

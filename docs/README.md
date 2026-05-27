@@ -20,4 +20,7 @@
 - [Матрица рисков, базовая версия](./01_Project_Launch/P3_Risks.md)
 - [ER-диаграмма](./04_Data_Architecture/P19_ER_Diagram.md)
 - [Схема БД](./04_Data_Architecture/P21_DB_Structure.md)
+- [Спецификация API отчета загрузки по часам](./05_Integration_API/P25_Workload_Report_API.md)
+- [Пример CSV-экспорта операций](./05_Integration_API/P26_CSV_Export_Example.md)
+- [Результаты тестирования интерфейса](./06_Appendices/P2_Interface_Test_Results.md)
 - [Команды и политики](./02_Requirements_Analysis/P11_Commands_Policies.md)
