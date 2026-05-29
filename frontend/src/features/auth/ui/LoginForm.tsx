@@ -5,7 +5,7 @@ import Popup from './Popup';
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (role?: 'operator' | 'admin' | 'owner') => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) => {
@@ -36,7 +36,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSuccess }) 
         return;
       }
 
-      onSuccess?.();
+      const data = await res.json().catch(() => null);
+      onSuccess?.(data?.role);
     } catch {
       setError(t.connectionError);
     } finally {

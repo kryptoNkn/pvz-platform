@@ -84,7 +84,8 @@ pub async fn register_user(
                 .cookie(refresh_cookie(refresh_token.clone()))
                 .json(serde_json::json!({
                     "access_token": access_token,
-                    "refresh_token": refresh_token
+                    "refresh_token": refresh_token,
+                    "role": role
                 }))
         }
         Err(e) => {
@@ -127,6 +128,7 @@ pub async fn login_user(db: web::Data<PgPool>, user: web::Json<LoginUser>) -> im
 
     let user_id: Uuid = db_user.get("id");
     let password_hash: String = db_user.get("password_hash");
+    let role: String = db_user.get("role");
 
     if !verify_password(&password_hash, &user.password) {
         return HttpResponse::Unauthorized().body("Invalid credentials");
@@ -165,7 +167,8 @@ pub async fn login_user(db: web::Data<PgPool>, user: web::Json<LoginUser>) -> im
         .cookie(refresh_cookie(refresh_token.clone()))
         .json(serde_json::json!({
             "access_token": access_token,
-            "refresh_token": refresh_token
+            "refresh_token": refresh_token,
+            "role": role
         }))
 }
 

@@ -1,3 +1,12 @@
-node_modules
-dist
+node_modules/
+dist/
+.git/
 .env*
+*.log
+.idea/
+.vscode/
+*.swp
+*.tmp
+.DS_Store
+coverage/
+.cache/

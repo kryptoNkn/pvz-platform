@@ -5,7 +5,7 @@ import Popup from './Popup';
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (role?: 'operator' | 'admin' | 'owner') => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess }) => {
@@ -44,7 +44,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onSuccess 
         return;
       }
 
-      onSuccess?.();
+      const data = await res.json().catch(() => null);
+      onSuccess?.(data?.role ?? 'operator');
     } catch {
       setError(t.connectionError);
     } finally {

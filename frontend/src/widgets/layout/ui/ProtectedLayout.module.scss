@@ -38,6 +38,30 @@
     margin: 0;
 }
 
+.pendingActions {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.pendingButton {
+    height: 40px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 12px;
+    background: #163832;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+
+    &:hover {
+        background: #235347;
+        transform: translateY(-1px);
+    }
+}
+
 .layout {
     display: flex;
     height: 100%;

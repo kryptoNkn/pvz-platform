@@ -47,6 +47,16 @@ function saveNotifications(items: NotificationItem[]) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
+function createNotificationId() {
+    const cryptoApi = globalThis.crypto
+
+    if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+        return cryptoApi.randomUUID()
+    }
+
+    return `notif-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export function getNotifications(): NotificationItem[] {
     try {
         const raw = localStorage.getItem(STORAGE_KEY)
@@ -65,7 +75,7 @@ export function refreshNotifications(lang: Lang): NotificationItem[] {
     const now = Date.now()
 
     const items = templates.map((template, index) => ({
-        id: crypto.randomUUID(),
+        id: createNotificationId(),
         title: template.title,
         body: template.body,
         type: template.type,

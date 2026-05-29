@@ -16,6 +16,60 @@
   text-align: center;
 }
 
+.stateWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stateCard {
+  width: min(100%, 520px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  padding: 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.stateTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stateText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.stateButton {
+  align-self: center;
+  margin-top: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 12px;
+  background: #163832;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+
+  &:hover {
+    background: #235347;
+    transform: translateY(-1px);
+  }
+}
+
 // ── Stat cards ───────────────────────────────────────────────
 
 .statsSection {

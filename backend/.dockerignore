@@ -1,5 +1,12 @@
-target
-.git
+target/
+target-linux/
+.git/
 .env*
-uploads
+*.log
+.idea/
+.vscode/
+*.swp
+*.tmp
+.DS_Store
+uploads/
 package-lock.json

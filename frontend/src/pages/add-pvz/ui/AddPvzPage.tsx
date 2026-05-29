@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLang } from '@/shared/i18n'
 import styles from './AddPvzPage.module.scss'
@@ -10,7 +10,23 @@ type DaySchedule = {
 }
 
 const defaultSchedule = (): DaySchedule[] =>
-    Array(7).fill(null).map(() => ({ isOff: false, startTime: '9:00', endTime: '21:00' }))
+    Array(7).fill(null).map(() => ({ isOff: false, startTime: '09:00', endTime: '21:00' }))
+
+async function getErrorMessage(response: Response, fallback: string) {
+    const contentType = response.headers.get('content-type') ?? ''
+
+    if (contentType.includes('application/json')) {
+        try {
+            const data = await response.json()
+            if (typeof data?.error === 'string' && data.error.trim()) return data.error
+            if (typeof data?.message === 'string' && data.message.trim()) return data.message
+        } catch {
+            // Fall through to the fallback message below.
+        }
+    }
+
+    return fallback
+}
 
 export const AddPvzPage = () => {
     const navigate = useNavigate()
@@ -40,7 +56,9 @@ export const AddPvzPage = () => {
         )
     }
 
-    const handleSave = async () => {
+    const handleSave = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+
         if (!address.trim()) { setError('Введите адрес'); return }
         setSaving(true)
         setError('')
@@ -56,7 +74,9 @@ export const AddPvzPage = () => {
                     marketplace,
                 }),
             })
-            if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`)
+            if (!res.ok) {
+                throw new Error(await getErrorMessage(res, `Ошибка сервера: ${res.status}`))
+            }
             const pvz = await res.json()
 
             const schedRes = await fetch(`/api/v1/pvz/${pvz.id}/schedule`, {
@@ -72,7 +92,11 @@ export const AddPvzPage = () => {
                     }))
                 ),
             })
-            if (!schedRes.ok) throw new Error(`Ошибка сохранения расписания: ${schedRes.status}`)
+            if (!schedRes.ok) {
+                throw new Error(
+                    await getErrorMessage(schedRes, `Ошибка сохранения расписания: ${schedRes.status}`)
+                )
+            }
 
             navigate('/workload')
         } catch (e: any) {
@@ -83,7 +107,7 @@ export const AddPvzPage = () => {
     }
 
     return (
-        <div className={styles.page}>
+        <form className={styles.page} onSubmit={handleSave}>
             <h1 className={styles.title}>{t.addPvzTitle}</h1>
 
             <section className={styles.section}>
@@ -201,16 +225,16 @@ export const AddPvzPage = () => {
                 </div>
             </section>
 
-            {error && <p className={styles.errorMsg}>{error}</p>}
+            {error && <p className={styles.errorMsg} role="alert">{error}</p>}
 
             <div className={styles.actions}>
-                <button className={styles.btnCancel} onClick={() => navigate('/workload')}>
+                <button type="button" className={styles.btnCancel} onClick={() => navigate('/workload')}>
                     {t.cancel}
                 </button>
-                <button className={styles.btnSave} onClick={handleSave} disabled={saving}>
+                <button type="submit" className={styles.btnSave} disabled={saving} aria-busy={saving}>
                     {saving ? t.saving : t.saveChanges}
                 </button>
             </div>
-        </div>
+        </form>
     )
 }

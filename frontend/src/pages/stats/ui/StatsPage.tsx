@@ -13,21 +13,96 @@ interface Stats {
     returns: number
 }
 
+function isStatsPayload(value: unknown): value is Stats {
+    if (!value || typeof value !== 'object') return false
+
+    const candidate = value as Record<string, unknown>
+    const keys: Array<keyof Stats> = [
+        'total',
+        'active',
+        'overloaded',
+        'closed',
+        'total_items',
+        'acceptance',
+        'delivery',
+        'returns',
+    ]
+
+    return keys.every(key => typeof candidate[key] === 'number' && Number.isFinite(candidate[key] as number))
+}
+
 export const StatsPage = () => {
     const { t } = useLang()
     const [stats, setStats] = useState<Stats | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [reloadKey, setReloadKey] = useState(0)
 
     useEffect(() => {
-        fetch('/api/v1/stats', { credentials: 'include' })
-            .then(r => r.json())
-            .then(setStats)
-            .catch(console.error)
-    }, [])
+        let cancelled = false
 
-    if (!stats) {
+        const loadStats = async () => {
+            setLoading(true)
+            setError(null)
+
+            try {
+                const response = await fetch('/api/v1/stats', { credentials: 'include' })
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`)
+                }
+
+                const data = await response.json()
+                if (!isStatsPayload(data)) {
+                    throw new Error('Некорректный формат данных статистики')
+                }
+                if (!cancelled) {
+                    setStats(data)
+                }
+            } catch (err) {
+                console.error(err)
+                if (!cancelled) {
+                    setStats(null)
+                    setError('Не удалось загрузить статистику')
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false)
+                }
+            }
+        }
+
+        void loadStats()
+
+        return () => {
+            cancelled = true
+        }
+    }, [reloadKey])
+
+    if (loading) {
         return (
             <div className={styles.page}>
-                <p className={styles.loading}>{t.loading}</p>
+                <div className={styles.stateWrap}>
+                    <div className={styles.stateCard}>
+                        <p className={styles.stateTitle}>{t.loading}</p>
+                        <p className={styles.stateText}>Загружаем сводные данные по ПВЗ.</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error || !stats) {
+        return (
+            <div className={styles.page}>
+                <div className={styles.stateWrap}>
+                    <div className={styles.stateCard}>
+                        <p className={styles.stateTitle}>Статистика недоступна</p>
+                        <p className={styles.stateText}>{error ?? 'Попробуйте обновить страницу.'}</p>
+                        <button className={styles.stateButton} onClick={() => setReloadKey(k => k + 1)}>
+                            Повторить
+                        </button>
+                    </div>
+                </div>
             </div>
         )
     }
