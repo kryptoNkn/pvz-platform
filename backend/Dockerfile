@@ -2,6 +2,7 @@ ARG RUST_IMAGE=rust:1.96.0-bookworm
 ARG RUNTIME_IMAGE=debian:12.14-slim
 FROM ${RUST_IMAGE} AS chef
 WORKDIR /app
+ENV CARGO_BUILD_JOBS=1
 
 RUN cargo install --locked cargo-chef
 
@@ -12,6 +13,7 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 ARG BUILD_REV=local
+ENV CARGO_BUILD_JOBS=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libssl-dev pkg-config \
@@ -52,7 +54,7 @@ ENV RUST_LOG=info
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD wget -q -O /dev/null http://127.0.0.1:8080/api/ready || exit 1
+    CMD wget -q -O /dev/null http://127.0.0.1:${PORT:-8080}/api/ready || exit 1
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["./backend"]

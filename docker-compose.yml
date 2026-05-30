@@ -35,7 +35,6 @@ services:
 
   migrate:
     image: pvz-backend:local
-    build: *backend-build
     pull_policy: never
     init: true
     command: ["sqlx", "migrate", "run"]
