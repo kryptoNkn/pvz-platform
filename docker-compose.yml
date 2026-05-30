@@ -33,23 +33,6 @@ services:
           cpus: "1.0"
           memory: 1G
 
-  migrate:
-    image: pvz-backend:local
-    pull_policy: never
-    init: true
-    command: ["sqlx", "migrate", "run"]
-    env_file: ./backend/.env
-    environment:
-      DATABASE_URL: postgres://postgres:password@db:5432/pvzbd
-    depends_on:
-      db:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-
   backend:
     image: pvz-backend:local
     build: *backend-build
@@ -65,8 +48,8 @@ services:
     volumes:
       - uploads:/app/uploads
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:

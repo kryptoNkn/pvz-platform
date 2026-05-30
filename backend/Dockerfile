@@ -19,14 +19,13 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libssl-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cargo install --locked sqlx-cli --no-default-features --features postgres
-
 COPY --from=planner /app/recipe.json recipe.json
 
 RUN cargo chef cook --release --recipe-path recipe.json
 
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
+COPY migrations ./migrations
 
 RUN echo "building revision: ${BUILD_REV}" >/dev/null \
     && cargo build --release --locked --bin backend \
@@ -44,8 +43,6 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY --from=builder --chown=app:app /app/target/release/backend ./backend
-COPY --from=builder --chown=app:app /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
-COPY --chown=app:app migrations ./migrations
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
 

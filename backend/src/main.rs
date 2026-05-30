@@ -148,6 +148,12 @@ async fn main() -> std::io::Result<()> {
     let pool = PgPool::connect(&database_url)
         .await
         .expect("Failed to connect to DB");
+
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("Failed to run database migrations");
+
     seed_test_accounts(&pool).await;
 
     let app_state = Arc::new(Mutex::new(AppState::new()));
